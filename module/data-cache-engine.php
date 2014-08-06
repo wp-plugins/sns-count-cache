@@ -72,14 +72,46 @@ class DataCacheEngine {
 	 */	          
   	private $event_description = 'cache event';
   
+  	/**
+	 * Instance
+	 */
+  	private static $instance = array();
+  
 	/**
 	 * Class constarctor
 	 * Hook onto all of the actions and filters needed by the plugin.
 	 *
 	 */
-	function __construct($crawler, $options=array()) {
+	protected function __construct() {
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 
-		$this->crawler = $crawler;
+	}
+  
+  	/**
+	 * Get instance
+	 *
+	 * @since 0.1.1
+	 */	 	
+  	public static function get_instance() {
+
+	  	$class_name = get_called_class();
+		if( !isset( self::$instance[$class_name] ) ) {
+			self::$instance[$class_name] = new $class_name();
+		  	//self::$instance[$class_name]->initialize($crawler, $options=array());
+		}
+
+		return self::$instance[$class_name];
+	}
+	
+  	/**
+	 * Initialization
+	 *
+	 * @since 0.1.1
+	 */
+  	public function initialize($crawler, $options=array()){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+
+	  	$this->crawler = $crawler;
 	  
 	  	if(isset($options['check_interval'])) $this->check_interval = $options['check_interval'];
 	  	if(isset($options['posts_per_check'])) $this->posts_per_check = $options['posts_per_check'];
@@ -91,15 +123,17 @@ class DataCacheEngine {
 	  	  
 		add_filter('cron_schedules', array($this, 'schedule_check_interval')); 
 		add_action($this->cron_cache_prime, array($this, 'prime_data_cache'));
-		add_action($this->cron_cache_execute, array($this, 'execute_data_cache'),10,1);
-
-	}
-	
+		add_action($this->cron_cache_execute, array($this, 'execute_data_cache'),10,1);	  
+  	}
+  	
+  
   	/**
 	 * Register base schedule for this engine
 	 *
+	 * @since 0.1.0
 	 */	     
 	public function register_base_schedule(){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 	
 		if (!wp_next_scheduled($this->cron_cache_prime)) {
 			wp_schedule_event( time(), $this->event_schedule, $this->cron_cache_prime);
@@ -109,16 +143,42 @@ class DataCacheEngine {
   	/**
 	 * Unregister base schedule for this engine
 	 *
+	 * @since 0.1.0
 	 */	     
 	public function unregister_base_schedule(){
-		wp_clear_scheduled_hook($this->cron_cache_prime);
-	}
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 
+	  	wp_clear_scheduled_hook($this->cron_cache_prime);
+	  	$this->clear_scheduled_hook($this->cron_cache_execute);
+	}
+  
+  	/**
+	 * Clear scheduled hook based related to specified hook name 
+	 *
+	 * @since 0.1.1
+	 */	     
+  	private function clear_scheduled_hook($hook){
+		$crons = _get_cron_array();
+	  
+		if(empty($crons)) return;
+			  
+		foreach($crons as $timestamp => $cron) {		  
+		  	if(isset($cron[$hook])){
+			  	foreach ($cron[$hook] as $signature => $data){
+						wp_unschedule_event( $timestamp, $hook, $data['args']);
+			  	}
+		  	}
+		}
+	  
+  	}
+  
   	/**
 	 * Register event schedule for this engine
 	 *
+	 * @since 0.1.0
 	 */	     
 	public function schedule_check_interval($schedules) {
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 		
 		$schedules[$this->event_schedule] = array(
 			'interval' => $this->check_interval,
@@ -130,15 +190,17 @@ class DataCacheEngine {
   	/**
 	 * Schedule data retrieval and cache processing
 	 *
+	 * @since 0.1.0
 	 */	   
 	public function prime_data_cache(){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 
 		$next_exec_time = time() + $this->check_interval;
 		$posts_total = $this->get_posts_total();
 
-		$this->log('[prime_data_cache] check_interval: ' . $this->check_interval);
-		$this->log('[prime_data_cache] next_exec_time: ' . $next_exec_time);
-		$this->log('[prime_data_cache] posts_total: ' . $posts_total);
+		$this->log('[' . __METHOD__ . '] check_interval: ' . $this->check_interval);
+		$this->log('[' . __METHOD__ . '] next_exec_time: ' . $next_exec_time);
+		$this->log('[' . __METHOD__ . '] posts_total: ' . $posts_total);
 		
 		$transient_id = $this->transient_prefix . 'offset';
 	  
@@ -146,11 +208,11 @@ class DataCacheEngine {
 			$posts_offset = 0;
 		}
 
-		$this->log('[prime_data_cache] posts_offset: ' . $posts_offset);
+		$this->log('[' . __METHOD__ . '] posts_offset: ' . $posts_offset);
 		
 		wp_schedule_single_event($next_exec_time, $this->cron_cache_execute, array($posts_offset)); 
 	  	
-		$this->log('[prime_data_cache] posts_per_check: ' . $this->posts_per_check);
+		$this->log('[' . __METHOD__ . '] posts_per_check: ' . $this->posts_per_check);
 			  
 		$posts_offset = $posts_offset + $this->posts_per_check;
 	  
@@ -158,7 +220,7 @@ class DataCacheEngine {
 			$posts_offset = 0;
 		}
 
-		delete_transient($transient_id);
+	  	//delete_transient($transient_id);
 		set_transient($transient_id, $posts_offset, $this->check_interval + $this->check_interval); 
 		
 	}
@@ -166,18 +228,20 @@ class DataCacheEngine {
   	/**
 	 * Get and cache data of each published post
 	 *
+	 * @since 0.1.0
 	 */	    
 	public function execute_data_cache($posts_offset){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 		
-		$this->log('[execute_data_cache] posts_offset: ' . $posts_offset);
-		$this->log('[execute_data_cache] posts_per_check: ' . $this->posts_per_check);
-		$this->log('[execute_data_cache] check_interval: ' . $this->check_interval);
+		$this->log('[' . __METHOD__ . '] posts_offset: ' . $posts_offset);
+		$this->log('[' . __METHOD__ . '] posts_per_check: ' . $this->posts_per_check);
+		$this->log('[' . __METHOD__ . '] check_interval: ' . $this->check_interval);
 		
 		$posts_total = $this->get_posts_total();
 		$cache_expiration = (ceil($posts_total / $this->posts_per_check) * $this->check_interval) + 2 * $this->check_interval;
 
-		$this->log('[execute_data_cache] cache_expiration: ' . $cache_expiration);
-		$this->log('[execute_data_cache] posts_total: ' . $posts_total);
+		$this->log('[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration);
+		$this->log('[' . __METHOD__ . '] posts_total: ' . $posts_total);
 		
 		$query_args = array(
 				'post_type' => 'post',
@@ -195,7 +259,7 @@ class DataCacheEngine {
 			while($posts_query->have_posts()){
 				$posts_query->the_post();
 				
-			  	$this->log('[execute_data_cache] post_id: ' . get_the_ID());
+			  	$this->log('[' . __METHOD__ . '] post_id: ' . get_the_ID());
 
 			  	$transient_id = $this->transient_prefix . get_the_ID();
 					 
@@ -207,9 +271,10 @@ class DataCacheEngine {
 			  
 			  	$this->log($data);
 			  
-				delete_transient($transient_id);
-				set_transient($transient_id, $data, $cache_expiration); 
-				
+				//delete_transient($transient_id);
+				$result = set_transient($transient_id, $data, $cache_expiration); 
+			  
+			  	$this->log('[' . __METHOD__ . '] set_transient result: ' . $result);
 			}
 		}
 		wp_reset_postdata();
@@ -218,8 +283,10 @@ class DataCacheEngine {
   	/**
 	 * Get total count of current published posts
 	 *
+	 * @since 0.1.0
 	 */	    
 	private function get_posts_total(){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 
 		$query_args = array(
 				'post_type' => 'post',
@@ -237,6 +304,7 @@ class DataCacheEngine {
   	/**
 	 * Output log message according to WP_DEBUG setting
 	 *
+	 * @since 0.1.0
 	 */	    
 	private function log($message) {
     	if (WP_DEBUG === true) {
@@ -246,6 +314,28 @@ class DataCacheEngine {
         		error_log($message);
       		}
     	}
+  	}
+  
+  	/**
+	 * Set interval cheking and caching target data
+	 *
+	 * @since 0.1.1
+	 */	  	  
+  	public function set_check_interval($check_interval) {
+	  	$this->check_interval = $check_interval;
+	  	$this->unregister_base_schedule();
+	  	$this->register_base_schedule();
+  	}
+  
+  	/**
+	 * Set number of posts to check at a time
+	 *
+	 * @since 0.1.1
+	 */	  
+  	public function set_posts_per_check($posts_per_check) {
+	  	$this->posts_per_check = $posts_per_check;
+	  	$this->unregister_base_schedule();
+	  	$this->register_base_schedule();	  	
   	}
 }
 
