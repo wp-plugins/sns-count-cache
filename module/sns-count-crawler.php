@@ -36,41 +36,27 @@ class SNSCountCrawler extends DataCrawler{
 	 * Timeout for cURL data retrieval
 	 */	  
 	private $timeout = 10;
-    
-	protected function __construct($url='',$timeout=10) {
-	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	  
+  
+	function __construct($url='',$timeout=10) {
 		$this->url=rawurlencode($url);
 		$this->timeout=$timeout;
 	}
-  
-	public function set_timeout($timeout){
-	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	  
+
+	function set_timeout($timeout){
 		$this->timeout = $timeout;
 	}
-  
+
   	/**
 	 * Implementation of abstract method. this method gets each share count
 	 *
-	 * @since 0.1.0
 	 */	  
   	public function get_data(){
-	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	  
 		$sns_counts = array();
-	  	
+	  
 	  	$sns_counts[SNSCountCache::REF_HATEBU] = $this->get_hatebu_count();
 	  	$sns_counts[SNSCountCache::REF_TWITTER] = $this->get_twitter_count();
 	  	$sns_counts[SNSCountCache::REF_FACEBOOK] = $this->get_facebook_count();
 	  	$sns_counts[SNSCountCache::REF_GPLUS] = $this->get_gplus_count();
-		
-	  	/*
-	  	$sns_counts['hatebu'] = $this->get_hatebu_count();
-	  	$sns_counts['twitter'] = $this->get_twitter_count();
-	  	$sns_counts['facebook'] = $this->get_facebook_count();
-	  	$sns_counts['gplus'] = $this->get_gplus_count();
-		*/
 	  
 		return $sns_counts;
 	}
@@ -78,11 +64,8 @@ class SNSCountCrawler extends DataCrawler{
   	/**
 	 * Get share count for Hatena Bookmark
 	 *
-	 * @since 0.1.0
 	 */	      
 	public function get_hatebu_count() {
-	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	  
 	  	$query = 'http://api.b.st-hatena.com/entry.count?url=' . $this->url;
 	  
 		$hatebu = $this->file_get_contents($query);
@@ -93,11 +76,8 @@ class SNSCountCrawler extends DataCrawler{
   	/**
 	 * Get share count for Twitter
 	 *
-	 * @since 0.1.0
 	 */	        
 	public function get_twitter_count() {
-	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	  
 	  	$query = 'http://urls.api.twitter.com/1/urls/count.json?url=' . $this->url;
 	  
 		$json = $this->file_get_contents($query);
@@ -110,11 +90,8 @@ class SNSCountCrawler extends DataCrawler{
   	/**
 	 * Get share count for Facebook
 	 *
-	 * @since 0.1.0
 	 */	        
 	public function get_facebook_count() {
-	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	  
 	  	$query = 'http://graph.facebook.com/' . $this->url;
 	  
 		$json = $this->file_get_contents($query);
@@ -127,11 +104,8 @@ class SNSCountCrawler extends DataCrawler{
   	/**
 	 * Get share count for Google Plus
 	 *
-	 * @since 0.1.0
 	 */	          
 	public function get_gplus_count()	{
-	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	  
 		$curl = curl_init();
 	  
 		curl_setopt($curl, CURLOPT_URL, "https://clients6.google.com/rpc");
@@ -157,11 +131,8 @@ class SNSCountCrawler extends DataCrawler{
   	/**
 	 * Get content from given URL using cURL
 	 *
-	 * @since 0.1.0
 	 */	          
 	private function file_get_contents($url){
-	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	  
 		$curl = curl_init();
 	  
 		curl_setopt($curl, CURLOPT_URL, $url);
@@ -181,6 +152,20 @@ class SNSCountCrawler extends DataCrawler{
 	  
 		return $curl_results;
 	}
+
+  	/**
+	 * Output log message according to WP_DEBUG setting
+	 *
+	 */	    
+	private function log($message) {
+    	if (WP_DEBUG === true) {
+      		if (is_array($message) || is_object($message)) {
+        		error_log(print_r($message, true));
+      		} else {
+        		error_log($message);
+      		}
+    	}
+  	}
 
 }
 
