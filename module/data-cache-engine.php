@@ -3,7 +3,7 @@
 data-cache-engine.php
 
 Description: This class is a data cache engine whitch get and cache data using wp-cron at regular intervals  
-Version: 0.1.0
+Version: 0.2.0
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -202,9 +202,9 @@ class DataCacheEngine {
 		$this->log('[' . __METHOD__ . '] next_exec_time: ' . $next_exec_time);
 		$this->log('[' . __METHOD__ . '] posts_total: ' . $posts_total);
 		
-		$transient_id = $this->transient_prefix . 'offset';
-	  
-		if (false === ($posts_offset = get_transient($transient_id))) {
+	  	$transient_ID = $this->get_transient_ID('offset');
+		  
+		if (false === ($posts_offset = get_transient($transient_ID))) {
 			$posts_offset = 0;
 		}
 
@@ -221,7 +221,7 @@ class DataCacheEngine {
 		}
 
 	  	//delete_transient($transient_id);
-		set_transient($transient_id, $posts_offset, $this->check_interval + $this->check_interval); 
+		set_transient($transient_ID, $posts_offset, $this->check_interval + $this->check_interval); 
 		
 	}
   
@@ -237,11 +237,9 @@ class DataCacheEngine {
 		$this->log('[' . __METHOD__ . '] posts_per_check: ' . $this->posts_per_check);
 		$this->log('[' . __METHOD__ . '] check_interval: ' . $this->check_interval);
 		
-		$posts_total = $this->get_posts_total();
-		$cache_expiration = (ceil($posts_total / $this->posts_per_check) * $this->check_interval) + 2 * $this->check_interval;
-
+	  	$cache_expiration = $this->get_cache_expiration();
+		  
 		$this->log('[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration);
-		$this->log('[' . __METHOD__ . '] posts_total: ' . $posts_total);
 		
 		$query_args = array(
 				'post_type' => 'post',
@@ -258,27 +256,99 @@ class DataCacheEngine {
 		if($posts_query->have_posts()) {
 			while($posts_query->have_posts()){
 				$posts_query->the_post();
-				
-			  	$this->log('[' . __METHOD__ . '] post_id: ' . get_the_ID());
-
-			  	$transient_id = $this->transient_prefix . get_the_ID();
-					 
-				$url = get_permalink(get_the_ID());
-								
-				$this->crawler->set_url($url);
-
-			 	$data = $this->crawler->get_data();
-			  
-			  	$this->log($data);
-			  
-				//delete_transient($transient_id);
-				$result = set_transient($transient_id, $data, $cache_expiration); 
-			  
-			  	$this->log('[' . __METHOD__ . '] set_transient result: ' . $result);
+			  			  
+			  	$this->cache_data(get_the_ID(), $cache_expiration);			  
 			}
 		}
 		wp_reset_postdata();
 	}
+  
+  	/**
+	 * Get and cache data for a given post
+	 *
+	 * @since 0.1.1
+	 */
+  	public function restock_data_cache($post_ID){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+		
+		$this->log('[' . __METHOD__ . '] posts_per_check: ' . $this->posts_per_check);
+		$this->log('[' . __METHOD__ . '] check_interval: ' . $this->check_interval);
+
+	  	$cache_expiration = $this->get_cache_expiration();
+		  
+		$this->log('[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration);	
+	  		  	  
+	  	return $this->cache_data($post_ID, $cache_expiration);
+	}
+
+  	/**
+	 * Get and cache data for a given post
+	 *
+	 * @since 0.1.1
+	 */  	
+  	private function cache_data($post_ID, $cache_expiration){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+
+	  	$this->log('[' . __METHOD__ . '] post_id: ' . $post_ID);
+
+		$transient_ID = $this->get_transient_ID($post_ID);
+	  
+		$url = get_permalink($post_ID);
+								
+		$data = $this->crawler->get_data($url);
+			  
+		$this->log($data);
+			  
+		$result = set_transient($transient_ID, $data, $cache_expiration); 
+			  
+		$this->log('[' . __METHOD__ . '] set_transient result: ' . $result);
+	  
+	  	return $data;
+  	}
+  
+  	public function retrieve_data($post_ID){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+	  
+	  	$this->log('[' . __METHOD__ . '] post_id: ' . $post_ID);
+
+		$url = get_permalink($post_ID);
+			
+	  	//$time_start = microtime(true);
+	  
+		$data = $this->crawler->get_data($url);
+	  
+	  	//$time_end = microtime(true);
+	  	//$time = $time_end - $time_start;
+	  	//$this->log('[' . __METHOD__ . '] post_id: ' . $post_ID . ' time to retrieve: ' . $time);
+	  
+	  	$this->log($data);
+
+		return $data;
+  	}	
+
+  	/**
+	 * Get transient ID
+	 *
+	 * @since 0.1.1
+	 */  	  
+  	private function get_transient_ID($suffix){
+	  	return $this->transient_prefix . $suffix;
+  	}
+  
+  	/**
+	 * Get cache expiration based on current number of total posts
+	 *
+	 * @since 0.1.1
+	 */	      
+  	private function get_cache_expiration(){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+	  
+	  	$posts_total = $this->get_posts_total();
+	  
+		$this->log('[' . __METHOD__ . '] posts_total: ' . $posts_total);
+	  
+		return (ceil($posts_total / $this->posts_per_check) * $this->check_interval) + 2 * $this->check_interval;
+  	}
   
   	/**
 	 * Get total count of current published posts

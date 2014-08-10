@@ -56,6 +56,11 @@ class SNSCountCache {
 	 * Slug of the plugin screen
 	 */		
 	private $plugin_screen_hook_suffix = NULL;
+  
+	/**
+	 * Option flag of dynamic cache processing
+	 */		  
+  	private $dynamic_cache = false;
 	
 	/**
 	 * Prefix of cache ID
@@ -101,6 +106,11 @@ class SNSCountCache {
 	 * Option key for Number of posts to check at a time
 	 */	    
   	const DB_POSTS_PER_CHECK = 'scc_posts_per_check';
+
+	/**
+	 * Option key for dynamic cache processing
+	 */	    
+  	const DB_DYNAMIC_CACHE = 'scc_dynamic_cache';
   
 	/**
 	 * Slug of the plugin
@@ -181,6 +191,9 @@ class SNSCountCache {
 	  	$check_interval = !empty($check_interval) ? intval($check_interval) : self::OPT_CHECK_INTERVAL;
 	  	$posts_per_check = !empty($posts_per_check) ? intval($posts_per_check) : self::OPT_POSTS_PER_CHECK; 
 
+	  	$dynamic_cache = get_option(self::DB_DYNAMIC_CACHE);
+	  	$this->dynamic_cache = !empty($dynamic_cache) ? $dynamic_cache : false;
+	  
 	  	$this->log('[' . __METHOD__ . '] check_interval: ' . $check_interval);
 	  	$this->log('[' . __METHOD__ . '] posts_per_check: ' . $posts_per_check);
 	  
@@ -314,6 +327,35 @@ class SNSCountCache {
     	}
   	}
   
+  	/**
+	 * Get and cache data for a given post
+	 *
+	 * @since 0.1.1
+	 */  
+  	public function restock_count_cache($post_ID){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+	  	return $this->cache_engine->restock_data_cache($post_ID);
+	  	//return $this->cache_engine->retrieve_data($post_ID);
+  	}
+  
+  	/**
+	 * Return if dynamic cache processing is enabled or not.
+	 *
+	 * @since 0.1.1
+	 */      
+  	public function is_enable_dynamic_cache(){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+
+		$this->log('[' . __METHOD__ . '] dynamic cache: ' . $this->dynamic_cache);
+	  
+	  	if($this->dynamic_cache){
+		  	$this->log('[' . __METHOD__ . '] dynamic cache: true');
+		  	return true;
+		} else {
+		  	$this->log('[' . __METHOD__ . '] dynamic cache: false');
+		  	return false;
+		}
+  	}
 }
 
 SNSCountCache::get_instance();
@@ -324,17 +366,27 @@ SNSCountCache::get_instance();
  * @since 0.1.0
  */       
 function get_scc_hatebu($post_ID='') {
-	$transient_id ='';
+	$transient_ID ='';
+  	$sns_counts = array();
   
-	if(!empty($post_ID)){
-	  	$transient_id = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
-    }else{
-	  	$transient_id = SNSCountCache::OPT_TRANSIENT_PREFIX . get_the_ID();
-    }
+	if(empty($post_ID)){
+	  	$post_ID = get_the_ID();
+	}
+	
+  	$transient_ID = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
+  
+  	if(false !== ($sns_counts = get_transient($transient_ID))){
+	  	return $sns_counts[SNSCountCache::REF_HATEBU]; 
+	} else {
+	  	$sns_count_cache = SNSCountCache::get_instance();
+	  	if($sns_count_cache->is_enable_dynamic_cache()){
+	  		$sns_counts = $sns_count_cache->restock_count_cache($post_ID);
+	  		return $sns_counts[SNSCountCache::REF_HATEBU]; 
+		} else {
+		  	return $sns_counts[SNSCountCache::REF_HATEBU]; 
+		}
+	}  
 
-  	$sns_counts = get_transient($transient_id);
-     
-	return $sns_counts[SNSCountCache::REF_HATEBU]; 
 }
   
 /**
@@ -343,17 +395,27 @@ function get_scc_hatebu($post_ID='') {
  * @since 0.1.0
  */     
 function get_scc_twitter($post_ID='') {
-	$transient_id ='';
+	$transient_ID ='';
+  	$sns_counts = array();
   
-	if(!empty($post_ID)){
-	  	$transient_id = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
-    }else{
-	  	$transient_id = SNSCountCache::OPT_TRANSIENT_PREFIX . get_the_ID();
-    }
-
-  	$sns_counts = get_transient($transient_id);
-       
-	return $sns_counts[SNSCountCache::REF_TWITTER]; 
+	if(empty($post_ID)){
+	  	$post_ID = get_the_ID();
+	}
+	
+  	$transient_ID = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
+  
+  	if(false !== ($sns_counts = get_transient($transient_ID))){
+	  	return $sns_counts[SNSCountCache::REF_TWITTER]; 
+	} else {
+	  	$sns_count_cache = SNSCountCache::get_instance();
+	  	if($sns_count_cache->is_enable_dynamic_cache()){
+	  		$sns_counts = $sns_count_cache->restock_count_cache($post_ID);
+	  		return $sns_counts[SNSCountCache::REF_TWITTER]; 
+		} else {
+		  	return $sns_counts[SNSCountCache::REF_TWITTER]; 
+		}
+	}  
+  
 }
 
 /**
@@ -362,17 +424,27 @@ function get_scc_twitter($post_ID='') {
  * @since 0.1.0
  */     
 function get_scc_facebook($post_ID='') {
-	$transient_id ='';
+	$transient_ID ='';
+  	$sns_counts = array();
   
-	if(!empty($post_ID)){
-	  	$transient_id = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
-    }else{
-	  	$transient_id = SNSCountCache::OPT_TRANSIENT_PREFIX . get_the_ID();
-    }
-
-  	$sns_counts = get_transient($transient_id);
-
-  	return $sns_counts[SNSCountCache::REF_FACEBOOK]; 
+	if(empty($post_ID)){
+	  	$post_ID = get_the_ID();
+	}
+	
+  	$transient_ID = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
+  
+  	if(false !== ($sns_counts = get_transient($transient_ID))){
+	  	return $sns_counts[SNSCountCache::REF_FACEBOOK]; 
+	} else {
+	  	$sns_count_cache = SNSCountCache::get_instance();
+	  	if($sns_count_cache->is_enable_dynamic_cache()){
+	  		$sns_counts = $sns_count_cache->restock_count_cache($post_ID);
+	  		return $sns_counts[SNSCountCache::REF_FACEBOOK]; 
+		} else {
+		  	return $sns_counts[SNSCountCache::REF_FACEBOOK]; 
+		}
+	}
+  
 }
   
 /**
@@ -381,17 +453,27 @@ function get_scc_facebook($post_ID='') {
  * @since 0.1.0
  */     
 function get_scc_gplus($post_ID='') {
-	$transient_id ='';
+	$transient_ID ='';
+  	$sns_counts = array();
   
-	if(!empty($post_ID)){
-	  	$transient_id = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
-    }else{
-	  	$transient_id = SNSCountCache::OPT_TRANSIENT_PREFIX . get_the_ID();
-    }
-
-  	$sns_counts = get_transient($transient_id);
-
-  	return $sns_counts[SNSCountCache::REF_GPLUS]; 
+	if(empty($post_ID)){
+	  	$post_ID = get_the_ID();
+	}
+	
+  	$transient_ID = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
+  
+  	if(false !== ($sns_counts = get_transient($transient_ID))){
+	  	return $sns_counts[SNSCountCache::REF_GPLUS];
+	} else {
+	  	$sns_count_cache = SNSCountCache::get_instance();
+	  	if($sns_count_cache->is_enable_dynamic_cache()){
+	  		$sns_counts = $sns_count_cache->restock_count_cache($post_ID);
+	  		return $sns_counts[SNSCountCache::REF_GPLUS];
+		} else {
+		  	return $sns_counts[SNSCountCache::REF_GPLUS];
+		}
+	}
+  
 }
 
 /**
@@ -400,19 +482,28 @@ function get_scc_gplus($post_ID='') {
  * @since 0.1.0
  */     
 function get_scc($post_ID='') {
-	$transient_id ='';
+	$transient_ID ='';
+  	$sns_counts = array();
   
-	if(!empty($post_ID)){
-	  	$transient_id = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
-    }else{
-	  	$transient_id = SNSCountCache::OPT_TRANSIENT_PREFIX . get_the_ID();
-    }
-
-  	$sns_counts = get_transient($transient_id);
+	if(empty($post_ID)){
+	  	$post_ID = get_the_ID();
+	}
+	
+  	$transient_ID = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
   
-	return $sns_counts;
+  	if(false !== ($sns_counts = get_transient($transient_ID))){
+	  	return $sns_counts;
+	} else {
+	  	$sns_count_cache = SNSCountCache::get_instance();
+	  	if($sns_count_cache->is_enable_dynamic_cache()){
+	  		$sns_counts = $sns_count_cache->restock_count_cache($post_ID);
+	  		return $sns_counts;
+		} else {
+		  	return $sns_counts;
+		}
+	}
 }
-  
+
 }
 
 ?>

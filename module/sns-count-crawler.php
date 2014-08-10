@@ -54,7 +54,8 @@ class SNSCountCrawler extends DataCrawler{
 	 * Implementation of abstract method. this method gets each share count
 	 *
 	 * @since 0.1.0
-	 */	  
+	 */
+	/*
   	public function get_data(){
 	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 	  
@@ -65,25 +66,40 @@ class SNSCountCrawler extends DataCrawler{
 	  	$sns_counts[SNSCountCache::REF_FACEBOOK] = $this->get_facebook_count();
 	  	$sns_counts[SNSCountCache::REF_GPLUS] = $this->get_gplus_count();
 		
-	  	/*
-	  	$sns_counts['hatebu'] = $this->get_hatebu_count();
-	  	$sns_counts['twitter'] = $this->get_twitter_count();
-	  	$sns_counts['facebook'] = $this->get_facebook_count();
-	  	$sns_counts['gplus'] = $this->get_gplus_count();
-		*/
-	  
 		return $sns_counts;
 	}
+	*/
+  
+  	/**
+	 * Implementation of abstract method. this method gets each share count
+	 *
+	 * @since 0.1.1
+	 */	    
+  	public function get_data($url){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+	  
+	  	$url=rawurlencode($url);
+	  
+		$sns_counts = array();
+	  	
+	  	$sns_counts[SNSCountCache::REF_HATEBU] = $this->get_hatebu_count($url);
+	  	$sns_counts[SNSCountCache::REF_TWITTER] = $this->get_twitter_count($url);
+	  	$sns_counts[SNSCountCache::REF_FACEBOOK] = $this->get_facebook_count($url);
+	  	$sns_counts[SNSCountCache::REF_GPLUS] = $this->get_gplus_count($url);
+		
+		return $sns_counts;
+	  	
+  	}
   
   	/**
 	 * Get share count for Hatena Bookmark
 	 *
 	 * @since 0.1.0
 	 */	      
-	public function get_hatebu_count() {
+	public function get_hatebu_count($url) {
 	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	  
-	  	$query = 'http://api.b.st-hatena.com/entry.count?url=' . $this->url;
+	  	  
+	  	$query = 'http://api.b.st-hatena.com/entry.count?url=' . $url;
 	  
 		$hatebu = $this->file_get_contents($query);
 	  
@@ -95,10 +111,10 @@ class SNSCountCrawler extends DataCrawler{
 	 *
 	 * @since 0.1.0
 	 */	        
-	public function get_twitter_count() {
+	public function get_twitter_count($url) {
 	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	  
-	  	$query = 'http://urls.api.twitter.com/1/urls/count.json?url=' . $this->url;
+	  	  
+	  	$query = 'http://urls.api.twitter.com/1/urls/count.json?url=' . $url;
 	  
 		$json = $this->file_get_contents($query);
 	  
@@ -112,10 +128,10 @@ class SNSCountCrawler extends DataCrawler{
 	 *
 	 * @since 0.1.0
 	 */	        
-	public function get_facebook_count() {
+	public function get_facebook_count($url) {
 	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 	  
-	  	$query = 'http://graph.facebook.com/' . $this->url;
+	  	$query = 'http://graph.facebook.com/' . $url;
 	  
 		$json = $this->file_get_contents($query);
 	  
@@ -129,7 +145,7 @@ class SNSCountCrawler extends DataCrawler{
 	 *
 	 * @since 0.1.0
 	 */	          
-	public function get_gplus_count()	{
+	public function get_gplus_count($url)	{
 	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 	  
 		$curl = curl_init();
@@ -137,7 +153,7 @@ class SNSCountCrawler extends DataCrawler{
 		curl_setopt($curl, CURLOPT_URL, "https://clients6.google.com/rpc");
 		curl_setopt($curl, CURLOPT_POST, true);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($curl, CURLOPT_POSTFIELDS, '[{"method":"pos.plusones.get","id":"p","params":{"nolog":true,"id":"' . rawurldecode($this->url) . '","source":"widget","userId":"@viewer","groupId":"@self"},"jsonrpc":"2.0","key":"p","apiVersion":"v1"}]');
+		curl_setopt($curl, CURLOPT_POSTFIELDS, '[{"method":"pos.plusones.get","id":"p","params":{"nolog":true,"id":"' . rawurldecode($url) . '","source":"widget","userId":"@viewer","groupId":"@self"},"jsonrpc":"2.0","key":"p","apiVersion":"v1"}]');
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
 	  

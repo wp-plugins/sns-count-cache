@@ -71,7 +71,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 								<td><?php echo get_permalink(get_the_ID()); ?></td>
 							<?php  
 								$transient_id = self::OPT_TRANSIENT_PREFIX . get_the_ID();
-								if (false === ($sns_counts = get_transient($transient_id))) {
+							  							  
+								if (false === ($sns_counts = get_transient($transient_id))) {								  
 					  				echo '<td class="not-cached">';
 									_e('not cached', self::DOMAIN);
 					  				echo '</td>';
@@ -101,6 +102,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 		  
 		  					$check_interval = $_POST["check_interval"];
 		  					$posts_per_check = $_POST["posts_per_check"];
+						  	$dynamic_cache = $_POST["dynamic_cache"];
 		  					
 							if(isset($check_interval) && $check_interval && is_numeric($check_interval)){
 			  					update_option(self::DB_CHECK_INTERVAL,$check_interval);
@@ -108,15 +110,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 							if(isset($posts_per_check) && $posts_per_check && is_numeric($posts_per_check)){
 			  					update_option(self::DB_POSTS_PER_CHECK,$posts_per_check);
 							}
+						  	if(isset($dynamic_cache) && $dynamic_cache){
+							  	update_option(self::DB_DYNAMIC_CACHE, true);
+							} else {
+							  	update_option(self::DB_DYNAMIC_CACHE, false);
+							}
 						  
 						  	$this->reactivate_plugin();
 						}
 
 						$check_interval = get_option(self::DB_CHECK_INTERVAL);
 						$posts_per_check = get_option(self::DB_POSTS_PER_CHECK);
+						$dynamic_cache = get_option(self::DB_DYNAMIC_CACHE);
 
 	  					$check_interval = !empty($check_interval) ? intval($check_interval) : self::OPT_CHECK_INTERVAL;
 	  					$posts_per_check = !empty($posts_per_check) ? intval($posts_per_check) : self::OPT_POSTS_PER_CHECK; 
+						$dynamic_cache = isset($dynamic_cache) && $dynamic_cache ? 'enabled' : 'disabled';
 
 					?>
 				  	<h4><?php _e('Current Parameter', self::DOMAIN) ?></h4>
@@ -135,6 +144,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  			<tr>
 							<td><?php _e('Number of posts to check at a time (posts)', self::DOMAIN) ?></td><td><?php echo $posts_per_check ?></td>
 			  			</tr>
+			  			<tr>
+							<td><?php _e('Dynamic caching of SNS share count based on user access', self::DOMAIN) ?></td><td><?php echo $dynamic_cache ?></td>
+			  			</tr>						  
 						</tbody>
 		  			</table>
 				  	<h4><?php _e('Register New Parameter', self::DOMAIN) ?></h4>
@@ -145,9 +157,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 							<input type="text" class="text" name="check_interval" size="60" value="" />
 			  			</div>
 			  			<div>
-							<label><?php _e(' Number of posts to check at a time', self::DOMAIN) ?></label><br />
+							<label><?php _e('Number of posts to check at a time', self::DOMAIN) ?></label><br />
 							<input type="text" class="text" name="posts_per_check" size="60" value="" />
 			  			</div>
+					  	<div>
+						  	<label><?php _e('Dynamic caching of SNS share cout basend on user access', self::DOMAIN) ?></label><br />
+						  	<input type="checkbox" value="1" name="dynamic_cache"<?php if ( $this->dynamic_cache ) echo ' checked="checked"'; ?> />
+					  	</div>
 			  			<input type="hidden" class="text" name="action" value="register" />
 			  			<div class="submit-button">
 							<input type="submit" class="button button-primary" value="<?php _e('Register', self::DOMAIN) ?>" />

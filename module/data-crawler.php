@@ -73,9 +73,9 @@ abstract class DataCrawler{
   	/**
 	 * Abstract method for data crawling
 	 *
-	 * @since 0.1.0
+	 * @since 0.1.1
 	 */  
-	abstract public function get_data();
+	abstract public function get_data($url);  
   
   	/**
 	 * Output log message according to WP_DEBUG setting
