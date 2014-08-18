@@ -3,7 +3,7 @@
 sns-count-crawler.php
 
 Description: This class is a data crawler whitch get share count using given API and cURL
-Version: 0.1.0
+Version: 0.2.0
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -85,10 +85,9 @@ class SNSCountCrawler extends DataCrawler{
 	  	$sns_counts[SNSCountCache::REF_HATEBU] = $this->get_hatebu_count($url);
 	  	$sns_counts[SNSCountCache::REF_TWITTER] = $this->get_twitter_count($url);
 	  	$sns_counts[SNSCountCache::REF_FACEBOOK] = $this->get_facebook_count($url);
-	  	$sns_counts[SNSCountCache::REF_GPLUS] = $this->get_gplus_count($url);
+	  	$sns_counts[SNSCountCache::REF_GPLUS] = $this->get_gplus_count($url);		  
 		
-		return $sns_counts;
-	  	
+		return $sns_counts;	
   	}
   
   	/**

@@ -312,15 +312,9 @@ class DataCacheEngine {
 	  	$this->log('[' . __METHOD__ . '] post_id: ' . $post_ID);
 
 		$url = get_permalink($post_ID);
-			
-	  	//$time_start = microtime(true);
-	  
+			  
 		$data = $this->crawler->get_data($url);
-	  
-	  	//$time_end = microtime(true);
-	  	//$time = $time_end - $time_start;
-	  	//$this->log('[' . __METHOD__ . '] post_id: ' . $post_ID . ' time to retrieve: ' . $time);
-	  
+
 	  	$this->log($data);
 
 		return $data;
@@ -347,7 +341,7 @@ class DataCacheEngine {
 	  
 		$this->log('[' . __METHOD__ . '] posts_total: ' . $posts_total);
 	  
-		return (ceil($posts_total / $this->posts_per_check) * $this->check_interval) + 2 * $this->check_interval;
+		return ((ceil($posts_total / $this->posts_per_check) + 2) * $this->check_interval) + 2 * $this->check_interval;
   	}
   
   	/**

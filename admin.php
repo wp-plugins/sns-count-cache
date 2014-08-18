@@ -3,7 +3,7 @@
 admin.php
 
 Description: Option page implementation
-Version: 0.1.0
+Version: 0.2.0
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -51,7 +51,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 		  	</ul>
 		  	<ul class="content">
 				<li>
-		  			<table>
+		  			<table class="view-table">
 						<thead>
 			  				<tr>
 								<th>No.</th>
@@ -130,43 +130,45 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 					?>
 				  	<h4><?php _e('Current Parameter', self::DOMAIN) ?></h4>
 		  			<p><?php _e('The following describes registered parameters.', self::DOMAIN) ?></p>
-		  			<table>
+		  			<table class="view-table">
 						<thead>
 			  			<tr>
-							<th><?php _e('Name', self::DOMAIN) ?></th>
+							<th><?php _e('Parameter', self::DOMAIN) ?></th>
 							<th><?php _e('Value', self::DOMAIN) ?></th>
 			  			</tr>
 						</thead>
 						<tbody>
 			  			<tr>
-							<td><?php _e('Interval cheking and caching target data (sec)', self::DOMAIN) ?></td><td><?php echo $check_interval ?></td>
+							<td><?php _e('Interval cheking and caching SNS share count (sec)', self::DOMAIN) ?></td><td><?php echo $check_interval ?></td>
 			  			</tr>
 			  			<tr>
 							<td><?php _e('Number of posts to check at a time (posts)', self::DOMAIN) ?></td><td><?php echo $posts_per_check ?></td>
 			  			</tr>
 			  			<tr>
-							<td><?php _e('Dynamic caching of SNS share count based on user access', self::DOMAIN) ?></td><td><?php echo $dynamic_cache ?></td>
+							<td><?php _e('Dynamic caching based on user access', self::DOMAIN) ?></td><td><?php echo $dynamic_cache ?></td>
 			  			</tr>						  
 						</tbody>
 		  			</table>
 				  	<h4><?php _e('Register New Parameter', self::DOMAIN) ?></h4>
 		  			<p><?php _e('You can register or modify required parameters at the following form.', self::DOMAIN) ?></p>
 					<form action="" method="post">
-			  			<div>
-							<label><?php _e('Interval cheking and caching target data', self::DOMAIN) ?></label><br />
-							<input type="text" class="text" name="check_interval" size="60" value="" />
-			  			</div>
-			  			<div>
-							<label><?php _e('Number of posts to check at a time', self::DOMAIN) ?></label><br />
-							<input type="text" class="text" name="posts_per_check" size="60" value="" />
-			  			</div>
-					  	<div>
-						  	<label><?php _e('Dynamic caching of SNS share cout basend on user access', self::DOMAIN) ?></label><br />
-						  	<input type="checkbox" value="1" name="dynamic_cache"<?php if ( $this->dynamic_cache ) echo ' checked="checked"'; ?> />
-					  	</div>
+					  	<table class="form-table">
+			  			<tr>
+						  	<th><label><?php _e('Interval cheking and caching SNS share count (sec)', self::DOMAIN) ?></label></th>
+						  	<td><input type="text" class="text" name="check_interval" size="60" value="" /></td>
+			  			</tr>
+			  			<tr>
+						  	<th><label><?php _e('Number of posts to check at a time (posts)', self::DOMAIN) ?></label></th>
+						 	<td><input type="text" class="text" name="posts_per_check" size="60" value="" /></td>
+			  			</tr>
+					  	<tr>
+						  	<th><label><?php _e('Dynamic caching based on user access', self::DOMAIN) ?></label></th>
+						  	<td><input type="checkbox" value="1" name="dynamic_cache"<?php if ( $this->dynamic_cache ) echo ' checked="checked"'; ?> /></td>
+					  	</tr>
+						</table>
 			  			<input type="hidden" class="text" name="action" value="register" />
 			  			<div class="submit-button">
-							<input type="submit" class="button button-primary" value="<?php _e('Register', self::DOMAIN) ?>" />
+							<input type="submit" class="button button-primary" value="<?php _e('Update Options', self::DOMAIN) ?>" />
 			  			</div>
 					</form>	  	
 				  
@@ -181,7 +183,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 					<p><?php _e('Cache status is described in the "Cache Status" tab in the setting page.', self::DOMAIN) ?></p>
 					<h3><?php _e('How can I get share count from the cache?', self::DOMAIN) ?></h3>
 					<p><?php _e('The share cout is retrieved from the cache using the following functions in the WordPress loop such as query_posts(), get_posts() and WP_Query().', self::DOMAIN) ?></p>
-		  			<table>
+		  			<table class="view-table">
 						<thead>
 			  				<tr>
 								<th><?php _e('Function', self::DOMAIN) ?></th>
