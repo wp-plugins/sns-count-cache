@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 	$count = 1;
 	$query_args = array(
-		'post_type' => 'post',
+		'post_type' => array('post', 'page'),
 		'post_status' => 'publish',
 		'nopaging' => true,
 		'update_post_term_cache' => false,
@@ -55,7 +55,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						<thead>
 			  				<tr>
 								<th>No.</th>
-								<th><?php _e('Post', self::DOMAIN) ?></th>
+								<th><?php _e('Target Content', self::DOMAIN) ?></th>
 								<th><?php _e('Cache Status', self::DOMAIN) ?></th>
 			  				</tr>
 						</thead>
@@ -70,7 +70,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 								<td><?php echo $count; ?></td>
 								<td><?php echo get_permalink(get_the_ID()); ?></td>
 							<?php  
-								$transient_id = self::OPT_TRANSIENT_PREFIX . get_the_ID();
+								$transient_id = self::OPT_BASE_TRANSIENT_PREFIX . get_the_ID();
 							  							  
 								if (false === ($sns_counts = get_transient($transient_id))) {								  
 					  				echo '<td class="not-cached">';
@@ -110,11 +110,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 							if(isset($posts_per_check) && $posts_per_check && is_numeric($posts_per_check)){
 			  					update_option(self::DB_POSTS_PER_CHECK,$posts_per_check);
 							}
-						  	if(isset($dynamic_cache) && $dynamic_cache){
-							  	update_option(self::DB_DYNAMIC_CACHE, true);
-							} else {
-							  	update_option(self::DB_DYNAMIC_CACHE, false);
-							}
+						  	if(isset($dynamic_cache)){
+							  	update_option(self::DB_DYNAMIC_CACHE, $dynamic_cache);
+							} 
 						  
 						  	$this->reactivate_plugin();
 						}
@@ -123,9 +121,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						$posts_per_check = get_option(self::DB_POSTS_PER_CHECK);
 						$dynamic_cache = get_option(self::DB_DYNAMIC_CACHE);
 
-	  					$check_interval = !empty($check_interval) ? intval($check_interval) : self::OPT_CHECK_INTERVAL;
-	  					$posts_per_check = !empty($posts_per_check) ? intval($posts_per_check) : self::OPT_POSTS_PER_CHECK; 
-						$dynamic_cache = isset($dynamic_cache) && $dynamic_cache ? 'enabled' : 'disabled';
+	  					$check_interval = !empty($check_interval) ? intval($check_interval) : self::OPT_BASE_CHECK_INTERVAL;
+	  					$posts_per_check = !empty($posts_per_check) ? intval($posts_per_check) : self::OPT_BASE_POSTS_PER_CHECK; 
+						$dynamic_cache = isset($dynamic_cache) ? intval($dynamic_cache) : self::OPT_ACCESS_BASED_CACHE_NONE;
 
 					?>
 				  	<h4><?php _e('Current Parameter', self::DOMAIN) ?></h4>
@@ -133,19 +131,34 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 		  			<table class="view-table">
 						<thead>
 			  			<tr>
+						  	<th><?php _e('Function', self::DOMAIN) ?></th>
 							<th><?php _e('Parameter', self::DOMAIN) ?></th>
 							<th><?php _e('Value', self::DOMAIN) ?></th>
 			  			</tr>
 						</thead>
 						<tbody>
 			  			<tr>
-							<td><?php _e('Interval cheking and caching SNS share count (sec)', self::DOMAIN) ?></td><td><?php echo $check_interval ?></td>
+						 	<td><?php _e('Base Cache', self::DOMAIN) ?></td><td><?php _e('Interval cheking and caching SNS share count (sec)', self::DOMAIN) ?></td><td><?php echo $check_interval ?></td>
 			  			</tr>
 			  			<tr>
-							<td><?php _e('Number of posts to check at a time (posts)', self::DOMAIN) ?></td><td><?php echo $posts_per_check ?></td>
+						  	<td><?php _e('Base Cache', self::DOMAIN) ?></td><td><?php _e('Number of posts to check at a time (posts)', self::DOMAIN) ?></td><td><?php echo $posts_per_check ?></td>
 			  			</tr>
 			  			<tr>
-							<td><?php _e('Dynamic caching based on user access', self::DOMAIN) ?></td><td><?php echo $dynamic_cache ?></td>
+							<td><?php _e('Dynamic Cache', self::DOMAIN) ?></td><td><?php _e('Dynamic caching based on user access', self::DOMAIN) ?></td><td>
+						  	<?php
+					  			switch($dynamic_cache){
+		  							case SNSCountCache::OPT_ACCESS_BASED_CACHE_NONE:
+		  								_e('disabled', self::DOMAIN);
+		  								break;
+		  							case SNSCountCache::OPT_ACCESS_BASED_SYNC_CACHE:
+		  								_e('enabled (Synchronous Cache)', self::DOMAIN);
+		  								break;
+		  							case SNSCountCache::OPT_ACCESS_BASED_ASYNC_CACHE:
+		  								_e('enabled (Asynchronous Cache)', self::DOMAIN);
+		  								break;								  
+								}
+						  	?>
+						  	</td>
 			  			</tr>						  
 						</tbody>
 		  			</table>
@@ -163,7 +176,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  			</tr>
 					  	<tr>
 						  	<th><label><?php _e('Dynamic caching based on user access', self::DOMAIN) ?></label></th>
-						  	<td><input type="checkbox" value="1" name="dynamic_cache"<?php if ( $this->dynamic_cache ) echo ' checked="checked"'; ?> /></td>
+						  	<td>
+							  <select name="dynamic cache">
+								<option value="0"<?php if ($this->dynamic_cache == 0) echo ' selected="selected"'; ?>><?php _e('None', self::DOMAIN) ?></option>
+								<option value="1"<?php if ($this->dynamic_cache == 1) echo ' selected="selected"'; ?>><?php _e('Synchronous Cache', self::DOMAIN) ?></option>
+								<option value="2"<?php if ($this->dynamic_cache == 2) echo ' selected="selected"'; ?>><?php _e('Asynchronous Cache', self::DOMAIN) ?></option>
+							  </select>
+						  	</td>
 					  	</tr>
 						</table>
 			  			<input type="hidden" class="text" name="action" value="register" />
@@ -178,7 +197,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 					<h3><?php _e('What is SNS Cout Cache?', self::DOMAIN) ?></h3>
 					<p><?php _e('SNS Count Cache gets share count for Twitter and Facebook, Google Plus, Hatena Bookmark and caches these count in the background. This plugin may help you to shorten page loading time because the share count can be retrieved not through network but through the cache using given functions.', self::DOMAIN) ?></p>
 					<h3><?php _e('How often does this plugin get and cache share count?', self::DOMAIN) ?></h3>
-					<p><?php _e('This plugin gets share count of 20 posts at a time every 10 minutes.', self::DOMAIN) ?></p>
+					<p><?php _e('Although this plugin gets share count of 20 posts at a time every 10 minutes by default, you can modify the setting in the "Setting" tab in the setting page.', self::DOMAIN) ?></p>
 					<h3><?php _e('How can I know whether share cout of each post is cached or not?', self::DOMAIN) ?></h3>
 					<p><?php _e('Cache status is described in the "Cache Status" tab in the setting page.', self::DOMAIN) ?></p>
 					<h3><?php _e('How can I get share count from the cache?', self::DOMAIN) ?></h3>

@@ -2,8 +2,8 @@
 Contributors: marubon
 Donate link: 
 Tags: performance, SNS, social, cache
-Requires at least: 3.2
-Tested up to: 3.9.1
+Requires at least: 3.7
+Tested up to: 3.9.2
 Stable tag: 0.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -39,12 +39,18 @@ There are no questions.
 
 == Screenshots ==
 1. Cache status is described in setting page
-2. Help page shows available functions to access the cache  
+2. Described parameters can be modified in this page
+3. Help page shows available functions to access the cache  
 
 == Changelog ==
 
 = 0.1.0 =
 * Initial working version.
+
+= 0.2.0 =
+* Added: function to modify check interval of SNS share count and its number of target posts and pages at a time
+* Added: function to cache SNS share count for latest posts and pages preferentially
+* Added: function to cache SNS share count based on user access dynamically 
 
 == Upgrade Notice ==
 There is no upgrade notice.

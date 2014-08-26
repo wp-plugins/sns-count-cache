@@ -40,38 +40,93 @@ class DataCacheEngine {
 	/**
 	 * Interval cheking and caching target data
 	 */	  
-	private $check_interval = 600;
+	private $base_check_interval = 600;
   
 	/**
 	 * Number of posts to check at a time
 	 */	  
-	private $posts_per_check = 20;
+	private $base_posts_per_check = 20;
 
 	/**
 	 * Prefix of cache ID
 	 */	    
-  	private $transient_prefix = 'data_cache';
+  	private $base_transient_prefix = 'base_data_cache';
   
 	/**
 	 * Cron name to schedule cache processing
 	 */	      
-  	private $cron_cache_prime = 'data_cache_prime';
+  	private $base_cache_prime_cron = 'base_data_cache_prime';
 
 	/**
 	 * Cron name to execute cache processing
 	 */	        
-  	private $cron_cache_execute = 'data_cache_exec';
+  	private $base_cache_execute_cron = 'base_data_cache_exec';
 
 	/**
 	 * Schedule name for cache processing
 	 */	          
-  	private $event_schedule = 'cache_event';
+  	private $base_event_schedule = 'base_cache_event';
 
   	/**
 	 * Schedule description for cache processing
 	 */	          
-  	private $event_description = 'cache event';
+  	private $base_event_description = 'base cache event';
   
+    /**
+	 * Offset suffix
+	 */	    
+  	private $base_offset_suffix = 'base_offset';
+
+	/**
+	 * Interval cheking and caching target data
+	 */	  
+	private $rush_check_interval = 300;
+
+	/**
+	 * Number of posts to check at a time
+	 */	  
+	private $rush_posts_per_check = 20;
+
+	/**
+	 * Prefix of cache ID
+	 */	    
+  	private $rush_transient_prefix = 'rush_data_cache';
+  
+	/**
+	 * Cron name to schedule cache processing
+	 */	      
+  	private $rush_cache_prime_cron = 'rush_data_cache_prime';
+
+	/**
+	 * Cron name to execute cache processing
+	 */	        
+  	private $rush_cache_execute_cron = 'rush_data_cache_exec';
+
+	/**
+	 * Schedule name for cache processing
+	 */	          
+  	private $rush_event_schedule = 'rush_cache_event';
+
+  	/**
+	 * Schedule description for cache processing
+	 */	          
+  	private $rush_event_description = 'rush cache event';
+
+    /**
+	 * Offset suffix
+	 */	  
+  	private $rush_offset_suffix = 'rush_offset';
+
+    /**
+	 * Latency suffix
+	 */	  
+  	private $lazy_check_latency = 10;
+
+	/**
+	 * Cron name to execute cache processing
+	 */	        
+  	private $lazy_cache_execute_cron = 'lazy_data_cache_exec';
+
   	/**
 	 * Instance
 	 */
@@ -113,17 +168,33 @@ class DataCacheEngine {
 
 	  	$this->crawler = $crawler;
 	  
-	  	if(isset($options['check_interval'])) $this->check_interval = $options['check_interval'];
-	  	if(isset($options['posts_per_check'])) $this->posts_per_check = $options['posts_per_check'];
-	  	if(isset($options['transient_prefix'])) $this->transient_prefix = $options['transient_prefix'];
-		if(isset($options['cron_cache_prime'])) $this->cron_cache_prime = $options['cron_cache_prime'];
-		if(isset($options['cron_cache_execute'])) $this->cron_cache_execute = $options['cron_cache_execute'];
-		if(isset($options['event_schedule'])) $this->event_schedule = $options['event_schedule'];
-	  	if(isset($options['event_description'])) $this->event_description = $options['event_description'];
+	  	if(isset($options['base_check_interval'])) $this->base_check_interval = $options['base_check_interval'];
+	  	if(isset($options['base_posts_per_check'])) $this->base_posts_per_check = $options['base_posts_per_check'];
+	  	if(isset($options['base_transient_prefix'])) $this->base_transient_prefix = $options['base_transient_prefix'];
+		if(isset($options['base_cache_prime_cron'])) $this->base_cache_prime_cron = $options['base_cache_prime_cron'];
+		if(isset($options['base_cache_execute_cron'])) $this->base_cache_execute_cron = $options['base_cache_execute_cron'];
+		if(isset($options['base_event_schedule'])) $this->base_event_schedule = $options['base_event_schedule'];
+	  	if(isset($options['base_event_description'])) $this->base_event_description = $options['base_event_description'];
 	  	  
-		add_filter('cron_schedules', array($this, 'schedule_check_interval')); 
-		add_action($this->cron_cache_prime, array($this, 'prime_data_cache'));
-		add_action($this->cron_cache_execute, array($this, 'execute_data_cache'),10,1);	  
+		add_filter('cron_schedules', array($this, 'schedule_base_check_interval')); 
+		add_action($this->base_cache_prime_cron, array($this, 'prime_base_data_cache'));
+		add_action($this->base_cache_execute_cron, array($this, 'execute_base_data_cache'),10,1);
+
+	  	if(isset($options['rush_check_interval'])) $this->rush_check_interval = $options['rush_check_interval'];
+	  	if(isset($options['rush_posts_per_check'])) $this->rush_posts_per_check = $options['rush_posts_per_check'];
+		if(isset($options['rush_cache_prime_cron'])) $this->rush_cache_prime_cron = $options['rush_cache_prime_cron'];
+		if(isset($options['rush_cache_execute_cron'])) $this->rush_cache_execute_cron = $options['rush_cache_execute_cron'];
+		if(isset($options['rush_event_schedule'])) $this->rush_event_schedule = $options['rush_event_schedule'];
+	  	if(isset($options['rush_event_description'])) $this->rush_event_description = $options['rush_event_description'];
+
+		add_filter('cron_schedules', array($this, 'schedule_rush_check_interval')); 
+		add_action($this->rush_cache_prime_cron, array($this, 'prime_rush_data_cache'));
+		add_action($this->rush_cache_execute_cron, array($this, 'execute_rush_data_cache'),10,2);
+	  
+		if(isset($options['lazy_cache_execute_cron'])) $this->lazy_cache_execute_cron = $options['lazy_cache_execute_cron'];
+
+	  	//add_action($this->lazy_cache_execute_cron, array($this, 'execute_lazy_data_cache'),10,2);
+	  	add_action($this->lazy_cache_execute_cron, array($this, 'execute_lazy_data_cache'),10,1);
   	}
   	
   
@@ -135,8 +206,11 @@ class DataCacheEngine {
 	public function register_base_schedule(){
 	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 	
-		if (!wp_next_scheduled($this->cron_cache_prime)) {
-			wp_schedule_event( time(), $this->event_schedule, $this->cron_cache_prime);
+		if (!wp_next_scheduled($this->base_cache_prime_cron)) {
+			wp_schedule_event( time(), $this->base_event_schedule, $this->base_cache_prime_cron);
+		}
+		if (!wp_next_scheduled($this->rush_cache_prime_cron)) {
+			wp_schedule_event( time(), $this->rush_event_schedule, $this->rush_cache_prime_cron);
 		}
 	}
 
@@ -148,8 +222,12 @@ class DataCacheEngine {
 	public function unregister_base_schedule(){
 	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 
-	  	wp_clear_scheduled_hook($this->cron_cache_prime);
-	  	$this->clear_scheduled_hook($this->cron_cache_execute);
+	  	wp_clear_scheduled_hook($this->base_cache_prime_cron);
+	  	$this->clear_scheduled_hook($this->base_cache_execute_cron);
+
+	  	wp_clear_scheduled_hook($this->rush_cache_prime_cron);
+	  	$this->clear_scheduled_hook($this->rush_cache_execute_cron);
+	  
 	}
   
   	/**
@@ -177,32 +255,32 @@ class DataCacheEngine {
 	 *
 	 * @since 0.1.0
 	 */	     
-	public function schedule_check_interval($schedules) {
+	public function schedule_base_check_interval($schedules) {
 	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 		
-		$schedules[$this->event_schedule] = array(
-			'interval' => $this->check_interval,
-			'display' => $this->event_description
+		$schedules[$this->base_event_schedule] = array(
+			'interval' => $this->base_check_interval,
+			'display' => $this->base_event_description
 		);
 		return $schedules;
 	}
-  
+
   	/**
 	 * Schedule data retrieval and cache processing
 	 *
 	 * @since 0.1.0
 	 */	   
-	public function prime_data_cache(){
+	public function prime_base_data_cache(){
 	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 
-		$next_exec_time = time() + $this->check_interval;
-		$posts_total = $this->get_posts_total();
+		$next_exec_time = time() + $this->base_check_interval;
+		$posts_total = $this->get_base_posts_total();
 
-		$this->log('[' . __METHOD__ . '] check_interval: ' . $this->check_interval);
+		$this->log('[' . __METHOD__ . '] check_interval: ' . $this->base_check_interval);
 		$this->log('[' . __METHOD__ . '] next_exec_time: ' . $next_exec_time);
 		$this->log('[' . __METHOD__ . '] posts_total: ' . $posts_total);
 		
-	  	$transient_ID = $this->get_transient_ID('offset');
+	  	$transient_ID = $this->get_transient_ID($this->base_offset_suffix);
 		  
 		if (false === ($posts_offset = get_transient($transient_ID))) {
 			$posts_offset = 0;
@@ -210,42 +288,41 @@ class DataCacheEngine {
 
 		$this->log('[' . __METHOD__ . '] posts_offset: ' . $posts_offset);
 		
-		wp_schedule_single_event($next_exec_time, $this->cron_cache_execute, array($posts_offset)); 
+		wp_schedule_single_event($next_exec_time, $this->base_cache_execute_cron, array($posts_offset)); 
 	  	
-		$this->log('[' . __METHOD__ . '] posts_per_check: ' . $this->posts_per_check);
+		$this->log('[' . __METHOD__ . '] posts_per_check: ' . $this->base_posts_per_check);
 			  
-		$posts_offset = $posts_offset + $this->posts_per_check;
+		$posts_offset = $posts_offset + $this->base_posts_per_check;
 	  
 		if($posts_offset > $posts_total){
 			$posts_offset = 0;
 		}
 
-	  	//delete_transient($transient_id);
-		set_transient($transient_ID, $posts_offset, $this->check_interval + $this->check_interval); 
+		set_transient($transient_ID, $posts_offset, $this->base_check_interval + $this->base_check_interval); 
 		
 	}
-  
+    
   	/**
-	 * Get and cache data of each published post
+	 * Get and cache data of each published post and page
 	 *
 	 * @since 0.1.0
 	 */	    
-	public function execute_data_cache($posts_offset){
+	public function execute_base_data_cache($posts_offset){
 	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 		
 		$this->log('[' . __METHOD__ . '] posts_offset: ' . $posts_offset);
-		$this->log('[' . __METHOD__ . '] posts_per_check: ' . $this->posts_per_check);
-		$this->log('[' . __METHOD__ . '] check_interval: ' . $this->check_interval);
+		$this->log('[' . __METHOD__ . '] posts_per_check: ' . $this->base_posts_per_check);
+		$this->log('[' . __METHOD__ . '] check_interval: ' . $this->base_check_interval);
 		
-	  	$cache_expiration = $this->get_cache_expiration();
+	  	$cache_expiration = $this->get_base_cache_expiration();
 		  
 		$this->log('[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration);
 		
 		$query_args = array(
-				'post_type' => 'post',
+				'post_type' => array('post', 'page'),
 				'post_status' => 'publish',
 				'offset' => $posts_offset,
-				'posts_per_page' => $this->posts_per_check,
+				'posts_per_page' => $this->base_posts_per_check,
 				'no_found_rows' => true,
 				'update_post_term_cache' => false,
 				'update_post_meta_cache' => false
@@ -256,25 +333,254 @@ class DataCacheEngine {
 		if($posts_query->have_posts()) {
 			while($posts_query->have_posts()){
 				$posts_query->the_post();
-			  			  
-			  	$this->cache_data(get_the_ID(), $cache_expiration);			  
+			  
+			  	$post_ID = get_the_ID();
+			  	
+			  	$this->log('[' . __METHOD__ . '] post_id: ' . $post_ID);	
+			  
+			  	$this->cache_data($post_ID, $cache_expiration);			  
 			}
 		}
 		wp_reset_postdata();
 	}
+    
+  	/**
+	 * Get cache expiration based on current number of total post and page
+	 *
+	 * @since 0.1.1
+	 */	      
+  	private function get_base_cache_expiration(){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+	  
+	  	$posts_total = $this->get_base_posts_total();
+	  
+		$this->log('[' . __METHOD__ . '] posts_total: ' . $posts_total);
+	  
+		return ((ceil($posts_total / $this->base_posts_per_check) + 2) * $this->base_check_interval) + 2 * $this->base_check_interval;
+  	}
+ 
+  	/**
+	 * Get total count of current published post and page
+	 *
+	 * @since 0.1.0
+	 */	    
+	private function get_base_posts_total(){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+
+		$query_args = array(
+				'post_type' => array('post', 'page'),
+				'post_status' => 'publish',
+				'nopaging' => true,
+				'update_post_term_cache' => false,
+				'update_post_meta_cache' => false
+				);
+
+		$posts_query = new WP_Query($query_args);
+
+		return $posts_query->found_posts;		
+	}
+  
+  	/**
+	 * Register event schedule for this engine
+	 *
+	 * @since 0.2.0
+	 */	     
+	public function schedule_rush_check_interval($schedules) {
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+		
+		$schedules[$this->rush_event_schedule] = array(
+			'interval' => $this->rush_check_interval,
+			'display' => $this->rush_event_description
+		);
+		return $schedules;
+	}
+
+  	/**
+	 * Schedule data retrieval and cache processing
+	 *
+	 * @since 0.2.0
+	 */	   
+	public function prime_rush_data_cache(){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+
+		$next_exec_time = time() + $this->rush_check_interval;
+		$posts_total = $this->get_rush_posts_total();
+
+		$this->log('[' . __METHOD__ . '] check_interval: ' . $this->rush_check_interval);
+		$this->log('[' . __METHOD__ . '] next_exec_time: ' . $next_exec_time);
+		$this->log('[' . __METHOD__ . '] posts_total: ' . $posts_total);
+		
+	  	$transient_ID = $this->get_transient_ID($this->rush_offset_suffix);
+		  
+		if (false === ($posts_offset = get_transient($transient_ID))) {
+			$posts_offset = 0;
+		}
+
+		$this->log('[' . __METHOD__ . '] posts_offset: ' . $posts_offset);
+		
+		wp_schedule_single_event($next_exec_time, $this->rush_cache_execute_cron, array($posts_offset, $this->short_hash($next_exec_time))); 
+	  	
+		$this->log('[' . __METHOD__ . '] posts_per_check: ' . $this->rush_posts_per_check);
+			  
+		$posts_offset = $posts_offset + $this->rush_posts_per_check;
+	  
+		if($posts_offset > $posts_total){
+			$posts_offset = 0;
+		}
+
+	  	//delete_transient($transient_id);
+		set_transient($transient_ID, $posts_offset, $this->rush_check_interval + $this->rush_check_interval); 
+	}
+
+  	/**
+	 * Get and cache data of each published post and page
+	 *
+	 * @since 0.2.0
+	 */	    
+	public function execute_rush_data_cache($posts_offset, $hash){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+		
+		$this->log('[' . __METHOD__ . '] posts_offset: ' . $posts_offset);
+		$this->log('[' . __METHOD__ . '] posts_per_check: ' . $this->rush_posts_per_check);
+		$this->log('[' . __METHOD__ . '] check_interval: ' . $this->rush_check_interval);
+		
+	  	$cache_expiration = $this->get_rush_cache_expiration();
+		  
+		$this->log('[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration);
+		
+		$query_args = array(
+				'post_type' => array('post', 'page'),
+				'post_status' => 'publish',
+				'offset' => $posts_offset,
+				'posts_per_page' => $this->rush_posts_per_check,
+				'date_query' => array(
+					'column' => 'post_date_gmt',
+					'after' => '3 days ago'
+					),				
+				'no_found_rows' => true,
+				'update_post_term_cache' => false,
+				'update_post_meta_cache' => false
+				);
+
+		$posts_query = new WP_Query($query_args);
+
+		if($posts_query->have_posts()) {
+			while($posts_query->have_posts()){
+				$posts_query->the_post();
+			  
+			  	$post_ID = get_the_ID();
+			  	
+			  	$this->log('[' . __METHOD__ . '] post_id: ' . $post_ID);
+			  
+			  	$this->cache_data($post_ID, $cache_expiration);			  
+			}
+		}
+		wp_reset_postdata();
+	}
+
+  	/**
+	 * Get cache expiration based on current number of total post and page
+	 *
+	 * @since 0.2.0
+	 */	      
+  	private function get_rush_cache_expiration(){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+	  
+	  	$posts_total = $this->get_rush_posts_total();
+	  
+		$this->log('[' . __METHOD__ . '] posts_total: ' . $posts_total);
+	  
+		return ((ceil($posts_total / $this->rush_posts_per_check) + 2) * $this->rush_check_interval) + 2 * $this->rush_check_interval;
+	}  
+
+  	/**
+	 * Get total count of current published post and page
+	 *
+	 * @since 0.2.0
+	 */	    
+	private function get_rush_posts_total(){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+
+		$query_args = array(
+				'post_type' => array('post', 'page'),
+				'post_status' => 'publish',
+				'date_query' => array(
+					'column' => 'post_date_gmt',
+					'after' => '3 days ago'
+					),
+				'nopaging' => true,
+				'no_found_rows' => true,
+				'update_post_term_cache' => false,
+				'update_post_meta_cache' => false
+				);
+
+		$posts_query = new WP_Query($query_args);
+
+		return $posts_query->found_posts;		
+	}
+  
+  	/**
+	 * Schedule data retrieval and cache processing
+	 *
+	 * @since 0.2.0
+	 */	   
+	public function prime_lazy_data_cache($post_ID){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+
+		$next_exec_time = time() + $this->lazy_check_latency;
+		
+		$this->log('[' . __METHOD__ . '] check_latency: ' . $this->lazy_check_latency);
+		$this->log('[' . __METHOD__ . '] next_exec_time: ' . $next_exec_time);
+		
+	  	//wp_schedule_single_event($next_exec_time, $this->lazy_cache_execute_cron, array($post_ID, $this->short_hash($next_exec_time)));
+	  	wp_schedule_single_event($next_exec_time, $this->lazy_cache_execute_cron, array($post_ID)); 
+	  	
+	}
+
+   	/**
+	 * Get and cache data of each published post
+	 *
+	 * @since 0.2.0
+	 */	    
+	public function execute_lazy_data_cache($post_ID){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+		
+	  	$cache_expiration = $this->get_base_cache_expiration();
+		  
+		$this->log('[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration);
+
+	  	$this->cache_data($post_ID, $cache_expiration);
+	}
+
+   	/**
+	 * Get and cache data of each published post
+	 *
+	 * @since 0.2.0
+	 */
+  	/*
+	public function execute_lazy_data_cache($post_ID, $hash){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+		
+	  	$cache_expiration = $this->get_base_cache_expiration();
+		  
+		$this->log('[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration);
+
+	  	$this->cache_data($post_ID, $cache_expiration);
+	}
+	*/
   
   	/**
 	 * Get and cache data for a given post
 	 *
 	 * @since 0.1.1
 	 */
-  	public function restock_data_cache($post_ID){
+  	public function execute_direct_data_cache($post_ID){
 	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 		
-		$this->log('[' . __METHOD__ . '] posts_per_check: ' . $this->posts_per_check);
-		$this->log('[' . __METHOD__ . '] check_interval: ' . $this->check_interval);
+		$this->log('[' . __METHOD__ . '] posts_per_check: ' . $this->base_posts_per_check);
+		$this->log('[' . __METHOD__ . '] check_interval: ' . $this->base_check_interval);
 
-	  	$cache_expiration = $this->get_cache_expiration();
+	  	$cache_expiration = $this->get_base_cache_expiration();
 		  
 		$this->log('[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration);	
 	  		  	  
@@ -306,64 +612,23 @@ class DataCacheEngine {
 	  	return $data;
   	}
   
-  	public function retrieve_data($post_ID){
-	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	  
-	  	$this->log('[' . __METHOD__ . '] post_id: ' . $post_ID);
-
-		$url = get_permalink($post_ID);
-			  
-		$data = $this->crawler->get_data($url);
-
-	  	$this->log($data);
-
-		return $data;
-  	}	
-
   	/**
 	 * Get transient ID
 	 *
 	 * @since 0.1.1
 	 */  	  
   	private function get_transient_ID($suffix){
-	  	return $this->transient_prefix . $suffix;
+	  	return $this->base_transient_prefix . $suffix;
   	}
-  
+
   	/**
-	 * Get cache expiration based on current number of total posts
+	 * Get short hash code
 	 *
-	 * @since 0.1.1
-	 */	      
-  	private function get_cache_expiration(){
-	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	  
-	  	$posts_total = $this->get_posts_total();
-	  
-		$this->log('[' . __METHOD__ . '] posts_total: ' . $posts_total);
-	  
-		return ((ceil($posts_total / $this->posts_per_check) + 2) * $this->check_interval) + 2 * $this->check_interval;
-  	}
-  
-  	/**
-	 * Get total count of current published posts
-	 *
-	 * @since 0.1.0
-	 */	    
-	private function get_posts_total(){
-	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-
-		$query_args = array(
-				'post_type' => 'post',
-				'post_status' => 'publish',
-				'nopaging' => true,
-				'update_post_term_cache' => false,
-				'update_post_meta_cache' => false
-				);
-
-		$posts_query = new WP_Query($query_args);
-
-		return $posts_query->found_posts;		
-	}
+	 * @since 0.2.0
+	 */	   
+  	private function short_hash($data, $algo = 'CRC32') {
+	  	return strtr(rtrim(base64_encode(pack('H*', $algo($data))), '='), '+/', '-_');
+	}  
   
   	/**
 	 * Output log message according to WP_DEBUG setting
@@ -380,27 +645,6 @@ class DataCacheEngine {
     	}
   	}
   
-  	/**
-	 * Set interval cheking and caching target data
-	 *
-	 * @since 0.1.1
-	 */	  	  
-  	public function set_check_interval($check_interval) {
-	  	$this->check_interval = $check_interval;
-	  	$this->unregister_base_schedule();
-	  	$this->register_base_schedule();
-  	}
-  
-  	/**
-	 * Set number of posts to check at a time
-	 *
-	 * @since 0.1.1
-	 */	  
-  	public function set_posts_per_check($posts_per_check) {
-	  	$this->posts_per_check = $posts_per_check;
-	  	$this->unregister_base_schedule();
-	  	$this->register_base_schedule();	  	
-  	}
 }
 
 ?>

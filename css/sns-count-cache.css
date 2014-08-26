@@ -1,4 +1,4 @@
-.sns-cnt-cache table {
+.sns-cnt-cache .view-table {
     border: 1px solid #000;
     margin: 20px 0 0 0;
     margin: 0px;
@@ -8,15 +8,15 @@
     border-spacing: 0;
 }
 
-.sns-cnt-cache tr:nth-child(odd) {
+.sns-cnt-cache .view-table tr:nth-child(odd) {
     background-color: #ffffff;
 }
 
-.sns-cnt-cache tr:nth-child(even) {
+.sns-cnt-cache .view-table tr:nth-child(even) {
     background-color: #f9f9f9;
 }
 
-.sns-cnt-cache th {
+.sns-cnt-cache .view-table th {
     vertical-align: middle;
     padding: 3px;
     text-align: left;
@@ -24,7 +24,7 @@
     color: #fff;
 }
 
-.sns-cnt-cache td {
+.sns-cnt-cache .view-table td {
     vertical-align: middle;
     padding: 4px;
     text-align: left;

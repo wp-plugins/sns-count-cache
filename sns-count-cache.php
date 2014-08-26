@@ -2,7 +2,7 @@
 /*
 Plugin Name: SNS Count Cache
 Description: SNS Count Cache gets share count for Twitter and Facebook, Google Plus, Hatena Bookmark and caches these count in the background. This plugin may help you to shorten page loading time because the share count can be retrieved not through network but through the cache using given functions.
-Version: 0.1.0
+Version: 0.2.0
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -60,42 +60,82 @@ class SNSCountCache {
 	/**
 	 * Option flag of dynamic cache processing
 	 */		  
-  	private $dynamic_cache = false;
+  	private $dynamic_cache = 0;
 	
 	/**
 	 * Prefix of cache ID
 	 */
-	const OPT_TRANSIENT_PREFIX = 'sns_count_cache_';
+	const OPT_BASE_TRANSIENT_PREFIX = 'sns_count_cache_';
 
 	/**
 	 * Cron name to schedule cache processing
 	 */	       
-  	const OPT_CRON_CACHE_PRIME = 'scc_cntcache_prime';
+  	const OPT_BASE_CACHE_PRIME_CRON = 'scc_basecache_prime';
   
 	/**
 	 * Cron name to execute cache processing
 	 */	 
-  	const OPT_CRON_CACHE_EXECUTE = 'scc_cntcache_exec';
+  	const OPT_BASE_CACHE_EXECUTE_CRON = 'scc_basecache_exec';
   
 	/**
 	 * Schedule name for cache processing
 	 */	      
-  	const OPT_EVENT_SCHEDULE = 'cache_event';
+  	const OPT_BASE_EVENT_SCHEDULE = 'base_cache_event';
   
   	/**
 	 * Schedule description for cache processing
 	 */	    
-  	const OPT_EVENT_DESCRIPTION = '[SCC] Share Count Cache Interval';
+  	const OPT_BASE_EVENT_DESCRIPTION = '[SCC] Share Count Cache Basic Interval';
 
 	/**
 	 * Interval cheking and caching target data
 	 */	  
-	const OPT_CHECK_INTERVAL = 600;
+	const OPT_BASE_CHECK_INTERVAL = 600;
   
 	/**
 	 * Number of posts to check at a time
 	 */	    	
-  	const OPT_POSTS_PER_CHECK = 20;
+  	const OPT_BASE_POSTS_PER_CHECK = 20;
+
+	/**
+	 * Cron name to schedule cache processing
+	 */	       
+  	const OPT_RUSH_CACHE_PRIME_CRON = 'scc_rushcache_prime';
+  
+	/**
+	 * Cron name to execute cache processing
+	 */	 
+  	const OPT_RUSH_CACHE_EXECUTE_CRON = 'scc_rushcache_exec';
+  
+	/**
+	 * Schedule name for cache processing
+	 */	      
+  	const OPT_RUSH_EVENT_SCHEDULE = 'rush_cache_event';
+  
+  	/**
+	 * Schedule description for cache processing
+	 */	    
+  	const OPT_RUSH_EVENT_DESCRIPTION = '[SCC] Share Count Cache Rush Interval';
+
+	/**
+	 * Cron name to execute cache processing
+	 */	 
+  	const OPT_LAZY_CACHE_EXECUTE_CRON = 'scc_lazycache_exec';
+
+	/**
+	 * Type of dynamic cache processing
+	 */	 
+  	const OPT_ACCESS_BASED_CACHE_NONE = 0;  
+  
+	/**
+	 * Type of dynamic cache processing
+	 */	 
+  	const OPT_ACCESS_BASED_SYNC_CACHE = 1;
+
+	/**
+	 * Type of dynamic cache processing
+	 */	 
+  	const OPT_ACCESS_BASED_ASYNC_CACHE = 2;
 
 	/**
 	 * Option key for interval cheking and caching target data
@@ -188,8 +228,8 @@ class SNSCountCache {
 	  	$check_interval = get_option(self::DB_CHECK_INTERVAL);
 		$posts_per_check = get_option(self::DB_POSTS_PER_CHECK);
 	  
-	  	$check_interval = !empty($check_interval) ? intval($check_interval) : self::OPT_CHECK_INTERVAL;
-	  	$posts_per_check = !empty($posts_per_check) ? intval($posts_per_check) : self::OPT_POSTS_PER_CHECK; 
+	  	$check_interval = !empty($check_interval) ? intval($check_interval) : self::OPT_BASE_CHECK_INTERVAL;
+	  	$posts_per_check = !empty($posts_per_check) ? intval($posts_per_check) : self::OPT_BASE_POSTS_PER_CHECK; 
 
 	  	$dynamic_cache = get_option(self::DB_DYNAMIC_CACHE);
 	  	$this->dynamic_cache = !empty($dynamic_cache) ? $dynamic_cache : false;
@@ -200,13 +240,18 @@ class SNSCountCache {
 	  	$this->crawler = SNSCountCrawler::get_instance();
 	  
 	  	$options = array(
-			'check_interval' => $check_interval,
-			'posts_per_check' => $posts_per_check,
-		  	'transient_prefix' => self::OPT_TRANSIENT_PREFIX,
-		  	'cron_cache_prime' => self::OPT_CRON_CACHE_PRIME,
-		  	'cron_cache_execute' => self::OPT_CRON_CACHE_EXECUTE,
-		  	'event_schedule' => self::OPT_EVENT_SCHEDULE,
-		  	'event_description' => self::OPT_EVENT_DESCRIPTION
+			'base_check_interval' => $check_interval,
+			'base_posts_per_check' => $posts_per_check,
+		  	'base_transient_prefix' => self::OPT_BASE_TRANSIENT_PREFIX,
+		  	'base_cache_prime_cron' => self::OPT_BASE_CACHE_PRIME_CRON,
+		  	'base_cache_execute_cron' => self::OPT_BASE_CACHE_EXECUTE_CRON,
+		  	'base_event_schedule' => self::OPT_BASE_EVENT_SCHEDULE,
+		  	'base_event_description' => self::OPT_BASE_EVENT_DESCRIPTION,
+		  	'rush_cache_prime_cron' => self::OPT_RUSH_CACHE_PRIME_CRON,
+		  	'rush_cache_execute_cron' => self::OPT_RUSH_CACHE_EXECUTE_CRON,
+		  	'rush_event_schedule' => self::OPT_RUSH_EVENT_SCHEDULE,
+		  	'rush_event_description' => self::OPT_RUSH_EVENT_DESCRIPTION,
+		  	'lazy_cache_execute_cron' => self::OPT_LAZY_CACHE_EXECUTE_CRON		  
 			);
 	  
 	  	$this->cache_engine = DataCacheEngine::get_instance();
@@ -326,36 +371,43 @@ class SNSCountCache {
       		}
     	}
   	}
-  
+    
   	/**
-	 * Get and cache data for a given post
+	 * Return type of dynamic cache processing
 	 *
-	 * @since 0.1.1
-	 */  
-  	public function restock_count_cache($post_ID){
-	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	  	return $this->cache_engine->restock_data_cache($post_ID);
-	  	//return $this->cache_engine->retrieve_data($post_ID);
-  	}
-  
-  	/**
-	 * Return if dynamic cache processing is enabled or not.
-	 *
-	 * @since 0.1.1
-	 */      
-  	public function is_enable_dynamic_cache(){
+	 * @since 0.2.0
+	 */
+  	public function get_dynamic_cache_type(){
 	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 
 		$this->log('[' . __METHOD__ . '] dynamic cache: ' . $this->dynamic_cache);
-	  
-	  	if($this->dynamic_cache){
-		  	$this->log('[' . __METHOD__ . '] dynamic cache: true');
-		  	return true;
-		} else {
-		  	$this->log('[' . __METHOD__ . '] dynamic cache: false');
-		  	return false;
-		}
+	  	
+	  	return $this->dynamic_cache;
   	}
+
+  
+  	/**
+	 * Get and cache data for a given post ID
+	 *
+	 * @since 0.2.0
+	 */  
+  	public function retrieve_count_cache($post_ID){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+	  
+	  	return $this->cache_engine->execute_direct_data_cache($post_ID);
+  	}
+  
+  	/**
+	 * Reserve cache processing for a given post ID
+	 *
+	 * @since 0.2.0
+	 */    
+  	public function reserve_count_cache($post_ID){
+	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+	  
+	  	$this->cache_engine->prime_lazy_data_cache($post_ID);
+	}
+  
 }
 
 SNSCountCache::get_instance();
@@ -373,18 +425,26 @@ function get_scc_hatebu($post_ID='') {
 	  	$post_ID = get_the_ID();
 	}
 	
-  	$transient_ID = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
+  	$transient_ID = SNSCountCache::OPT_BASE_TRANSIENT_PREFIX . $post_ID;
   
   	if(false !== ($sns_counts = get_transient($transient_ID))){
 	  	return $sns_counts[SNSCountCache::REF_HATEBU]; 
 	} else {
 	  	$sns_count_cache = SNSCountCache::get_instance();
-	  	if($sns_count_cache->is_enable_dynamic_cache()){
-	  		$sns_counts = $sns_count_cache->restock_count_cache($post_ID);
-	  		return $sns_counts[SNSCountCache::REF_HATEBU]; 
-		} else {
-		  	return $sns_counts[SNSCountCache::REF_HATEBU]; 
-		}
+	  
+	  	switch($sns_count_cache->get_dynamic_cache_type()){
+		  	case SNSCountCache::OPT_ACCESS_BASED_CACHE_NONE:
+		  			return $sns_counts[SNSCountCache::REF_HATEBU];
+		  			break;
+		  	case SNSCountCache::OPT_ACCESS_BASED_SYNC_CACHE:
+		  			$sns_counts = $sns_count_cache->retrieve_count_cache($post_ID);
+		  			return $sns_counts[SNSCountCache::REF_HATEBU];
+		  			break;
+		  	case SNSCountCache::OPT_ACCESS_BASED_ASYNC_CACHE:
+		  			$sns_count_cache->reserve_count_cache($post_ID);
+	  				return $sns_counts[SNSCountCache::REF_HATEBU]; 
+		  			break;
+		} 
 	}  
 
 }
@@ -402,18 +462,26 @@ function get_scc_twitter($post_ID='') {
 	  	$post_ID = get_the_ID();
 	}
 	
-  	$transient_ID = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
+  	$transient_ID = SNSCountCache::OPT_BASE_TRANSIENT_PREFIX . $post_ID;
   
   	if(false !== ($sns_counts = get_transient($transient_ID))){
 	  	return $sns_counts[SNSCountCache::REF_TWITTER]; 
 	} else {
 	  	$sns_count_cache = SNSCountCache::get_instance();
-	  	if($sns_count_cache->is_enable_dynamic_cache()){
-	  		$sns_counts = $sns_count_cache->restock_count_cache($post_ID);
-	  		return $sns_counts[SNSCountCache::REF_TWITTER]; 
-		} else {
-		  	return $sns_counts[SNSCountCache::REF_TWITTER]; 
-		}
+	  
+	  	switch($sns_count_cache->get_dynamic_cache_type()){
+		  	case SNSCountCache::OPT_ACCESS_BASED_CACHE_NONE:
+		  			return $sns_counts[SNSCountCache::REF_TWITTER];
+		  			break;
+		  	case SNSCountCache::OPT_ACCESS_BASED_SYNC_CACHE:
+		  			$sns_counts = $sns_count_cache->retrieve_count_cache($post_ID);
+		  			return $sns_counts[SNSCountCache::REF_TWITTER];
+		  			break;
+		  	case SNSCountCache::OPT_ACCESS_BASED_ASYNC_CACHE:
+		  			$sns_count_cache->reserve_count_cache($post_ID);
+	  				return $sns_counts[SNSCountCache::REF_TWITTER];
+		  			break;
+		} 
 	}  
   
 }
@@ -431,18 +499,26 @@ function get_scc_facebook($post_ID='') {
 	  	$post_ID = get_the_ID();
 	}
 	
-  	$transient_ID = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
+  	$transient_ID = SNSCountCache::OPT_BASE_TRANSIENT_PREFIX . $post_ID;
   
   	if(false !== ($sns_counts = get_transient($transient_ID))){
 	  	return $sns_counts[SNSCountCache::REF_FACEBOOK]; 
 	} else {
 	  	$sns_count_cache = SNSCountCache::get_instance();
-	  	if($sns_count_cache->is_enable_dynamic_cache()){
-	  		$sns_counts = $sns_count_cache->restock_count_cache($post_ID);
-	  		return $sns_counts[SNSCountCache::REF_FACEBOOK]; 
-		} else {
-		  	return $sns_counts[SNSCountCache::REF_FACEBOOK]; 
-		}
+	  
+	  	switch($sns_count_cache->get_dynamic_cache_type()){
+		  	case SNSCountCache::OPT_ACCESS_BASED_CACHE_NONE:
+		  			return $sns_counts[SNSCountCache::REF_FACEBOOK];
+		  			break;
+		  	case SNSCountCache::OPT_ACCESS_BASED_SYNC_CACHE:
+		  			$sns_counts = $sns_count_cache->retrieve_count_cache($post_ID);
+		  			return $sns_counts[SNSCountCache::REF_FACEBOOK];
+		  			break;
+		  	case SNSCountCache::OPT_ACCESS_BASED_ASYNC_CACHE:
+		  			$sns_count_cache->reserve_count_cache($post_ID);
+	  				return $sns_counts[SNSCountCache::REF_FACEBOOK];
+		  			break;
+		} 
 	}
   
 }
@@ -460,18 +536,26 @@ function get_scc_gplus($post_ID='') {
 	  	$post_ID = get_the_ID();
 	}
 	
-  	$transient_ID = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
+  	$transient_ID = SNSCountCache::OPT_BASE_TRANSIENT_PREFIX . $post_ID;
   
   	if(false !== ($sns_counts = get_transient($transient_ID))){
 	  	return $sns_counts[SNSCountCache::REF_GPLUS];
 	} else {
 	  	$sns_count_cache = SNSCountCache::get_instance();
-	  	if($sns_count_cache->is_enable_dynamic_cache()){
-	  		$sns_counts = $sns_count_cache->restock_count_cache($post_ID);
-	  		return $sns_counts[SNSCountCache::REF_GPLUS];
-		} else {
-		  	return $sns_counts[SNSCountCache::REF_GPLUS];
-		}
+	  
+	  	switch($sns_count_cache->get_dynamic_cache_type()){
+		  	case SNSCountCache::OPT_ACCESS_BASED_CACHE_NONE:
+		  			return $sns_counts[SNSCountCache::REF_GPLUS];
+		  			break;
+		  	case SNSCountCache::OPT_ACCESS_BASED_SYNC_CACHE:
+		  			$sns_counts = $sns_count_cache->retrieve_count_cache($post_ID);
+		  			return $sns_counts[SNSCountCache::REF_GPLUS];
+		  			break;
+		  	case SNSCountCache::OPT_ACCESS_BASED_ASYNC_CACHE:
+		  			$sns_count_cache->reserve_count_cache($post_ID);
+	  				return $sns_counts[SNSCountCache::REF_GPLUS];
+		  			break;
+		} 
 	}
   
 }
@@ -489,18 +573,26 @@ function get_scc($post_ID='') {
 	  	$post_ID = get_the_ID();
 	}
 	
-  	$transient_ID = SNSCountCache::OPT_TRANSIENT_PREFIX . $post_ID;
+  	$transient_ID = SNSCountCache::OPT_BASE_TRANSIENT_PREFIX . $post_ID;
   
   	if(false !== ($sns_counts = get_transient($transient_ID))){
 	  	return $sns_counts;
 	} else {
 	  	$sns_count_cache = SNSCountCache::get_instance();
-	  	if($sns_count_cache->is_enable_dynamic_cache()){
-	  		$sns_counts = $sns_count_cache->restock_count_cache($post_ID);
-	  		return $sns_counts;
-		} else {
-		  	return $sns_counts;
-		}
+	  	
+	  	switch($sns_count_cache->get_dynamic_cache_type()){
+		  	case SNSCountCache::OPT_ACCESS_BASED_CACHE_NONE:
+		  			return $sns_counts;
+		  			break;
+		  	case SNSCountCache::OPT_ACCESS_BASED_SYNC_CACHE:
+		  			$sns_counts = $sns_count_cache->retrieve_count_cache($post_ID);
+		  			return $sns_counts;
+		  			break;
+		  	case SNSCountCache::OPT_ACCESS_BASED_ASYNC_CACHE:
+		  			$sns_count_cache->reserve_count_cache($post_ID);
+	  				return $sns_counts;
+		  			break;
+		} 
 	}
 }
 
