@@ -4,7 +4,7 @@ Donate link:
 Tags: performance, SNS, social, cache
 Requires at least: 3.7
 Tested up to: 4.0
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 PHP Version: 5.3+
