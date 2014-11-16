@@ -1,7 +1,6 @@
 .sns-cnt-cache .view-table {
     border: 1px solid #000;
-    margin: 20px 0 0 0;
-    margin: 0px;
+    margin: 20px 0;
     padding: 0px;
     width: 100%;
     border-collapse: collapse;
@@ -24,10 +23,15 @@
     color: #fff;
 }
 
+.sns-cnt-cache .form-table .section-label {
+    font-weight: 600;
+	font-size: 1.3em;
+}
+
 .sns-cnt-cache .view-table td {
     vertical-align: middle;
-    padding: 4px;
-    text-align: left;
+    padding: 2px 4px;
+    border: 1px dotted #dfdfdf;
 }
 
 .sns-cnt-cache .cached {
@@ -37,6 +41,10 @@
 
 .sns-cnt-cache .not-cached {
     color: #ccc;
+}
+
+.sns-cnt-cache .share-count {
+    text-align: right;
 }
 
 .sns-cnt-cache .tab {
@@ -93,6 +101,25 @@
 }
 
 .sns-cnt-cache .submit-button {
-	margin: 15px 0 0 0;
+	margin: 20px 0;
 }
 
+.sns-cnt-cache h3 {
+    font-size: 1.5em;
+}
+
+.sns-cnt-cache a {
+    text-decoration: none;
+    color: #444;
+    -webkit-transition-property: border,background,color;
+    transition-property: border,background,color;
+    -webkit-transition-duration: .05s;
+    transition-duration: .05s;
+    -webkit-transition-timing-function: ease-in-out;
+    transition-timing-function: ease-in-out;
+    text-decoration: none;
+}
+
+.sns-cnt-cache a:hover {
+    color: #0074a2;
+}

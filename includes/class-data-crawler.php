@@ -1,9 +1,9 @@
 <?php
 /*
-data-crawler.php
+class-data-crawler.php
 
 Description: This class is abstract class of a data crawler
-Version: 0.2.0
+Version: 0.3.0
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -30,7 +30,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
 
-abstract class DataCrawler{
+abstract class Data_Crawler {
   
   	/**
 	 * URL for data crawling
@@ -51,7 +51,7 @@ abstract class DataCrawler{
 
 	  	$class_name = get_called_class();
 	  
-		if(!isset( self::$instance[$class_name])) {
+		if( ! isset( self::$instance[$class_name] ) ) {
 			self::$instance[$class_name] = new $class_name();
 		  	//self::$instance[ $c ]->init($crawler, $options=array());
 		}
@@ -64,10 +64,10 @@ abstract class DataCrawler{
 	 *
 	 * @since 0.1.0
 	 */	      
-	public function set_url($url){
-	  	$this->log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+	public function set_url( $url ) {
+	  	$this->log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-		$this->url = rawurlencode($url);
+		$this->url = rawurlencode( $url );
 	}
   
   	/**
@@ -75,19 +75,19 @@ abstract class DataCrawler{
 	 *
 	 * @since 0.1.1
 	 */  
-	abstract public function get_data($url);  
+	abstract public function get_data( $cache_target, $url );  
   
   	/**
 	 * Output log message according to WP_DEBUG setting
 	 *
 	 * @since 0.1.0
 	 */	    
-	protected function log($message) {
-    	if (WP_DEBUG === true) {
-      		if (is_array($message) || is_object($message)) {
-        		error_log(print_r($message, true));
+	protected function log( $message ) {
+    	if ( WP_DEBUG === true ) {
+      		if ( is_array( $message ) || is_object( $message ) ) {
+        		error_log( print_r( $message, true ) );
       		} else {
-        		error_log($message);
+        		error_log( $message );
       		}
     	}
   	}
