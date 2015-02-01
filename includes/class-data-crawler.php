@@ -77,20 +77,6 @@ abstract class Data_Crawler {
 	 */  
 	abstract public function get_data( $cache_target, $url );  
   
-  	/**
-	 * Output log message according to WP_DEBUG setting
-	 *
-	 * @since 0.1.0
-	 */	    
-	protected function log( $message ) {
-    	if ( WP_DEBUG === true ) {
-      		if ( is_array( $message ) || is_object( $message ) ) {
-        		error_log( print_r( $message, true ) );
-      		} else {
-        		error_log( $message );
-      		}
-    	}
-  	}
 }
 
 ?>

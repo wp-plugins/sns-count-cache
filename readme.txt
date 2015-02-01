@@ -3,14 +3,12 @@ Contributors: marubon
 Donate link: 
 Tags: performance, SNS, social, cache
 Requires at least: 3.7
-Tested up to: 4.0
-Stable tag: 0.3.0
+Tested up to: 4.1
+Stable tag: 0.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-PHP Version: 5.3+
 
 This plugin gets and caches SNS share count in the background, and provides functions to access the cache.
-
 
 == Description ==
 
@@ -19,11 +17,16 @@ This plugin may help you to shorten page loading time because the share count ca
 
 The following shows functions to get share count from the cache:
 
-* get_scc_twitter()
-* get_scc_facebook()
-* get_scc_gplus()
-* get_scc_pocket()
-* get_scc_hatebu()
+* scc_get_share_twitter()
+* scc_get_share_facebook()
+* scc_get_share_gplus()
+* scc_get_share_pocket()
+* scc_get_share_hatebu()
+* scc_get_share_total()
+
+The following shows function to get follower count from the cache:
+
+* scc_get_follow_feedly()
 
 The following describes meta keys to get share count from custom field.
 
@@ -32,6 +35,7 @@ The following describes meta keys to get share count from custom field.
 * scc_share_count_google+
 * scc_share_count_pocket
 * scc_share_count_hatebu
+* scc_share_count_total
 
 == Installation ==
 
@@ -48,10 +52,11 @@ The following describes meta keys to get share count from custom field.
 There are no questions.
 
 == Screenshots ==
-1. Cache status is described in setting page
-2. Share count for each post can be verviewed
-3. Described parameters can be modified in this page
-4. Help page shows available functions to access the cache  
+1. Dashboard to overview cache status and share count
+2. Cache status is described in setting page
+3. Share count for each post can be verviewed
+4. Described parameters can be modified in this page
+5. Help page shows available functions to access the cache  
 
 == Changelog ==
 
@@ -70,9 +75,23 @@ There are no questions.
 * Added: page to display share count for specified all tagets.
 * Added: function to query pages and posts based on SNS share count using specific custom fields in WP_Query and so on.
 
+= 0.4.0 =
+* Added: admin page was totally improved.
+* Added: function to sort contents based on share count was added to admin page of share count.
+* Added: content of custom post type was added as share count cache target. 
+* Added: number of Feedly follower was included as one of cache targets.
+* Added: function to export share count data was added.
+* Added: cache logic was improved.
+
 == Upgrade Notice ==
-There is no upgrade notice.
+The following functions are deprecated.
+
+* get_scc_twitter()
+* get_scc_facebook()
+* get_scc_gplus()
+* get_scc_pocket()
+* get_scc_hatebu()
 
 == Arbitrary section ==
-
+* PHP Version: 5.3+
 
