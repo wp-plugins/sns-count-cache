@@ -156,27 +156,8 @@ class Follow_Second_Cache_Engine extends Cache_Engine {
 	public function execute_cache() {
 	 	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 		
-		$query_args = array(
-			'post_type' => $this->post_types,
-			'post_status' => 'publish',
-			'nopaging' => true,
-			'update_post_term_cache' => false,
-			'update_post_meta_cache' => false
-		);
-
-		$posts_query = new WP_Query( $query_args );
-	  
-		if ( $posts_query->have_posts() ) {
-			while ( $posts_query->have_posts() ) {
-				$posts_query->the_post();
-			  
-				$post_ID = get_the_ID();
-			  
-				$this->cache( $post_ID, $this->target_sns, 0 );
-			  	 
-			}
-		}
-		wp_reset_postdata();		
+	  	$this->cache( NULL, $this->target_sns, NULL );
+	  	
 	}
   
    	/**
@@ -188,7 +169,7 @@ class Follow_Second_Cache_Engine extends Cache_Engine {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
 		$transient_ID = $this->get_transient_ID( 'follow' );
-			  	
+			  		  
   		if ( false !== ( $sns_followers = get_transient( $transient_ID ) ) ) {
 				  
 			foreach ( $target_sns as $key => $value ) {
@@ -199,13 +180,12 @@ class Follow_Second_Cache_Engine extends Cache_Engine {
 					if ( isset( $sns_followers[$key] ) && $sns_followers[$key] >= 0 ) {
 						Common_Util::log( '[' . __METHOD__ . '] meta_key: ' . $meta_key . ' SNS: ' . $key . ' post_ID: ' . $post_ID . ' - ' . $sns_followers[$key] );
 						  
-				  		update_post_meta($post_ID, $meta_key, $sns_followers[$key]);
-						//$data[$key][$post_ID] = $sns_counts[$key];
+					  	update_option( $meta_key, $sns_followers[$key] );
 					}
 				}
 			}	  
 		}
-			  	  
+	  
 	}  
   
   	/**
@@ -227,33 +207,15 @@ class Follow_Second_Cache_Engine extends Cache_Engine {
   	public function initialize_cache() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-		$query_args = array(
-			'post_type' => $this->post_types,
-			'post_status' => 'publish',
-			'nopaging' => true,
-			'update_post_term_cache' => false,
-			'update_post_meta_cache' => false
-		);
-
-		$posts_query = new WP_Query( $query_args );
-	  
-		if ( $posts_query->have_posts() ) {
-			while ( $posts_query->have_posts() ) {
-				$posts_query->the_post();
-			  
-				$post_ID = get_the_ID();
-			  	
-				foreach ( $this->target_sns as $key => $value ) {
+		foreach ( $this->target_sns as $key => $value ) {
 					  
-					$meta_key = $this->meta_key_prefix . strtolower( $key );
+			$meta_key = $this->meta_key_prefix . strtolower( $key );
 					  
-					if ( $value ) {
-						update_post_meta($post_ID, $meta_key, -1);
-					}
-				}		  	 
+			if ( $value ) {
+				update_option( $meta_key, -1 );
 			}
-		}
-		wp_reset_postdata();
+		}	
+	    	
   	}  
 
     /**
@@ -263,7 +225,17 @@ class Follow_Second_Cache_Engine extends Cache_Engine {
 	 */	     
   	public function clear_cache() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
+
+		foreach ( $this->target_sns as $key => $value ) {
+					  
+			$meta_key = $this->meta_key_prefix . strtolower( $key );
+					  
+			if ( $value ) {
+				delete_option( $meta_key );
+			}
+		}		
 	  
+	  	// compatibility for old version
 		$query_args = array(
 			'post_type' => $this->post_types,
 			'post_status' => 'publish',
@@ -291,6 +263,9 @@ class Follow_Second_Cache_Engine extends Cache_Engine {
 			}
 		}
 		wp_reset_postdata();
+	  
+  
+	  
   	}    
   
 }

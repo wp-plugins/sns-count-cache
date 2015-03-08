@@ -31,38 +31,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 
-abstract class Cache_Engine {
+abstract class Cache_Engine extends Engine {
 
 	/**
 	 * Prefix of cache ID
 	 */	    
   	protected $transient_prefix = NULL;
   
-	/**
-	 * Cron name to schedule cache processing
-	 */	      
-  	protected $prime_cron = NULL;
-
-	/**
-	 * Cron name to execute cache processing
-	 */	        
-  	protected $execute_cron = NULL;
-
-	/**
-	 * Schedule name for cache processing
-	 */	          
-  	protected $event_schedule = NULL;
-
   	/**
-	 * Schedule description for cache processing
-	 */	          
-  	protected $event_description = NULL;
-  
-  	/**
-	 * Instance
-	 */
-  	private static $instance = array();
-  
+	 * instance for delegation
+	 */	   
+  	protected $delegate = NULL;  
+    
 	/**
 	 * Class constarctor
 	 * Hook onto all of the actions and filters needed by the plugin.
@@ -71,55 +51,7 @@ abstract class Cache_Engine {
 	protected function __construct() {
 	  	Common_Util::log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
 	}
-  
-  	/**
-	 * Get instance
-	 *
-	 * @since 0.1.1
-	 */	 	
-  	public static function get_instance() {
-
-	  	$class_name = get_called_class();
-		if ( ! isset( self::$instance[$class_name] ) ) {
-			self::$instance[$class_name] = new $class_name();
-		  	//self::$instance[$class_name]->initialize($crawler, $options=array());
-		}
-
-		return self::$instance[$class_name];
-	}
-	
-  	/**
-	 * Initialization
-	 *
-	 * @since 0.1.1
-	 */
-  	abstract public function initialize( $options = array() );
-
-  	/**
-	 * Register base schedule for this engine
-	 *
-	 * @since 0.1.0
-	 */	     
-	public function register_schedule() {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-	
-		if ( ! wp_next_scheduled( $this->prime_cron ) ) {
-			wp_schedule_event( time(), $this->event_schedule, $this->prime_cron );
-		}
-	}
-  
-  	/**
-	 * Unregister base schedule for this engine
-	 *
-	 * @since 0.1.0
-	 */	     
-	public function unregister_schedule() {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-
-	  	wp_clear_scheduled_hook( $this->prime_cron );
-	  	WP_Cron_Util::clear_scheduled_hook( $this->execute_cron );
-	}
-
+  	
   	/**
 	 * Get cache expiration based on current number of total post and page
 	 *
@@ -156,7 +88,7 @@ abstract class Cache_Engine {
   	protected function get_transient_ID( $suffix ) {
 	  	return $this->transient_prefix . $suffix;
   	}  
-  
+   
 }
 
 ?>

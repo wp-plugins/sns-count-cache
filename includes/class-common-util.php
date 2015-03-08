@@ -119,7 +119,12 @@ class Common_Util {
 	  
 	  	return $custom_post_types;
 	}
-  
+
+   	/**
+	 * check if php-xml module is loaded or not
+	 *
+	 * @since 0.4.0
+	 */	       
   	public static function extension_loaded_php_xml() {
 		if ( extension_loaded( 'xml' ) && extension_loaded( 'xmlreader' ) && extension_loaded( 'xmlwriter' ) ) {
 			return true;
@@ -127,6 +132,58 @@ class Common_Util {
 			return false;
 		}	  	
   	}
+
+   	/**
+	 * convert url based on http into url based on https
+	 *
+	 * @since 0.4.0
+	 */	         
+  	public static function get_secure_url( $url ){
+	  	
+		$url = str_replace( 'http://', 'https://', $url );
+	  
+		return $url;
+  	}
+
+   	/**
+	 * convert url based on https into url based on http
+	 *
+	 * @since 0.4.0
+	 */	         
+  	public static function get_normal_url( $url ){
+	  	
+		$url = str_replace( 'https://', 'http://', $url );
+	  
+		return $url;
+  	}
+
+   	/**
+	 * check if a given url is based on https or not.
+	 *
+	 * @since 0.4.0
+	 */	           
+  	public static function is_secure_url( $url ){
+	  	
+	  	if ( preg_match('/^(https)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)$/', $url ) ) {
+	  		return true;
+		} else {
+		  	return false;
+		}	  
+  	}
+
+    /**
+	 * check if a given url is based on http or not.
+	 *
+	 * @since 0.4.0
+	 */	           
+  	public static function is_normal_url( $url ){
+	  	
+	  	if ( preg_match('/^(http)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)$/', $url ) ) {
+	  		return true;
+		} else {
+		  	return false;
+		}	  
+  	}    
   
 }
 

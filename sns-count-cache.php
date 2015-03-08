@@ -2,7 +2,7 @@
 /*
 Plugin Name: SNS Count Cache
 Description: SNS Count Cache gets share count for Twitter and Facebook, Google Plus, Pocket, Hatena Bookmark and caches these count in the background. This plugin may help you to shorten page loading time because the share count can be retrieved not through network but through the cache using given functions.
-Version: 0.4.0
+Version: 0.5.0 beta
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -29,28 +29,33 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
 
+require_once ( dirname( __FILE__ ) . '/includes/class-common-util.php' );
+require_once ( dirname( __FILE__ ) . '/includes/class-wp-cron-util.php' );
+
+require_once ( dirname( __FILE__ ) . '/includes/class-engine.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-cache-engine.php' );
 
+require_once ( dirname( __FILE__ ) . '/includes/class-share-cache-engine.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-share-base-cache-engine.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-share-rush-cache-engine.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-share-lazy-cache-engine.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-share-second-cache-engine.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-share-rescue-cache-engine.php' );
 
+require_once ( dirname( __FILE__ ) . '/includes/class-follow-cache-engine.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-follow-base-cache-engine.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-follow-lazy-cache-engine.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-follow-second-cache-engine.php' );
-
-require_once ( dirname( __FILE__ ) . '/includes/class-data-crawler.php' );
-require_once ( dirname( __FILE__ ) . '/includes/class-share-crawler.php' );
-require_once ( dirname( __FILE__ ) . '/includes/class-follow-crawler.php' );
-require_once ( dirname( __FILE__ ) . '/includes/class-common-util.php' );
-require_once ( dirname( __FILE__ ) . '/includes/class-wp-cron-util.php' );
+require_once ( dirname( __FILE__ ) . '/includes/interface-cache-order.php' );
 
 require_once ( dirname( __FILE__ ) . '/includes/class-export-engine.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-common-data-export-engine.php' );
 
-require_once ( dirname( __FILE__ ) . '/includes/interface-cache-order.php' );
+require_once ( dirname( __FILE__ ) . '/includes/class-common-job-reset-engine.php' );
+
+require_once ( dirname( __FILE__ ) . '/includes/class-data-crawler.php' );
+require_once ( dirname( __FILE__ ) . '/includes/class-share-crawler.php' );
+require_once ( dirname( __FILE__ ) . '/includes/class-follow-crawler.php' );
 
 if ( ! class_exists( 'SNS_Count_Cache' ) ) {
 
@@ -132,25 +137,40 @@ class SNS_Count_Cache implements Cache_Order {
 	const OPT_COMMON_DATA_EXPORT_INTERVAL = 43200;
 
 	/**
+	 * Data export schedule
+	 */	  
+	const OPT_COMMON_DATA_EXPORT_SCHEDULE = '0 0 * * *';
+    
+	/**
 	 * Type of dynamic cache processing
 	 */	 
-  	const OPT_ACCESS_BASED_CACHE_NONE = 0;  
+  	const OPT_COMMON_ACCESS_BASED_CACHE_NONE = 0;  
   
 	/**
 	 * Type of dynamic cache processing
 	 */	 
-  	const OPT_ACCESS_BASED_SYNC_CACHE = 1;
+  	const OPT_COMMON_ACCESS_BASED_SYNC_CACHE = 1;
 
 	/**
 	 * Type of dynamic cache processing
 	 */	 
-  	const OPT_ACCESS_BASED_ASYNC_CACHE = 2;
+  	const OPT_COMMON_ACCESS_BASED_ASYNC_CACHE = 2;
 
 	/**
 	 * Type of dynamic cache processing
 	 */	 
-  	const OPT_ACCESS_BASED_2ND_CACHE = 3;
- 
+  	const OPT_COMMON_ACCESS_BASED_2ND_CACHE = 3;
+  
+	/**
+	 * Type of scheme migration mode
+	 */	 
+  	const OPT_COMMON_SCHEME_MIGRATION_MODE_OFF = false;
+
+	/**
+	 * Type of scheme migration mode
+	 */	   
+  	const OPT_COMMON_SCHEME_MIGRATION_MODE_ON = true;
+    
 	/**
 	 * Option key for custom post types for share base cache
 	 */  
@@ -169,7 +189,7 @@ class SNS_Count_Cache implements Cache_Order {
 	/**
 	 * Option key for dynamic cache 
 	 */	    
-  	const DB_COMMON_DYNAMIC_CACHE = 'scc_dynamic_cache';
+  	const DB_COMMON_DYNAMIC_CACHE = 'scc_dynamic_cache_mode';
 
 	/**
 	 * Option key for new content term for share rush cache
@@ -194,12 +214,22 @@ class SNS_Count_Cache implements Cache_Order {
 	/**
 	 * Option key of data export
 	 */  
-	const DB_COMMON_DATA_EXPORT = 'scc_data_export';
+	const DB_COMMON_DATA_EXPORT = 'scc_data_export_mode';
  
 	/**
 	 * Option key of data export interval
 	 */  
-	const DB_COMMON_DATA_EXPORT_INTERVAL = 'scc_data_export_interval';
+	const DB_COMMON_DATA_EXPORT_INTERVAL = 'scc_data_export_mode_interval';
+
+	/**
+	 * Option key of data export schedule
+	 */  
+	const DB_COMMON_DATA_EXPORT_SCHEDULE = 'scc_data_export_schedule';
+  
+	/**
+	 * Option key of http migration
+	 */  
+	const DB_COMMON_SCHEME_MIGRATION_MODE = 'scc_scheme_migration_mode';
   
 	/**
 	 * Slug of the plugin
@@ -250,6 +280,11 @@ class SNS_Count_Cache implements Cache_Order {
 	 * ID of common data export
 	 */
 	const REF_COMMON_EXPORT = 'common-export'; 
+
+ 	/**
+	 * ID of common data export
+	 */
+	const REF_COMMON_CONTROL = 'common-control'; 
     
  	/**
 	 * ID of share
@@ -320,6 +355,11 @@ class SNS_Count_Cache implements Cache_Order {
 	 * Instance of export engine 
 	 */	
 	private $export_engines = array();  
+
+	/**
+	 * Instance of control engine 
+	 */	
+	private $control_engines = array();  
   
 	/**
 	 * Slug of the plugin screen
@@ -330,11 +370,6 @@ class SNS_Count_Cache implements Cache_Order {
 	 * Cache target for share base cache
 	 */		  
   	private $share_base_cache_target = array();  
-
-	/**
-	 * Cache target for follow base cache
-	 */		  
-  	private $follow_base_cache_target = array();  
   
 	/**
 	 * Post types to be cached
@@ -342,20 +377,80 @@ class SNS_Count_Cache implements Cache_Order {
   	private $share_base_cache_post_types = array( 'post', 'page' );  
 
 	/**
-	 * Option flag of dynamic cache
+	 * Post types to be cached
 	 */		  
-  	private $dynamic_cache = 0;
+  	private $share_base_custom_post_types = array();  
+    
+	/**
+	 * Check interval for share base cahce
+	 */		    
+  	private $share_base_check_interval = 600;
+
+	/**
+	 * Post per check for share base cache
+	 */		      
+  	private $share_base_posts_per_check = 20;
+
+	/**
+	 * Term considering content as new one
+	 */  
+  	private $share_rush_new_content_term = 3;
+  
+	/**
+	 * Cache target for follow base cache
+	 */		  
+  	private $follow_base_cache_target = array();  
+
+	/**
+	 * Check interval for follow base cache
+	 */  
+  	private $follow_base_check_interval = 1800;
+  
+	/**
+	 * Dynamic cache mode
+	 */		  
+  	private $dynamic_cache_mode = 0;
   	  
 	/**
-	 * Option flag of data export
+	 * Data export mode
 	 */		  
-  	private $data_export = 0;
-      
+  	private $data_export_mode = 0;
+
+	/**
+	 * Data export interval
+	 */		      
+	private $data_export_interval = 3600;
+
+	/**
+	 * Data export schedule
+	 */		      
+  	private $data_export_schedule  = '* * * * *';
+
+	/**
+	 * Migration mode from http to https
+	 */		      
+  	private $scheme_migration_mode = false;
+
+	/**
+	 * Excluded key in migration from http to https
+	 */		      
+  	private $scheme_migration_exclude_keys = array();
+
+  	/**
+	 * Max execution time
+	 */
+  	private $original_max_execution_time = 0;
+
+  	/**
+	 * Extended max execution time
+	 */
+	private $extended_max_execution_time = 300;
+  
   	/**
 	 * Instance
 	 */
   	private static $instance = NULL;
-  
+    
 	/**
 	 * Class constarctor
 	 * Hook onto all of the actions and filters needed by the plugin.
@@ -400,28 +495,33 @@ class SNS_Count_Cache implements Cache_Order {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 
 	  	$share_base_check_interval = get_option( self::DB_SHARE_CHECK_INTERVAL );
-	  	$share_base_check_interval = ! empty( $share_base_check_interval ) ? intval( $share_base_check_interval ) : self::OPT_SHARE_BASE_CHECK_INTERVAL;
+	  	$this->share_base_check_interval = ! empty( $share_base_check_interval ) ? intval( $share_base_check_interval ) : self::OPT_SHARE_BASE_CHECK_INTERVAL;
 	  
 		$share_base_posts_per_check = get_option( self::DB_SHARE_POSTS_PER_CHECK );	
-	  	$share_base_posts_per_check = ! empty( $share_base_posts_per_check ) ? intval( $share_base_posts_per_check ) : self::OPT_SHARE_BASE_POSTS_PER_CHECK; 
+	  	$this->share_base_posts_per_check = ! empty( $share_base_posts_per_check ) ? intval( $share_base_posts_per_check ) : self::OPT_SHARE_BASE_POSTS_PER_CHECK; 
 
 	  	$follow_base_check_interval = get_option( self::DB_FOLLOW_CHECK_INTERVAL );
-	  	$follow_base_check_interval = ! empty( $follow_base_check_interval ) ? intval( $follow_base_check_interval ) : self::OPT_FOLLOW_BASE_CHECK_INTERVAL;
+	  	$this->follow_base_check_interval = ! empty( $follow_base_check_interval ) ? intval( $follow_base_check_interval ) : self::OPT_FOLLOW_BASE_CHECK_INTERVAL;
 	  	  
-	  	$dynamic_cache = get_option( self::DB_COMMON_DYNAMIC_CACHE );
-	  	$this->dynamic_cache = ! empty( $dynamic_cache ) ? $dynamic_cache : false;
+	  	$dynamic_cache_mode = get_option( self::DB_COMMON_DYNAMIC_CACHE );
+	  	$this->dynamic_cache_mode = ! empty( $dynamic_cache_mode ) ? $dynamic_cache_mode : self::OPT_COMMON_ACCESS_BASED_CACHE_NONE;
 	  
 	  	$share_rush_new_content_term = get_option( self::DB_SHARE_NEW_CONTENT_TERM );
-	  	$share_rush_new_content_term = ! empty( $share_rush_new_content_term ) ? intval( $share_rush_new_content_term ) : self::OPT_SHARE_RUSH_NEW_CONTENT_TERM;
+	  	$this->share_rush_new_content_term = ! empty( $share_rush_new_content_term ) ? intval( $share_rush_new_content_term ) : self::OPT_SHARE_RUSH_NEW_CONTENT_TERM;
 
 		$this->share_base_cache_target = get_option( self::DB_SHARE_CACHE_TARGET );
 	  	$this->follow_base_cache_target = get_option( self::DB_FOLLOW_CACHE_TARGET );
 	  
-	  	$data_export = get_option( self::DB_COMMON_DATA_EXPORT );
-	  	$this->data_export = isset( $data_export ) ? intval( $data_export ) : self::OPT_COMMON_DATA_EXPORT_MANUAL;
+	  	$data_export_mode = get_option( self::DB_COMMON_DATA_EXPORT );
+	  	$this->data_export_mode = isset( $data_export_mode ) ? intval( $data_export_mode ) : self::OPT_COMMON_DATA_EXPORT_MANUAL;
 
 		$data_export_interval = get_option( self::DB_COMMON_DATA_EXPORT_INTERVAL );
-		$data_export_interval = ! empty( $data_export_interval ) ? intval( $data_export_interval ) : self::OPT_COMMON_DATA_EXPORT_INTERVAL;	  		
+		$this->data_export_interval = ! empty( $data_export_interval ) ? intval( $data_export_interval ) : self::OPT_COMMON_DATA_EXPORT_INTERVAL;
+	  
+	  	$scheme_migration_mode = get_option( self::DB_COMMON_SCHEME_MIGRATION_MODE );
+	  	$this->scheme_migration_mode = isset( $scheme_migration_mode ) ? $scheme_migration_mode : self::OPT_COMMON_SCHEME_MIGRATION_MODE_OFF;
+	  
+	  	$this->scheme_migration_exclude_keys = array( self::REF_SHARE_POCKET, self::REF_SHARE_GPLUS );
 	  	  
 		if ( ! $this->share_base_cache_target ) {
 			$this->share_base_cache_target[self::REF_SHARE_TWITTER] = true;
@@ -440,17 +540,17 @@ class SNS_Count_Cache implements Cache_Order {
 	 		$this->follow_base_cache_target[self::REF_FOLLOW_FEEDLY] = true;
 		}
 	  
-	  	$share_base_custom_post_types = get_option( self::DB_SHARE_CUSTOM_POST_TYPES );
+	  	$this->share_base_custom_post_types = get_option( self::DB_SHARE_CUSTOM_POST_TYPES );
 	
-		if ( ! $share_base_custom_post_types ) {
-	  		$share_base_custom_post_types = array();
+		if ( ! $this->share_base_custom_post_types ) {
+	  		$this->share_base_custom_post_types = array();
 		}
 	    	
-	  	//$custom_post_types = Common_Util::get_custom_post_types();
-	  	$this->share_base_cache_post_types = array_merge( $this->share_base_cache_post_types, $share_base_custom_post_types );
-	  	//$custom_post_types = get_post_types( array( 'public' => true, '_builtin' => false ) );
-	  	//$this->share_base_cache_post_types = array_merge( $this->share_base_cache_post_types, $share_base_custom_post_types );
+	  	$this->share_base_cache_post_types = array_merge( $this->share_base_cache_post_types, $this->share_base_custom_post_types );
 
+		$data_export_schedule = get_option( self::DB_COMMON_DATA_EXPORT_SCHEDULE );
+		$this->data_export_schedule = ! empty( $data_export_schedule  ) ? $data_export_schedule  : self::OPT_COMMON_DATA_EXPORT_SCHEDULE;
+	  
 	  	// Crawler
 	  	$this->crawlers[self::REF_SHARE] = Share_Crawler::get_instance();
 	  	$this->crawlers[self::REF_FOLLOW] = Follow_Crawler::get_instance();
@@ -460,9 +560,11 @@ class SNS_Count_Cache implements Cache_Order {
 		  	'delegate' => $this,
 		  	'crawler' => $this->crawlers[self::REF_SHARE],
 		  	'target_sns' => $this->share_base_cache_target,
-			'check_interval' => $share_base_check_interval,
-			'posts_per_check' => $share_base_posts_per_check,
-		  	'post_types' => $this->share_base_cache_post_types		  
+			'check_interval' => $this->share_base_check_interval,
+			'posts_per_check' => $this->share_base_posts_per_check,
+		  	'post_types' => $this->share_base_cache_post_types,		  
+		  	'scheme_migration_mode' => $this->scheme_migration_mode,
+		  	'scheme_migration_exclude_keys' => $this->scheme_migration_exclude_keys
 		  	);
 	  
 	  	$this->cache_engines[self::REF_SHARE_BASE] = Share_Base_Cache_Engine::get_instance();
@@ -474,9 +576,11 @@ class SNS_Count_Cache implements Cache_Order {
 		  	'crawler' => $this->crawlers[self::REF_SHARE],
 		  	'target_sns' => $this->share_base_cache_target,
 		  	'check_interval' => self::OPT_SHARE_RUSH_CHECK_INTERVAL,
-			'posts_per_check' => $share_base_posts_per_check,
-		  	'new_content_term' => $share_rush_new_content_term,
-		  	'post_types' => $this->share_base_cache_post_types
+			'posts_per_check' => $this->share_base_posts_per_check,
+		  	'new_content_term' => $this->share_rush_new_content_term,
+		  	'post_types' => $this->share_base_cache_post_types,
+		  	'scheme_migration_mode' => $this->scheme_migration_mode,
+		  	'scheme_migration_exclude_keys' => $this->scheme_migration_exclude_keys
 			);
 
 	  	$this->cache_engines[self::REF_SHARE_RUSH] = Share_Rush_Cache_Engine::get_instance();
@@ -487,9 +591,11 @@ class SNS_Count_Cache implements Cache_Order {
 		  	'delegate' => $this,
 		  	'crawler' => $this->crawlers[self::REF_SHARE],
 		  	'target_sns' => $this->share_base_cache_target,
-			'check_interval' => $share_base_check_interval,
-			'posts_per_check' => $share_base_posts_per_check,
-		  	'post_types' => $this->share_base_cache_post_types
+			'check_interval' => $this->share_base_check_interval,
+			'posts_per_check' => $this->share_base_posts_per_check,
+		  	'post_types' => $this->share_base_cache_post_types,
+		  	'scheme_migration_mode' => $this->scheme_migration_mode,
+		  	'scheme_migration_exclude_keys' => $this->scheme_migration_exclude_keys
 			);	  
 			  
 	  	$this->cache_engines[self::REF_SHARE_LAZY] = Share_Lazy_Cache_Engine::get_instance();
@@ -500,7 +606,9 @@ class SNS_Count_Cache implements Cache_Order {
 		  	'target_sns' => $this->share_base_cache_target,
 			'check_interval' => self::OPT_SHARE_2ND_CHECK_INTERVAL,
 		  	'post_types' => $this->share_base_cache_post_types,
-		  	'meta_key_prefix' => self::OPT_SHARE_2ND_META_KEY_PREFIX
+		  	'meta_key_prefix' => self::OPT_SHARE_2ND_META_KEY_PREFIX,
+		  	'scheme_migration_mode' => $this->scheme_migration_mode,
+		  	'scheme_migration_exclude_keys' => $this->scheme_migration_exclude_keys
 			);	 
 	  
 	  	$this->cache_engines[self::REF_SHARE_2ND] = Share_Second_Cache_Engine::get_instance();
@@ -511,9 +619,11 @@ class SNS_Count_Cache implements Cache_Order {
 		  	'delegate' => $this,
 		  	'crawler' => $this->crawlers[self::REF_SHARE],
 		  	'target_sns' => $this->share_base_cache_target,
-			'check_interval' => $share_base_check_interval,
-			'posts_per_check' => $share_base_posts_per_check,
-		  	'post_types' => $this->share_base_cache_post_types		  
+			'check_interval' => $this->share_base_check_interval,
+			'posts_per_check' => $this->share_base_posts_per_check,
+		  	'post_types' => $this->share_base_cache_post_types,
+		  	'scheme_migration_mode' => $this->scheme_migration_mode,
+		  	'scheme_migration_exclude_keys' => $this->scheme_migration_exclude_keys
 		  	);
 	  
 	  	$this->cache_engines[self::REF_SHARE_RESCUE] = Share_Rescue_Cache_Engine::get_instance();
@@ -521,10 +631,12 @@ class SNS_Count_Cache implements Cache_Order {
 	  
 	  	// Follow base cache engine
 	  	$options = array(
+		  	'delegate' => $this,
 		  	'crawler' => $this->crawlers[self::REF_FOLLOW],
 		  	'target_sns' => $this->follow_base_cache_target,
-		  	'check_interval' => $follow_base_check_interval,
-		  	'post_types' => $this->share_base_cache_post_types		  
+		  	'check_interval' => $this->follow_base_check_interval,
+		  	'post_types' => $this->share_base_cache_post_types,
+			'scheme_migration_mode' => $scheme_migration_mode
 		  	);
 	  
 	  	$this->cache_engines[self::REF_FOLLOW_BASE] = Follow_Base_Cache_Engine::get_instance();
@@ -532,9 +644,11 @@ class SNS_Count_Cache implements Cache_Order {
 
 	  	// Follow lazy cache engine	  
 	  	$options = array(
+		  	'delegate' => $this,
 		  	'crawler' => $this->crawlers[self::REF_FOLLOW],
 		  	'target_sns' => $this->follow_base_cache_target,
-		  	'check_interval' => $follow_base_check_interval,  
+		  	'check_interval' => $this->follow_base_check_interval, 
+		  	'scheme_migration_mode' => $this->scheme_migration_mode
 		  	);	  
 	  
 	  	$this->cache_engines[self::REF_FOLLOW_LAZY] = Follow_Lazy_Cache_Engine::get_instance();
@@ -553,8 +667,9 @@ class SNS_Count_Cache implements Cache_Order {
 	  
 	  	// Data export engine  	  
 	  	$options = array(
-		  	'export_activation' => $this->data_export,
-		  	'export_interval' => $data_export_interval,
+		  	'export_activation' => $this->data_export_mode,
+		  	'export_interval' => $this->data_export_interval,
+		  	'export_schedule' => $this->data_export_schedule,
 		  	'share_target_sns' => $this->share_base_cache_target,
 		  	'follow_target_sns' => $this->follow_base_cache_target,
 		  	'export_file_name' => self::OPT_COMMON_DATA_EXPORT_FILE_NAME,
@@ -564,11 +679,45 @@ class SNS_Count_Cache implements Cache_Order {
 	  
 	  	$this->export_engines[self::REF_COMMON_EXPORT] = Common_Data_Export_Engine::get_instance();
 		$this->export_engines[self::REF_COMMON_EXPORT]->initialize( $options );
+
+	  	// Job reset engine
+	  	$target_crons = array();
 	  
+	  	foreach ( $this->cache_engines as $key => $cache_engine ) {
+		  	$target_crons[] = $cache_engine->get_excute_cron();
+	  	}
+
+	  	foreach ( $this->control_engines as $key => $control_engine ) {
+		  	$target_crons[] = $control_engine->get_excute_cron();
+	  	}
+	  	  	  
+	  	if ( $this->data_export_mode ) {
+	  		$target_crons[] = $this->export_engines[self::REF_COMMON_EXPORT]->get_excute_cron();
+	  	}
+	  
+	  	$options = array(
+		  	'delegate' => $this,
+		  	'check_interval' => 600,  
+		  	'expiration_time ' => 1800,
+		  	'target_cron' => $target_crons
+		  	);
+	  
+	  	$this->control_engines[self::REF_COMMON_CONTROL] = Common_Job_Reset_Engine::get_instance();
+		$this->control_engines[self::REF_COMMON_CONTROL]->initialize( $options );
+
 	  	// delete old hooks
 	  	WP_Cron_Util::clear_scheduled_hook( 'scc_basecache_prime' );
 	  	WP_Cron_Util::clear_scheduled_hook( 'scc_rushcache_prime' );	  
 		WP_Cron_Util::clear_scheduled_hook( 'scc_2ndcache_prime' );
+	  
+	  	$tmp_max_execution_time = ini_get( 'max_execution_time' );
+	  
+	  	if ( isset( $tmp_max_execution_time ) && $tmp_max_execution_time > 0 ) {
+	  		$this->original_max_execution_time = $tmp_max_execution_time;
+		} else {
+		  	$this->original_max_execution_time = 30;
+		}
+	  
   	}
   
 	/**
@@ -620,17 +769,35 @@ class SNS_Count_Cache implements Cache_Order {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
 	  	$this->initialize();
+  	  
+	  	set_time_limit( $this->extended_max_execution_time ); 
 	  
 	  	foreach ( $this->cache_engines as $key => $cache_engine ) {
-		  	$cache_engine->initialize_cache();
-		  	$cache_engine->register_schedule();
+			switch ( $key ) {
+				case self::REF_SHARE_2ND:
+		  			$cache_engine->initialize_cache();
+					break;
+				case self::REF_FOLLOW_2ND:
+		  			$cache_engine->initialize_cache();
+					break;			
+				default:
+		  			$cache_engine->initialize_cache();
+		  			$cache_engine->register_schedule();
+		  	}
 	  	}
-	  
-	  	if ( $this->data_export ) {
+
+	  	foreach ( $this->control_engines as $key => $control_engine ) {
+		  	$control_engine->register_schedule();
+	  	}
+	  	  	  
+	  	if ( $this->data_export_mode ) {
 	  		$this->export_engines[self::REF_COMMON_EXPORT]->register_schedule();
 	  	}
+	  
+	  	set_time_limit( $this->original_max_execution_time  ); 
+
 	}
-	
+  	
 	/**
 	 * Deactivate cache engine (schedule cron)
 	 *
@@ -638,13 +805,22 @@ class SNS_Count_Cache implements Cache_Order {
 	 */
 	function deactivate_plugin() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-	 
+
+	  	set_time_limit( $this->extended_max_execution_time ); 
+	  	  
 	  	foreach ( $this->cache_engines as $key => $cache_engine ) {
 		  	$cache_engine->unregister_schedule();
 		  	$cache_engine->clear_cache();
 	  	}
-
+	  
+	  	foreach ( $this->control_engines as $key => $control_engine ) {
+		  	$control_engine->unregister_schedule();
+	  	}
+	  	  
 	  	$this->export_engines[self::REF_COMMON_EXPORT]->unregister_schedule();
+	  
+	  	set_time_limit( $this->original_max_execution_time  ); 
+
 	}
 
 	/**
@@ -655,23 +831,9 @@ class SNS_Count_Cache implements Cache_Order {
   	function reactivate_plugin() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-	 	foreach ( $this->cache_engines as $key => $cache_engine ) {
-		  	$cache_engine->unregister_schedule();
-		  	$cache_engine->clear_cache();
-	  	}
-	  
-	  	$this->export_engines[self::REF_COMMON_EXPORT]->unregister_schedule();
-	  
-	  	$this->initialize();
-	  	
-	  	foreach ( $this->cache_engines as $key => $cache_engine ) {
-		  	$cache_engine->initialize_cache();		  
-		  	$cache_engine->register_schedule();
-	  	}
-	  
-	  	if ( $this->data_export ) {
-	  		$this->export_engines[self::REF_COMMON_EXPORT]->register_schedule();
-	  	}	  
+	  	$this->deactivate_plugin(); 
+	  	$this->activate_plugin();
+	  			  	  
 	}  
   
     /**
@@ -743,10 +905,10 @@ class SNS_Count_Cache implements Cache_Order {
 	 *
 	 * @since 0.2.0
 	 */
-  	public function get_dynamic_cache_type() {
+  	public function get_dynamic_cache_mode() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-	  	return $this->dynamic_cache;
+	  	return $this->dynamic_cache_mode;
   	}
 
   	/**
@@ -754,10 +916,10 @@ class SNS_Count_Cache implements Cache_Order {
 	 *
 	 * @since 0.2.0
 	 */  
-  	public function retrieve_share_cache( $post_ID ) {
+  	public function retrieve_share_cache( $post_ID,  $second_sync = false ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-	  	return $this->cache_engines[self::REF_SHARE_BASE]->direct_cache( $post_ID, false );
+	  	return $this->cache_engines[self::REF_SHARE_BASE]->direct_cache( $post_ID, $second_sync );
   	}
 
   	/**
@@ -835,7 +997,13 @@ class SNS_Count_Cache implements Cache_Order {
 		  		break;
 		  	case 'Share_Rush_Cache_Engine':
 		  		$this->cache_engines[self::REF_SHARE_2ND]->cache( $options['post_id'], $this->share_base_cache_target, NULL );
+		  		break;
+		  	case 'Follow_Lazy_Cache_Engine':
+		  		$this->cache_engines[self::REF_FOLLOW_2ND]->cache( NULL, $this->follow_base_cache_target, NULL );
 		  		break;		  
+		  	case 'Follow_Base_Cache_Engine':
+		  		$this->cache_engines[self::REF_FOLLOW_2ND]->cache( NULL, $this->follow_base_cache_target, NULL );
+		  		break;
 		}
 	  
   	}
@@ -971,8 +1139,8 @@ function scc_get_share( $options = array( 'id' => '', 'url' => '', 'sns' => '' )
 	} else {
 	  	$sns_count_cache = SNS_Count_Cache::get_instance();
 	  	
-	  	switch ( $sns_count_cache->get_dynamic_cache_type() ) {
-		  	case SNS_Count_Cache::OPT_ACCESS_BASED_CACHE_NONE:
+	  	switch ( $sns_count_cache->get_dynamic_cache_mode() ) {
+		  	case SNS_Count_Cache::OPT_COMMON_ACCESS_BASED_CACHE_NONE:
 					if ( $sns_key ) {
 					  	$sns_counts[$sns_key] = 0;
 		  				return $sns_counts[$sns_key];
@@ -987,15 +1155,15 @@ function scc_get_share( $options = array( 'id' => '', 'url' => '', 'sns' => '' )
 					  	return $sns_counts;					  
 					}	  
 		  			break;
-		  	case SNS_Count_Cache::OPT_ACCESS_BASED_SYNC_CACHE:
-		  			$sns_counts = $sns_count_cache->retrieve_share_cache( $post_ID );
+		  	case SNS_Count_Cache::OPT_COMMON_ACCESS_BASED_SYNC_CACHE:
+		  			$sns_counts = $sns_count_cache->retrieve_share_cache( $post_ID, true );
 					if ( $sns_key ) {
 		  				return $sns_counts[$sns_key];
 					} else {
 		  				return $sns_counts;
 					}	  
 		  			break;
-		  	case SNS_Count_Cache::OPT_ACCESS_BASED_ASYNC_CACHE:
+		  	case SNS_Count_Cache::OPT_COMMON_ACCESS_BASED_ASYNC_CACHE:
 		  			$sns_count_cache->reserve_share_cache( $post_ID );
 					if ( $sns_key ) {
 					  	$sns_counts[$sns_key] = 0;
@@ -1011,7 +1179,7 @@ function scc_get_share( $options = array( 'id' => '', 'url' => '', 'sns' => '' )
 					  	return $sns_counts;					  
 					}  
 		  			break;
-		  	case SNS_Count_Cache::OPT_ACCESS_BASED_2ND_CACHE:
+		  	case SNS_Count_Cache::OPT_COMMON_ACCESS_BASED_2ND_CACHE:
 		  			$sns_count_cache->reserve_share_cache( $post_ID );
 		  			if ( $sns_key ) {
 					    $meta_key = SNS_Count_Cache::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $sns_key );
@@ -1096,8 +1264,8 @@ function scc_get_follow( $options = array( 'id' => '', 'sns' => '' ) ) {
 	} else {
 	  	$sns_count_cache = SNS_Count_Cache::get_instance();
 	  	
-	  	switch ( $sns_count_cache->get_dynamic_cache_type() ) {
-		  	case SNS_Count_Cache::OPT_ACCESS_BASED_CACHE_NONE:
+	  	switch ( $sns_count_cache->get_dynamic_cache_mode() ) {
+		  	case SNS_Count_Cache::OPT_COMMON_ACCESS_BASED_CACHE_NONE:
 					if ( $sns_key ) {
 					  	$sns_followers[$sns_key] = 0;
 		  				return $sns_followers[$sns_key];
@@ -1113,7 +1281,7 @@ function scc_get_follow( $options = array( 'id' => '', 'sns' => '' ) ) {
 		  				return $sns_followers;
 					}	  
 		  			break;
-		  	case SNS_Count_Cache::OPT_ACCESS_BASED_SYNC_CACHE:
+		  	case SNS_Count_Cache::OPT_COMMON_ACCESS_BASED_SYNC_CACHE:
 		  			$sns_followers = $sns_count_cache->retrieve_follow_cache();
 					if ( $sns_key ) {
 		  				return $sns_followers[$sns_key];
@@ -1121,7 +1289,7 @@ function scc_get_follow( $options = array( 'id' => '', 'sns' => '' ) ) {
 		  				return $sns_followers;
 					}	  
 		  			break;
-		  	case SNS_Count_Cache::OPT_ACCESS_BASED_ASYNC_CACHE:
+		  	case SNS_Count_Cache::OPT_COMMON_ACCESS_BASED_ASYNC_CACHE:
 		  			$sns_count_cache->reserve_follow_cache();
 					if ( $sns_key ) {
 					  	$sns_followers[$sns_key] = 0;
@@ -1137,13 +1305,13 @@ function scc_get_follow( $options = array( 'id' => '', 'sns' => '' ) ) {
 		  				return $sns_followers;
 					}	  
 		  			break;
-		  	case SNS_Count_Cache::OPT_ACCESS_BASED_2ND_CACHE:
+		  	case SNS_Count_Cache::OPT_COMMON_ACCESS_BASED_2ND_CACHE:
 		  			$sns_count_cache->reserve_follow_cache();
 		  
 		  			if ( $sns_key ) {
 					    $meta_key = SNS_Count_Cache::OPT_FOLLOW_2ND_META_KEY_PREFIX . strtolower( $sns_key );
-					  
-					  	$sns_follower = get_post_meta( $post_ID, $meta_key, true );
+					  					  
+					  	$sns_follower = get_option( $meta_key );
 					  
 					  	if ( isset( $sns_follower ) && $sns_follower >= 0 ) { 
 					  		$sns_followers[$sns_key] = $sns_follower;
@@ -1159,8 +1327,8 @@ function scc_get_follow( $options = array( 'id' => '', 'sns' => '' ) ) {
 					  		if ( $value ) {
 							    $meta_key = SNS_Count_Cache::OPT_FOLLOW_2ND_META_KEY_PREFIX . strtolower( $key );
 							  
-							  	$sns_follower = get_post_meta( $post_ID, $meta_key, true );
-							  	
+							  	$sns_follower = get_option( $meta_key );
+							  
 							  	if ( isset( $sns_follower ) && $sns_follower >= 0 ) { 
 							  		$sns_followers[$key] = $sns_follower;
 								} else {

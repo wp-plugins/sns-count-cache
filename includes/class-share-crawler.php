@@ -1,6 +1,6 @@
 <?php
 /*
-class-sns-count-crawler.php
+class-share-crawler.php
 
 Description: This class is a data crawler whitch get share count using given API and cURL
 Version: 0.3.0
@@ -63,16 +63,16 @@ class Share_Crawler extends Data_Crawler {
 		$sns_counts = array();
 	  	
 	  	if ( isset( $cache_target[SNS_Count_Cache::REF_SHARE_HATEBU] ) && $cache_target[SNS_Count_Cache::REF_SHARE_HATEBU] ) {
-	  		$sns_counts[SNS_Count_Cache::REF_SHARE_HATEBU] = $this->get_hatebu_count( $url );
+	  		$sns_counts[SNS_Count_Cache::REF_SHARE_HATEBU] = ( int )$this->get_hatebu_count( $url );
 	  	}
 	  
 	  	if ( isset( $cache_target[SNS_Count_Cache::REF_SHARE_TWITTER] ) && $cache_target[SNS_Count_Cache::REF_SHARE_TWITTER] ) {
-	  		$sns_counts[SNS_Count_Cache::REF_SHARE_TWITTER] = $this->get_twitter_count( $url );
+	  		$sns_counts[SNS_Count_Cache::REF_SHARE_TWITTER] = ( int )$this->get_twitter_count( $url );
 		}
 	  
 	  	if ( isset( $cache_target[SNS_Count_Cache::REF_SHARE_FACEBOOK] ) && $cache_target[SNS_Count_Cache::REF_SHARE_FACEBOOK] ) {
 		  	if ( Common_Util::extension_loaded_php_xml() ) {
-		  		$sns_counts[SNS_Count_Cache::REF_SHARE_FACEBOOK] = $this->get_facebook_count( $url );
+		  		$sns_counts[SNS_Count_Cache::REF_SHARE_FACEBOOK] = ( int )$this->get_facebook_count( $url );
 			} else {
 			  	Common_Util::log( '[' . __METHOD__ . '] php-xml is not installed.' );
 			}
@@ -80,12 +80,12 @@ class Share_Crawler extends Data_Crawler {
 		}
 	  
 	  	if ( isset( $cache_target[SNS_Count_Cache::REF_SHARE_GPLUS] ) && $cache_target[SNS_Count_Cache::REF_SHARE_GPLUS] ) {
-	  		$sns_counts[SNS_Count_Cache::REF_SHARE_GPLUS] = $this->get_gplus_count( $url );		  
+	  		$sns_counts[SNS_Count_Cache::REF_SHARE_GPLUS] = ( int )$this->get_gplus_count( $url );		  
 		}
 	  
 	  	if ( isset( $cache_target[SNS_Count_Cache::REF_SHARE_POCKET] ) && $cache_target[SNS_Count_Cache::REF_SHARE_POCKET] ) {
 		  	if ( Common_Util::extension_loaded_php_xml() ) {
-		  		$sns_counts[SNS_Count_Cache::REF_SHARE_POCKET] = $this->get_pocket_count( $url );
+		  		$sns_counts[SNS_Count_Cache::REF_SHARE_POCKET] = ( int )$this->get_pocket_count( $url );
 			} else {
 			  	Common_Util::log( '[' . __METHOD__ . '] php-xml is not installed.' );
 			}
@@ -151,35 +151,17 @@ class Share_Crawler extends Data_Crawler {
 	public function get_facebook_count( $url ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-	  /*
-	  	$query = 'http://graph.facebook.com/' . $url;
-	  
-		$json = $this->remote_get( $query );
-	  
-	  	$facebook = json_decode( $json, true );
-	  	  
-	  	return isset( $facebook['shares'] ) ? intval( $facebook['shares'] ) : 0;
-		*/
-
 	  	$query = 'http://www.facebook.com/plugins/like.php?href=' . $url . '&width&layout=standard&action=like&show_faces=false&share=false&height=35&locale=ja_JP';
 	  
 	  	Common_Util::log( '[' . __METHOD__ . '] facebookquery: ' . $query );
 	  
 		$html = $this->remote_get( $query );
 	  
-	  //$html = wp_remote_get( $query );
-	  	
-	  	//Common_Util::log( $html );
-	  	//Common_Util::log( '[' . __METHOD__ . '] facebookhtml: ' . $html['body'] );
-	  	
 	  	$dom = new DOMDocument( '1.0', 'UTF-8' );
 		$dom->preserveWhiteSpace = false;
 		$dom->formatOutput = true;
 	  
 	  	$dom->loadHTML( $html );
-	  //$dom->loadXml( $html );
- 
-	  //$dom->loadHTML( $html['body'] );
 	  	
 		$xpath = new DOMXPath( $dom );
 	  
@@ -187,7 +169,7 @@ class Share_Crawler extends Data_Crawler {
 	  
 		Common_Util::log( '[' . __METHOD__ . '] count element: ' . $result->nodeValue );
 	  	
-	  	if ( preg_match( '/([0-9.]+)/', $result->nodeValue, $match ) ) {
+	  	if ( preg_match( '/([0-9,]+)/', $result->nodeValue, $match ) ) {
 	  		$count = str_replace( ',', '', $match[1] );
 		  	Common_Util::log( '[' . __METHOD__ . '] count: ' . $count );
 		} else {
@@ -223,7 +205,8 @@ class Share_Crawler extends Data_Crawler {
   	public function get_pocket_count( $url ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 		
-		$query = 'http://widgets.getpocket.com/v1/button?v=1&count=horizontal&url=' . $url;	  
+		$query = 'http://widgets.getpocket.com/v1/button?v=1&count=horizontal&url=' . $url;
+	  
 		$html = $this->remote_get( $query );
 	  	
 	  	$dom = new DOMDocument( '1.0', 'UTF-8' );
@@ -253,12 +236,13 @@ class Share_Crawler extends Data_Crawler {
 		$curl = curl_init();
 	  
 		curl_setopt( $curl, CURLOPT_URL, $url );
-	  	//curl_setopt( $curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT'] );	  
 	  	curl_setopt( $curl, CURLOPT_USERAGENT, 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ) );	  	
 	  	//curl_setopt( $curl, CURLOPT_FAILONERROR, true );
 		curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
 		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
 		curl_setopt( $curl, CURLOPT_TIMEOUT, $this->timeout );
+	  	//curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, false );
+	  	//curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, false );
 	  
 		$curl_results = curl_exec( $curl );
 	  

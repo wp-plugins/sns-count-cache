@@ -3,7 +3,7 @@ Contributors: marubon
 Donate link: 
 Tags: performance, SNS, social, cache
 Requires at least: 3.7
-Tested up to: 4.1
+Tested up to: 4.1.1
 Stable tag: 0.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -14,6 +14,8 @@ This plugin gets and caches SNS share count in the background, and provides func
 
 SNS Count Cache gets share count for Twitter and Facebook, Google Plus, Pocket, Hatena Bookmark and caches these count in the background. 
 This plugin may help you to shorten page loading time because the share count can be retrieved not through network but through the cache using given functions.
+
+Notice: PHP Version 5.3+ is required in order to activate and execute this plugin.
 
 The following shows functions to get share count from the cache:
 
@@ -83,6 +85,9 @@ There are no questions.
 * Added: function to export share count data was added.
 * Added: cache logic was improved.
 
+= 0.5.0 =
+* Added: function to cache share count for both old and new url in https migration. 
+
 == Upgrade Notice ==
 The following functions are deprecated.
 
@@ -93,5 +98,5 @@ The following functions are deprecated.
 * get_scc_hatebu()
 
 == Arbitrary section ==
-* PHP Version: 5.3+
+
 

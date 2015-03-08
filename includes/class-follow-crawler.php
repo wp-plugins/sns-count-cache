@@ -63,7 +63,7 @@ class Follow_Crawler extends Data_Crawler {
 		$sns_counts = array();
 	  	
 	  	if ( isset( $cache_target[SNS_Count_Cache::REF_FOLLOW_FEEDLY] ) && $cache_target[SNS_Count_Cache::REF_FOLLOW_FEEDLY] ) {
-	  		$sns_counts[SNS_Count_Cache::REF_FOLLOW_FEEDLY] = $this->get_feedly_follow( $url );
+	  		$sns_counts[SNS_Count_Cache::REF_FOLLOW_FEEDLY] = ( int )$this->get_feedly_follow( $url );
 	  	}
 
 		return $sns_counts;	
@@ -94,15 +94,19 @@ class Follow_Crawler extends Data_Crawler {
 	private function remote_get( $url ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
+	  	global $wp_version;
+	  	  
 		$curl = curl_init();
 	  
 		curl_setopt( $curl, CURLOPT_URL, $url );
-		curl_setopt( $curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT'] );
-	  	//curl_setopt( $curl, CURLOPT_FAILONERROR, true );
+  		curl_setopt( $curl, CURLOPT_USERAGENT, 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ) );	  	
+		//curl_setopt( $curl, CURLOPT_FAILONERROR, true );
 		curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
 		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
 		curl_setopt( $curl, CURLOPT_TIMEOUT, $this->timeout );
-	  
+	  	//curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, false );
+	  	//curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, false );
+	  	  
 		$curl_results = curl_exec( $curl );
 	  
 		if ( curl_error( $curl ) ) {

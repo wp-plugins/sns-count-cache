@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 
-class Follow_Base_Cache_Engine extends Cache_Engine {
+class Follow_Base_Cache_Engine extends Follow_Cache_Engine {
 
 	/**
 	 * Prefix of cache ID
@@ -58,9 +58,6 @@ class Follow_Base_Cache_Engine extends Cache_Engine {
 	 */	          
    	const DEF_EVENT_DESCRIPTION = '[SCC] Follow Base Cache Interval';  
   
-  
-	private $crawler = NULL;
-
 	/**
 	 * Interval cheking and caching target data
 	 */	  
@@ -70,16 +67,6 @@ class Follow_Base_Cache_Engine extends Cache_Engine {
 	 * Offset suffix
 	 */	    
   	private $offset_suffix = 'follow_base_cache_offset';
-
-  	/**
-	 * Cache target
-	 */	            
-  	private $target_sns = array();  
-
-  	/**
-	 * Cache post types
-	 */	   
-	private $post_types = array( 'post', 'page' );
   
 	/**
 	 * Class constarctor
@@ -104,6 +91,7 @@ class Follow_Base_Cache_Engine extends Cache_Engine {
 	  	$this->event_schedule = self::DEF_EVENT_SCHEDULE;
 	  	$this->event_description = self::DEF_EVENT_DESCRIPTION;	  	  
 	  	  
+	  	if ( isset( $options['delegate'] ) ) $this->delegate = $options['delegate'];
 	  	if ( isset( $options['crawler'] ) ) $this->crawler = $options['crawler'];	  
 	  	if ( isset( $options['target_sns'] ) ) $this->target_sns = $options['target_sns'];
 	  	if ( isset( $options['check_interval'] ) ) $this->check_interval = $options['check_interval'];
@@ -114,6 +102,8 @@ class Follow_Base_Cache_Engine extends Cache_Engine {
 		if ( isset( $options['event_schedule'] ) ) $this->event_schedule = $options['event_schedule'];
 	  	if ( isset( $options['event_description'] ) ) $this->event_description = $options['event_description'];
 	  	if ( isset( $options['post_types'] ) ) $this->post_types = $options['post_types'];
+	  	if ( isset( $options['scheme_migration_mode'] ) ) $this->scheme_migration_mode = $options['scheme_migration_mode'];
+	  	if ( isset( $options['scheme_migration_exclude_keys'] ) ) $this->scheme_migration_exclude_keys = $options['scheme_migration_exclude_keys'];
 	  	  
 		add_filter( 'cron_schedules', array( $this, 'schedule_check_interval' ) ); 
 		add_action( $this->prime_cron, array( $this, 'prime_cache' ) );
@@ -169,7 +159,10 @@ class Follow_Base_Cache_Engine extends Cache_Engine {
 	
 		$this->cache( NULL, $this->target_sns, $cache_expiration );
 	  
-	  //$this->prime_follow_second_cache_once();
+		if ( ! is_null( $this->delegate ) && method_exists( $this->delegate, 'order_cache' ) ) {
+		  	$this->delegate->order_cache( $this, NULL );
+	  	}
+	  
 	}
 
   	/**
@@ -198,33 +191,6 @@ class Follow_Base_Cache_Engine extends Cache_Engine {
 		return 3 * $this->check_interval;
   	}
   
-   	/**
-	 * Get and cache data for a given post
-	 *
-	 * @since 0.4.0
-	 */  	
-  	public function cache( $post_ID, $target_sns, $cache_expiration ) {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-	  
-	  	$url = get_feed_link();
-	  
-	  	Common_Util::log( '[' . __METHOD__ . '] feed: ' . $url );
-	  
-		$transient_ID = $this->get_transient_ID( 'follow' );
-	  								
-	  	$data = $this->crawler->get_data( $target_sns, $url );
-			  
-		Common_Util::log( $data );
-		
-	  	if ( $data ) {	  
-			$result = set_transient( $transient_ID, $data, $cache_expiration ); 
-			  
-			Common_Util::log( '[' . __METHOD__ . '] set_transient result: ' . $result );
-	  	}
-	  
-	  	return $data;
-  	}
-
     /**
 	 * Initialize meta key for ranking 
 	 *

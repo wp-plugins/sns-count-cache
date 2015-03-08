@@ -200,7 +200,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 								  				
 											if ( isset( $sns_counts[$key] ) &&  $sns_counts[$key] >= 0 ) {
 					  							echo '<td class="share-count">';
-								  				echo number_format( $sns_counts[$key] );
+								  				echo number_format( (int) $sns_counts[$key] );
 					  							echo '</td>';
 											} else {
 					  							echo '<td class="not-cached share-count">';
@@ -232,7 +232,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 									  	if ( $value ) {										  
 								  			if ( isset( $sns_counts[$key] ) && $sns_counts[$key] >= 0 ) {
 					  							echo '<td class="share-count">';
-								  				echo number_format( $sns_counts[$key] );
+								  				echo number_format( (int) $sns_counts[$key] );
 					  							echo '</td>';
 											} else {
 					  							echo '<td class="not-cached share-count">';

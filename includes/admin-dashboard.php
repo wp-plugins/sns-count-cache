@@ -30,53 +30,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
 
-	$share_base_custom_post_types = get_option( self::DB_SHARE_CUSTOM_POST_TYPES );
-	
-	if ( ! $share_base_custom_post_types ) {
-	  	$share_base_custom_post_types = array();
-	}
-
-	$share_base_check_interval = get_option( self::DB_SHARE_CHECK_INTERVAL );
-	$share_base_check_interval = ! empty( $share_base_check_interval ) ? intval( $share_base_check_interval ) : self::OPT_SHARE_BASE_CHECK_INTERVAL;
-
-	$share_base_posts_per_check = get_option( self::DB_SHARE_POSTS_PER_CHECK );
-	$share_base_posts_per_check = ! empty( $share_base_posts_per_check ) ? intval( $share_base_posts_per_check ) : self::OPT_SHARE_BASE_POSTS_PER_CHECK; 
-
-	$dynamic_cache = get_option( self::DB_COMMON_DYNAMIC_CACHE );
-	$dynamic_cache = isset( $dynamic_cache ) ? intval( $dynamic_cache ) : self::OPT_ACCESS_BASED_CACHE_NONE;
-
-	$share_rush_new_content_term = get_option( self::DB_SHARE_NEW_CONTENT_TERM );
-	$share_rush_new_content_term = ! empty( $share_rush_new_content_term ) ? intval( $share_rush_new_content_term ) : self::OPT_SHARE_RUSH_NEW_CONTENT_TERM;
-
-	$share_base_cache_target = get_option( self::DB_SHARE_CACHE_TARGET );
-
-	$follow_base_cache_target = get_option( self::DB_FOLLOW_CACHE_TARGET );
-
-	$follow_base_check_interval = get_option( self::DB_FOLLOW_CHECK_INTERVAL );
-	$follow_base_check_interval = ! empty( $follow_base_check_interval ) ? intval( $follow_base_check_interval ) : self::OPT_FOLLOW_BASE_CHECK_INTERVAL;
-
-	$data_export = get_option( self::DB_COMMON_DATA_EXPORT );
-	$data_export = isset( $data_export ) ? intval( $data_export ) : self::OPT_COMMON_DATA_EXPORT_MANUAL;
-
-	$data_export_interval = get_option( self::DB_COMMON_DATA_EXPORT_INTERVAL );
-	$data_export_interval = ! empty( $data_export_interval ) ? intval( $data_export_interval ) : self::OPT_COMMON_DATA_EXPORT_INTERVAL;
-		
-	if ( ! $share_base_cache_target ) {
-		$share_base_cache_target[self::REF_SHARE_TWITTER] = true;
-		$share_base_cache_target[self::REF_SHARE_FACEBOOK] = true;
-		$share_base_cache_target[self::REF_SHARE_GPLUS] = true;
-		if ( extension_loaded( 'xml' ) && extension_loaded( 'xmlreader' ) && extension_loaded( 'xmlwriter' )) {
-			$share_base_cache_target[self::REF_SHARE_POCKET] = true;
-		}
-		$share_base_cache_target[self::REF_SHARE_HATEBU] = true;
-	}
-
-	$share_base_cache_target[self::REF_SHARE_TOTAL] = true;
-	
-	if ( ! $follow_base_cache_target ) {
-		$follow_base_cache_target[self::REF_FOLLOW_FEEDLY] = true;
-	}
-
 	$query_args = array(
 		'post_type' => $this->share_base_cache_post_types,
 		'post_status' => 'publish',
@@ -118,19 +71,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				<td>
 							  				<?php
 					  							$target_sns = array();
-					  							if ( isset( $share_base_cache_target[self::REF_SHARE_TWITTER] ) && $share_base_cache_target[self::REF_SHARE_TWITTER] ) {
+					  							if ( isset( $this->share_base_cache_target[self::REF_SHARE_TWITTER] ) && $this->share_base_cache_target[self::REF_SHARE_TWITTER] ) {
 									  				$target_sns[] = 'Twitter';
 												}
-					  							if ( isset( $share_base_cache_target[self::REF_SHARE_FACEBOOK] ) && $share_base_cache_target[self::REF_SHARE_FACEBOOK] ) {
+					  							if ( isset( $this->share_base_cache_target[self::REF_SHARE_FACEBOOK] ) && $this->share_base_cache_target[self::REF_SHARE_FACEBOOK] ) {
 									  				$target_sns[] = 'Facebook';
 												}
-					  							if ( isset( $share_base_cache_target[self::REF_SHARE_GPLUS] ) && $share_base_cache_target[self::REF_SHARE_GPLUS] ) {
+					  							if ( isset( $this->share_base_cache_target[self::REF_SHARE_GPLUS] ) && $this->share_base_cache_target[self::REF_SHARE_GPLUS] ) {
 									  				$target_sns[] = 'Google+';
 												}
-					  							if ( isset( $share_base_cache_target[self::REF_SHARE_POCKET] ) && $share_base_cache_target[self::REF_SHARE_POCKET] ) {
+					  							if ( isset( $this->share_base_cache_target[self::REF_SHARE_POCKET] ) && $this->share_base_cache_target[self::REF_SHARE_POCKET] ) {
 									  				$target_sns[] = 'Pocket';
 												}
-					  							if ( isset( $share_base_cache_target[self::REF_SHARE_HATEBU] ) && $share_base_cache_target[self::REF_SHARE_HATEBU] ) {
+					  							if ( isset( $this->share_base_cache_target[self::REF_SHARE_HATEBU] ) && $this->share_base_cache_target[self::REF_SHARE_HATEBU] ) {
 									  				$target_sns[] = 'Hatena Bookmark';
 												}
 							  					echo implode( ", ", $target_sns );
@@ -141,8 +94,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
 						  				<td><?php _e( 'Additional custom post types', self::DOMAIN ) ?></td>
 						  				<td><?php								  
-											  	if ( ! empty( $share_base_custom_post_types ) && $share_base_custom_post_types ) {
-												  	echo implode( ',', $share_base_custom_post_types );
+											  	if ( ! empty( $this->share_base_custom_post_types ) && $this->share_base_custom_post_types ) {
+												  	echo implode( ',', $this->share_base_custom_post_types );
 												} else {
 											  		_e( 'N/A', self::DOMAIN );
 												}
@@ -152,22 +105,35 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  						<tr>
 						 				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
 						  				<td><?php _e( 'Interval cheking and caching share count', self::DOMAIN ) ?></td>
-						  				<td><?php echo $share_base_check_interval . ' seconds'; ?></td>
+						  				<td><?php echo $this->share_base_check_interval . ' seconds'; ?></td>
 			  						</tr>
 			  						<tr>
 						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
 						  				<td><?php _e( 'Number of posts to check at a time', self::DOMAIN ) ?></td>
-						  				<td><?php echo $share_base_posts_per_check . ' posts'; ?></td>
-			  						</tr>							  
+						  				<td><?php echo $this->share_base_posts_per_check . ' posts'; ?></td>
+			  						</tr>
+			  						<tr>
+						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
+						  				<td><?php _e( 'Migration mode from http to https', self::DOMAIN ) ?></td>
+						  				<td>
+										  	<?php 
+											  if ( $this->scheme_migration_mode ) {
+													echo 'On'; 
+											  } else {
+													echo 'Off';
+											  }
+										  	?>
+									  	</td>
+			  						</tr>									  
 			  						<tr>
 						  				<td><?php _e( 'Share Rush Cache', self::DOMAIN ) ?></td>
 						  				<td><?php _e( 'Term considering posted content as new content', self::DOMAIN ) ?></td>
 						  				<td>
 							  				<?php 
-								  			if ( $share_rush_new_content_term == 1 ) {
-								  				echo $share_rush_new_content_term . ' day';
-								  			} else if ( $share_rush_new_content_term > 1 ) {
-												echo $share_rush_new_content_term . ' days';
+								  			if ( $this->share_rush_new_content_term == 1 ) {
+								  				echo $this->share_rush_new_content_term . ' day';
+								  			} else if ( $this->share_rush_new_content_term > 1 ) {
+												echo $this->share_rush_new_content_term . ' days';
 								  			}
 							  				?>
 						  				</td>
@@ -177,7 +143,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				<td>
 							  				<?php
 					  							$target_sns = array();
-					  							if ( isset( $follow_base_cache_target[self::REF_FOLLOW_FEEDLY] ) && $follow_base_cache_target[self::REF_FOLLOW_FEEDLY] ) {
+					  							if ( isset( $this->follow_base_cache_target[self::REF_FOLLOW_FEEDLY] ) && $this->follow_base_cache_target[self::REF_FOLLOW_FEEDLY] ) {
 									  				$target_sns[] = 'Feedly';
 												}
 							  					echo implode( ", ", $target_sns );
@@ -187,21 +153,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  						<tr>
 						 				<td><?php _e( 'Follow Base Cache', self::DOMAIN ) ?></td>
 						  				<td><?php _e( 'Interval cheking and caching follower count', self::DOMAIN ) ?></td>
-						  				<td><?php echo $follow_base_check_interval . ' seconds'; ?></td>
+						  				<td><?php echo $this->follow_base_check_interval . ' seconds'; ?></td>
 			  						</tr>						  
 			  						<tr>
 										<td><?php _e( 'Dynamic Cache', self::DOMAIN) ?></td><td><?php _e( 'Dynamic caching based on user access', self::DOMAIN ) ?></td><td>
 						  				<?php
-					  						switch ( $dynamic_cache ) {
-		  										case self::OPT_ACCESS_BASED_CACHE_NONE:
+					  						switch ( $this->dynamic_cache_mode ) {
+		  										case self::OPT_COMMON_ACCESS_BASED_CACHE_NONE:
 		  											_e( 'disabled', self::DOMAIN );
 		  											break;
-		  										case self::OPT_ACCESS_BASED_SYNC_CACHE:
+		  										case self::OPT_COMMON_ACCESS_BASED_SYNC_CACHE:
 		  											_e( 'enabled (Synchronous Cache)', self::DOMAIN );
 		  											break;
-		  										case self::OPT_ACCESS_BASED_ASYNC_CACHE:
+		  										case self::OPT_COMMON_ACCESS_BASED_ASYNC_CACHE:
 		  											_e( 'enabled (Asynchronous Cache)', self::DOMAIN );
-								  				case self::OPT_ACCESS_BASED_2ND_CACHE:
+								  				case self::OPT_COMMON_ACCESS_BASED_2ND_CACHE:
 													_e( 'enabled (Asynchronous 2nd Cache)', self::DOMAIN );								  
 		  											break;
 											}
@@ -211,7 +177,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  						<tr>
 										<td><?php _e( 'Data Export', self::DOMAIN) ?></td><td><?php _e( 'Method of data export', self::DOMAIN ) ?></td><td>
 						  				<?php
-					  						switch ( $data_export ) {
+					  						switch ( $this->data_export_mode ) {
 		  										case self::OPT_COMMON_DATA_EXPORT_MANUAL:
 		  											_e( 'Manual', self::DOMAIN );
 		  											break;
@@ -223,12 +189,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				</td>
 			  						</tr>
 									<?php
-										if ( $data_export == self::OPT_COMMON_DATA_EXPORT_AUTO ) {
+										if ( $this->data_export_mode == self::OPT_COMMON_DATA_EXPORT_AUTO ) {
 									?>
 			  						<tr>
 						 				<td><?php _e( 'Data Export', self::DOMAIN ) ?></td>
 						  				<td><?php _e( 'Interval exporting share count to a csv file', self::DOMAIN ) ?></td>
-									  	<td><?php echo $data_export_interval / 3600 . ' hours'; ?></td>
+									  	<td><?php echo $this->data_export_interval / 3600 . ' hours'; ?></td>
 			  						</tr>
 									<?php
 										}
@@ -243,138 +209,140 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						<div id="share-site-summary" class="postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
 							<h3 class="hndle"><span><?php _e( 'Cache Status', self::DOMAIN ) ?></span></h3>  	
-							<div class="inside">
-			  
-  			<table class="view-table">
-						<thead>
-			  				<tr>
-								<th><?php _e( 'Cache Type', self::DOMAIN ) ?></th>
-							  	<th><?php _e( 'Status Overview', self::DOMAIN ) ?></th>
-								<th><?php _e( 'Total Content', self::DOMAIN ) ?></th>
-								<th><?php _e( 'State - Full Cache', self::DOMAIN ) ?></th>
-							  	<th><?php _e( 'State - Partial Cache', self::DOMAIN ) ?></th>
-							  	<th><?php _e( 'State - No Cache', self::DOMAIN ) ?></th>
-			  				</tr>
-						</thead>
-						<tbody>
-
-						<?php
+							<div class="inside">			  
+								<table class="view-table">
+									<thead>
+										<tr>
+											<th><?php _e( 'Cache Type', self::DOMAIN ) ?></th>
+											<th><?php _e( 'Status Overview', self::DOMAIN ) ?></th>
+											<th><?php _e( 'Total Content', self::DOMAIN ) ?></th>
+											<th><?php _e( 'State - Full Cache', self::DOMAIN ) ?></th>
+											<th><?php _e( 'State - Partial Cache', self::DOMAIN ) ?></th>
+											<th><?php _e( 'State - No Cache', self::DOMAIN ) ?></th>
+										</tr>
+									</thead>
+									<tbody>
+	
+									<?php
+												  
+									$share_base_cache_target = $this->share_base_cache_target ;
+									unset( $share_base_cache_target[self::REF_CRAWL_DATE] );
+			
+									$count = 1;
 									  
-						$share_base_cache_target = $this->share_base_cache_target ;
-						unset( $share_base_cache_target[self::REF_CRAWL_DATE] );
-
-						$count = 1;
-						  
-						$posts_count = 0;
-						$primary_full_cache_count = 0;
-						$primary_partial_cache_count = 0;
-						$primary_no_cache_count = 0;
-						
-						$secondary_full_cache_count = 0;
-						$secondary_partial_cache_count = 0;
-						$secondary_no_cache_count = 0;
-	  
-						if ( $site_query->have_posts() ) {
-							while ( $site_query->have_posts() ) {
-								$site_query->the_post();
-							  
-							  	$posts_count++;
-						  
-								$transient_id = self::OPT_SHARE_BASE_TRANSIENT_PREFIX . get_the_ID();
-							  							  
-								if ( false === ( $sns_counts = get_transient( $transient_id ) ) ) {								  
-					  				$primary_no_cache_count++;
-								} else {
-								  	$full_cache_flag = true;
-								  	$partial_cache_flag = false;	
-								  
-								  	foreach ( $share_base_cache_target as $key => $value ) {
-									  	if ( $value ) {
-									  		if ( isset( $sns_counts[$key] ) && $sns_counts[$key] >= 0 ) {
-										  		$partial_cache_flag = true;
+									$posts_count = 0;
+									$primary_full_cache_count = 0;
+									$primary_partial_cache_count = 0;
+									$primary_no_cache_count = 0;
+									
+									$secondary_full_cache_count = 0;
+									$secondary_partial_cache_count = 0;
+									$secondary_no_cache_count = 0;
+				  
+									set_time_limit( $this->extended_max_execution_time  );
+			
+									if ( $site_query->have_posts() ) {
+										while ( $site_query->have_posts() ) {
+											$site_query->the_post();
+										  
+											$posts_count++;
+									  
+											$transient_id = self::OPT_SHARE_BASE_TRANSIENT_PREFIX . get_the_ID();
+																	  
+											if ( false === ( $sns_counts = get_transient( $transient_id ) ) ) {								  
+												$primary_no_cache_count++;
 											} else {
-										  		$full_cache_flag = false;
+												$full_cache_flag = true;
+												$partial_cache_flag = false;	
+											  
+												foreach ( $share_base_cache_target as $key => $value ) {
+													if ( $value ) {
+														if ( isset( $sns_counts[$key] ) && $sns_counts[$key] >= 0 ) {
+															$partial_cache_flag = true;
+														} else {
+															$full_cache_flag = false;
+														}
+													}
+												}
+											  
+												if ( $partial_cache_flag && $full_cache_flag ) {
+													$primary_full_cache_count++;
+												} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+													$primary_partial_cache_count++;
+												} else {
+													$primary_no_cache_count++;
+												}				
 											}
+										  
+											$full_cache_flag = true;
+											$partial_cache_flag = false;
+											foreach ( $share_base_cache_target as $key => $value ) {
+												if ( $value ) {								
+										  
+													$meta_key = self::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
+													$sns_count = get_post_meta( get_the_ID(), $meta_key, true );
+													
+													if ( isset( $sns_count ) && $sns_count >= 0  ) {
+														$partial_cache_flag  = true;
+													} else {
+														$full_cache_flag = false;
+													}
+												  
+												}
+											}
+											if ( $partial_cache_flag && $full_cache_flag ) {
+												$secondary_full_cache_count++;
+											} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+												$secondary_partial_cache_count++;								  
+											} else {
+												$secondary_no_cache_count++;
+											}										  
 										}
-								  	}
-								  
-									if ( $partial_cache_flag && $full_cache_flag ) {
-					  					$primary_full_cache_count++;
-									} else if ( $partial_cache_flag && ! $full_cache_flag ) {
-									  	$primary_partial_cache_count++;
-									} else {
-										$primary_no_cache_count++;
-									}				
-								}
-							  
-							  	$full_cache_flag = true;
-							  	$partial_cache_flag = false;
-							  	foreach ( $share_base_cache_target as $key => $value ) {
-									if ( $value ) {								
-							  
-							    		$meta_key = self::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
-							  			$sns_count = get_post_meta( get_the_ID(), $meta_key, true );
-									 	
-									  	if ( isset( $sns_count ) && $sns_count >= 0  ) {
-										  	$partial_cache_flag  = true;
-										} else {
-										  	$full_cache_flag = false;
-										}
-									  
+										wp_reset_postdata();
 									}
-								}
-								if ( $partial_cache_flag && $full_cache_flag ) {
-					  				$secondary_full_cache_count++;
-								} else if ( $partial_cache_flag && ! $full_cache_flag ) {
-					  				$secondary_partial_cache_count++;								  
-								} else {
-					  				$secondary_no_cache_count++;
-								}										  
-							}
-						  	wp_reset_postdata();
-						}
-				
-							?>
-						  
-			  				<tr>
-								<td><?php _e( 'Primary Cache', self::DOMAIN ); ?></td>
-							  	<td>
-									<?php
-										if ( $primary_full_cache_count == $posts_count ) {
-										  	_e( 'Completed', self::DOMAIN );
-										} else if ( ( $primary_full_cache_count + $primary_partial_cache_count ) == $posts_count ) {
-										  	_e( 'Partially Completed', self::DOMAIN );  	
-										} else {
-										  	_e( 'Ongoing', self::DOMAIN );
-										}
-								  	?>
-							  	</td>
-							  	<td class="share-count"><?php echo $posts_count; ?></td>
-							  	<td class="share-count full-cache"><?php echo $primary_full_cache_count ; ?></td>
-							  	<td class="share-count partial-cache"><?php echo $primary_partial_cache_count ; ?></td>
-							  	<td class="share-count no-cache"><?php echo $primary_no_cache_count; ?></td>							  	
-			  				</tr>
-			  				<tr>
-								<td><?php _e( 'Secondary Cache', self::DOMAIN ); ?></td>
-							  	<td>
-									<?php
-										if ( $secondary_full_cache_count == $posts_count ) {
-										  	_e( 'Completed', self::DOMAIN );
-										} else if ( ( $secondary_full_cache_count + $secondary_partial_cache_count ) == $posts_count ) {
-										  	_e( 'Partially Completed', self::DOMAIN );  	
-										} else {
-										  	_e( 'Ongoing', self::DOMAIN );
-										}
-								  	?>
-							  	</td>							  
-							  	<td class="share-count"><?php echo $posts_count; ?></td>
-							  	<td class="share-count full-cache"><?php echo $secondary_full_cache_count; ?></td>
-							  	<td class="share-count partial-cache"><?php echo $secondary_partial_cache_count; ?></td>
-							  	<td class="share-count no-cache"><?php echo $secondary_no_cache_count; ?></td>							  	
-			  				</tr>
-						  
-						</tbody>
-		  			</table>
+							
+									set_time_limit( $this->original_max_execution_time  );
+			
+									?>
+							  
+										<tr>
+											<td><?php _e( 'Primary Cache', self::DOMAIN ); ?></td>
+											<td>
+												<?php
+													if ( $primary_full_cache_count == $posts_count ) {
+														_e( 'Completed', self::DOMAIN );
+													} else if ( ( $primary_full_cache_count + $primary_partial_cache_count ) == $posts_count ) {
+														_e( 'Partially Completed', self::DOMAIN );  	
+													} else {
+														_e( 'Ongoing', self::DOMAIN );
+													}
+												?>
+											</td>
+											<td class="share-count"><?php echo $posts_count; ?></td>
+											<td class="share-count full-cache"><?php echo $primary_full_cache_count ; ?></td>
+											<td class="share-count partial-cache"><?php echo $primary_partial_cache_count ; ?></td>
+											<td class="share-count no-cache"><?php echo $primary_no_cache_count; ?></td>							  	
+										</tr>
+										<tr>
+											<td><?php _e( 'Secondary Cache', self::DOMAIN ); ?></td>
+											<td>
+												<?php
+													if ( $secondary_full_cache_count == $posts_count ) {
+														_e( 'Completed', self::DOMAIN );
+													} else if ( ( $secondary_full_cache_count + $secondary_partial_cache_count ) == $posts_count ) {
+														_e( 'Partially Completed', self::DOMAIN );  	
+													} else {
+														_e( 'Ongoing', self::DOMAIN );
+													}
+												?>
+											</td>							  
+											<td class="share-count"><?php echo $posts_count; ?></td>
+											<td class="share-count full-cache"><?php echo $secondary_full_cache_count; ?></td>
+											<td class="share-count partial-cache"><?php echo $secondary_partial_cache_count; ?></td>
+											<td class="share-count no-cache"><?php echo $secondary_no_cache_count; ?></td>							  	
+										</tr>
+									</tbody>
+								</table>
 						  	</div>								  								  
 						 </div>
 			  		</div>				  
@@ -384,88 +352,89 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 							<div class="handlediv" title="Click to toggle"><br></div>
 							<h3 class="hndle"><span><?php _e( 'Share Count', self::DOMAIN ) ?></span></h3>  	
 							<div class="inside">
-
-		  			<table class="view-table">
-						<thead>
-			  				<tr>
-							  	<?php
-						  						  			
-						  			foreach ( $share_base_cache_target as $key => $value ){	
-									  	if ( $value ) {
-											echo '<th>' . $key . '</th>';	
-									  	}
+								<table class="view-table">
+									<thead>
+										<tr>
+											<?php
+																		
+												foreach ( $share_base_cache_target as $key => $value ){	
+													if ( $value ) {
+														echo '<th>' . $key . '</th>';	
+													}
+												}
+											?>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+									<?php
+			
+									$sum = array();
+									foreach ( $share_base_cache_target as $key => $value ) {
+										if( $value ){
+											$sum[$key] = 0;
+										}
 									}
-					  			?>
-			  				</tr>
-						</thead>
-						<tbody>
-			  				<tr>
-						<?php
-
-						$sum = array();
-						foreach ( $share_base_cache_target as $key => $value ) {
-							if( $value ){
-							  	$sum[$key] = 0;
-							}
-						}
-
-						if ( $site_query->have_posts() ) {
-							while ( $site_query->have_posts() ) {
-								$site_query->the_post();			  
-
-								$transient_id = self::OPT_SHARE_BASE_TRANSIENT_PREFIX . get_the_ID();
-							  							  
-								if ( false === ( $sns_counts = get_transient( $transient_id ) ) ) {
-						  
-						  			foreach ( $share_base_cache_target as $key => $value ) {
-									  	if( $value ){
-										  /**
-					  						echo '<td class="not-cached share-count">';
-								  			_e( 'N/A', self::DOMAIN );
-					  						echo '</td>';
-											*/
-											
-										  	$meta_key = self::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
-							  				$sns_counts[$key] = get_post_meta( get_the_ID(), $meta_key, true );
-								  				
-											if ( isset( $sns_counts[$key] ) &&  $sns_counts[$key] >= 0 ) {
-								  				 $sum[$key] = $sum[$key] + $sns_counts[$key];	
-											}								  								 										  
-									  	}
+			
+									set_time_limit( $this->extended_max_execution_time  );
+			
+									if ( $site_query->have_posts() ) {
+										while ( $site_query->have_posts() ) {
+											$site_query->the_post();			  
+			
+											$transient_id = self::OPT_SHARE_BASE_TRANSIENT_PREFIX . get_the_ID();
+																	  
+											if ( false === ( $sns_counts = get_transient( $transient_id ) ) ) {
+									  
+												foreach ( $share_base_cache_target as $key => $value ) {
+													if( $value ){
+													  /**
+														echo '<td class="not-cached share-count">';
+														_e( 'N/A', self::DOMAIN );
+														echo '</td>';
+														*/
+														
+														$meta_key = self::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
+														$sns_counts[$key] = get_post_meta( get_the_ID(), $meta_key, true );
+															
+														if ( isset( $sns_counts[$key] ) &&  $sns_counts[$key] >= 0 ) {
+															 $sum[$key] = $sum[$key] + $sns_counts[$key];	
+														}								  								 										  
+													}
+												}
+											  
+											} else {
+				  
+												foreach ( $share_base_cache_target as $key => $value ) {
+													if ( $value ) {										  
+														if ( isset( $sns_counts[$key] ) && $sns_counts[$key] >= 0 ) {
+															$sum[$key] = $sum[$key] + $sns_counts[$key];
+														} 								  
+													}
+												}
+																			  
+											}
+										}
 									}
-								  
-								} else {
-	  
-						  			foreach ( $share_base_cache_target as $key => $value ) {
-									  	if ( $value ) {										  
-								  			if ( isset( $sns_counts[$key] ) && $sns_counts[$key] >= 0 ) {
-								  				$sum[$key] = $sum[$key] + $sns_counts[$key];
-											} 								  
-									  	}
+			
+									foreach ( $share_base_cache_target as $key => $value ) {
+										if ( $value ) {
+											echo '<td class="share-count">';
+											echo number_format( (int) $sum[$key] );
+											echo '</td>';							  	
+										}
 									}
-								  								  
-								}
-							}
-						}
-
-						foreach ( $share_base_cache_target as $key => $value ) {
-							if ( $value ) {
-					  			echo '<td class="share-count">';
-								echo number_format( $sum[$key] );
-					  			echo '</td>';							  	
-							}
-						}
-
-						wp_reset_postdata();
-
-						?>
-							</tr>
-						</tbody>
-		  			</table>
-
+			
+									wp_reset_postdata();
+			
+									set_time_limit( $this->original_max_execution_time  );
+			
+									?>
+										</tr>
+									</tbody>
+								</table>
 						  	</div>								  								  
 						 </div>
-			  		</div>		  
-		  
+			  		</div>		  		  
 		</div>
      </div>

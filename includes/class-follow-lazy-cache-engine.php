@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 
-class Follow_Lazy_Cache_Engine extends Cache_Engine {
+class Follow_Lazy_Cache_Engine extends Follow_Cache_Engine {
 
 	/**
 	 * Prefix of cache ID
@@ -58,9 +58,6 @@ class Follow_Lazy_Cache_Engine extends Cache_Engine {
 	 */	          
    	const DEF_EVENT_DESCRIPTION = '[SCC] Follow Lazy Cache Interval';  
     
-  
-	private $crawler = NULL;
-
 	/**
 	 * Interval cheking and caching target data
 	 */	  
@@ -70,12 +67,7 @@ class Follow_Lazy_Cache_Engine extends Cache_Engine {
 	 * Latency suffix
 	 */	  
   	private $check_latency = 10;
-
-  	/**
-	 * Cache target
-	 */	            
-  	private $target_sns = array();  
-  
+    
 	/**
 	 * Class constarctor
 	 * Hook onto all of the actions and filters needed by the plugin.
@@ -99,6 +91,7 @@ class Follow_Lazy_Cache_Engine extends Cache_Engine {
 	  	$this->event_schedule = self::DEF_EVENT_SCHEDULE;
 	  	$this->event_description = self::DEF_EVENT_DESCRIPTION;
 	  
+	  	if ( isset( $options['delegate'] ) ) $this->delegate = $options['delegate'];
 	  	if ( isset( $options['crawler'] ) ) $this->crawler = $options['crawler'];	  
 	  	if ( isset( $options['target_sns'] ) ) $this->target_sns = $options['target_sns'];
 	  	if ( isset( $options['check_interval'] ) ) $this->check_interval = $options['check_interval'];	  
@@ -106,6 +99,8 @@ class Follow_Lazy_Cache_Engine extends Cache_Engine {
 		if ( isset( $options['execute_cron'] ) ) $this->execute_cron = $options['execute_cron'];
 	  	if ( isset( $options['check_latency'] ) ) $this->check_latency = $options['check_latency'];
 		if ( isset( $options['cache_post_types'] ) ) $this->cache_post_types = $options['cache_post_types'];
+	  	if ( isset( $options['scheme_migration_mode'] ) ) $this->scheme_migration_mode = $options['scheme_migration_mode'];
+	  	if ( isset( $options['scheme_migration_exclude_keys'] ) ) $this->scheme_migration_exclude_keys = $options['scheme_migration_exclude_keys'];
 	  
 		add_action( $this->execute_cron, array( $this, 'execute_cache' ), 10, 1 );
 
@@ -150,6 +145,10 @@ class Follow_Lazy_Cache_Engine extends Cache_Engine {
 		Common_Util::log( '[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration );
 
 	  	$this->cache( NULL, $this->target_sns, $cache_expiration );
+	  
+		if ( ! is_null( $this->delegate ) && method_exists( $this->delegate, 'order_cache' ) ) {
+		  	$this->delegate->order_cache( $this, NULL );
+	  	}		  
 	}
   
   	/**
@@ -161,33 +160,6 @@ class Follow_Lazy_Cache_Engine extends Cache_Engine {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  	  	  
 		return 3 * $this->check_interval;
-  	}
-
-    /**
-	 * Get and cache data for a given post
-	 *
-	 * @since 0.4.0
-	 */  	
-  	public function cache( $post_ID, $target_sns, $cache_expiration ) {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-	  
-	  	$url = get_feed_link();
-	  
-	  	Common_Util::log( '[' . __METHOD__ . '] feed: ' . $url );
-	  
-		$transient_ID = $this->get_transient_ID( 'follow' );
-	  								
-	  	$data = $this->crawler->get_data( $target_sns, $url );
-			  
-		Common_Util::log( $data );
-		
-	  	if ( $data ) {	  
-			$result = set_transient( $transient_ID, $data, $cache_expiration ); 
-			  
-			Common_Util::log( '[' . __METHOD__ . '] set_transient result: ' . $result );
-	  	}
-	  
-	  	return $data;
   	}
 
     /**

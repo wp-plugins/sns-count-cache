@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 
-class Share_Base_Cache_Engine extends Cache_Engine {
+class Share_Base_Cache_Engine extends Share_Cache_Engine {
 
 	/**
 	 * Prefix of cache ID
@@ -58,9 +58,6 @@ class Share_Base_Cache_Engine extends Cache_Engine {
 	 */	          
    	const DEF_EVENT_DESCRIPTION = '[SCC] Share Base Cache Interval';
   
-
-  	private $crawler = NULL;
-  
 	/**
 	 * Interval cheking and caching target data
 	 */	  
@@ -76,21 +73,6 @@ class Share_Base_Cache_Engine extends Cache_Engine {
 	 */	    
   	private $offset_suffix = 'base_offset';
   
-  	/**
-	 * Cache target
-	 */	            
-  	private $target_sns = array();  
-
-  	/**
-	 * Cache post types
-	 */	   
-	private $post_types = array( 'post', 'page' );
-  
-  	/**
-	 * instance for delegation
-	 */	   
-  	private $delegate = NULL;
-    
 	/**
 	 * Class constarctor
 	 * Hook onto all of the actions and filters needed by the plugin.
@@ -125,7 +107,9 @@ class Share_Base_Cache_Engine extends Cache_Engine {
 		if ( isset( $options['event_schedule'] ) ) $this->event_schedule = $options['event_schedule'];
 	  	if ( isset( $options['event_description'] ) ) $this->event_description = $options['event_description'];
 	  	if ( isset( $options['post_types'] ) ) $this->post_types = $options['post_types'];
-	  	  
+	  	if ( isset( $options['scheme_migration_mode'] ) ) $this->scheme_migration_mode = $options['scheme_migration_mode'];
+	  	if ( isset( $options['scheme_migration_exclude_keys'] ) ) $this->scheme_migration_exclude_keys = $options['scheme_migration_exclude_keys'];
+	  
 		add_filter( 'cron_schedules', array( $this, 'schedule_check_interval' ) ); 
 		add_action( $this->prime_cron, array( $this, 'prime_cache' ) );
 		add_action( $this->execute_cron, array( $this, 'execute_cache' ), 10, 1 );
@@ -276,33 +260,6 @@ class Share_Base_Cache_Engine extends Cache_Engine {
 	  
 		return ceil( $posts_total / $this->posts_per_check ) * $this->check_interval * 3;
   	}
-
-   	/**
-	 * Get and cache data for a given post
-	 *
-	 * @since 0.1.1
-	 */  	
-  	public function cache( $post_ID, $target_sns, $cache_expiration ) {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-
-	  	Common_Util::log( '[' . __METHOD__ . '] post_id: ' . $post_ID );
-
-		$transient_ID = $this->get_transient_ID( $post_ID );
-	  
-		$url = get_permalink( $post_ID );
-								
-	  	$data = $this->crawler->get_data( $target_sns, $url );
-			  
-		Common_Util::log( $data );
-		
-	  	if ( $data ) {	  
-			$result = set_transient( $transient_ID, $data, $cache_expiration ); 
-			  
-			Common_Util::log( '[' . __METHOD__ . '] set_transient result: ' . $result );
-	  	}
-	  
-	  	return $data;
-  	} 
 
     /**
 	 * Initialize meta key for ranking 

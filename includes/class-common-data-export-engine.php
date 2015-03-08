@@ -72,6 +72,11 @@ class Common_Data_Export_Engine extends Export_Engine {
 	 * Interval for data export
 	 */	  
 	private $export_interval = 43200;
+  
+  	/**
+	 * Schedule for data export
+	 */	    
+  	private $export_schedule = '0 0 * * *'; 
     
   	/**
 	 * Excluded keys of data export
@@ -124,6 +129,7 @@ class Common_Data_Export_Engine extends Export_Engine {
 	  
 	  	if ( isset( $options['export_activation'] ) ) $this->export_activation = $options['export_activation'];
 	  	if ( isset( $options['export_interval'] ) ) $this->export_interval = $options['export_interval'];
+	  	if ( isset( $options['export_schedule'] ) ) $this->export_schedule = $options['export_schedule'];
 	  	if ( isset( $options['prime_cron'] ) ) $this->prime_cron = $options['prime_cron'];
 	  	if ( isset( $options['execute_cron'] ) ) $this->execute_cron = $options['execute_cron'];
 		if ( isset( $options['event_schedule'] ) ) $this->event_schedule = $options['event_schedule'];
@@ -165,20 +171,26 @@ class Common_Data_Export_Engine extends Export_Engine {
   	public function prime_export() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-	  	$next_exec_time = time() + $this->export_interval;
+	  	//$next_exec_time = time() + $this->export_interval;
 	  
 	  	//$next_exec_time = time() + 5;
 
+	  	$next_exec_time = WP_Cron_Util::next_exec_time( $this->export_schedule );
+	  
 		Common_Util::log( '[' . __METHOD__ . '] check_interval: ' . $this->export_interval );
-		Common_Util::log( '[' . __METHOD__ . '] next_exec_time: ' . $next_exec_time );
 		
-	  /*
+	  	Common_Util::log( '[' . __METHOD__ . '] next_exec_time (timesatamp): ' . $next_exec_time );
+	  	Common_Util::log( '[' . __METHOD__ . '] next_exec_time (date): ' . date_i18n( 'Y/m/d H:i:s', $next_exec_time ) );
+		
+	  
 	  	if( ! WP_Cron_Util::is_scheduled_hook( $this->execute_cron ) ) {
-		  	wp_schedule_single_event( WP_Cron_Util::next_exec_time( '0 0 * * *' ), $this->execute_cron, array( Common_Util::short_hash( $next_exec_time ) ) );  
+		  	wp_schedule_single_event( $next_exec_time, $this->execute_cron, array( Common_Util::short_hash( $next_exec_time ) ) );  
 	  	}
-		*/
+		
 
+	  /*
 		wp_schedule_single_event( $next_exec_time, $this->execute_cron, array( Common_Util::short_hash( $next_exec_time ) ) );	  
+		*/
   	}
   
   
