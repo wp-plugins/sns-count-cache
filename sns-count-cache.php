@@ -2,7 +2,7 @@
 /*
 Plugin Name: SNS Count Cache
 Description: SNS Count Cache gets share count for Twitter and Facebook, Google Plus, Pocket, Hatena Bookmark and caches these count in the background. This plugin may help you to shorten page loading time because the share count can be retrieved not through network but through the cache using given functions.
-Version: 0.5.0 beta
+Version: 0.5.0
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -1121,8 +1121,7 @@ function scc_get_share( $options = array( 'id' => '', 'url' => '', 'sns' => '' )
 				$sns_counts[$sns_key] = $sns_count;
 			} else {
 				$sns_counts[$sns_key] = 0;
-			}					  	
-					  		  	
+			}					  						  		  	
 		  	return $sns_counts[$sns_key];
 		} else {
 		  	
@@ -1132,8 +1131,7 @@ function scc_get_share( $options = array( 'id' => '', 'url' => '', 'sns' => '' )
 				} else {
 				  	$sns_counts[$key] = 0;
 				}
-		  	}
-		  
+		  	}		  
 		  	return $sns_counts;
 		}	  	
 	} else {
@@ -1190,8 +1188,7 @@ function scc_get_share( $options = array( 'id' => '', 'url' => '', 'sns' => '' )
 							$sns_counts[$sns_key] = $sns_count;
 						} else {
 							$sns_counts[$sns_key] = 0;
-						}					  	
-					  
+						}					  						  
 		  				return $sns_counts[$sns_key];
 					} else {
 					  	$base_cache_target = $sns_count_cache->get_share_base_cache_target();
@@ -1257,8 +1254,7 @@ function scc_get_follow( $options = array( 'id' => '', 'sns' => '' ) ) {
 				} else {
 				  	$sns_followers[$key] = 0;
 				}
-		  	}		  
-		  
+		  	}		  		  
 		  	return $sns_followers;
 		}	  	
 	} else {
@@ -1276,8 +1272,7 @@ function scc_get_follow( $options = array( 'id' => '', 'sns' => '' ) ) {
 					  		if ( $value ) {
 								 $sns_followers[$key] = 0;
 							}
-						}					  
-					  	
+						}					  					  	
 		  				return $sns_followers;
 					}	  
 		  			break;
@@ -1317,8 +1312,7 @@ function scc_get_follow( $options = array( 'id' => '', 'sns' => '' ) ) {
 					  		$sns_followers[$sns_key] = $sns_follower;
 						} else {
 						  	$sns_followers[$sns_key] = 0;
-						}
-					  
+						}					  
 		  				return $sns_followers[$sns_key];
 					} else {
 					  	$base_cache_target = $sns_count_cache->get_follow_base_cache_target();

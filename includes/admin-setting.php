@@ -34,71 +34,48 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 		if( check_admin_referer( __FILE__, '_wpnonce' ) ) {
 		  
 			if( isset( $_POST["update_all_options"] ) && $_POST["update_all_options"] === 'Update All Options' ) {
-			  
-			  	$share_base_custom_post_types = $_POST["share_base_custom_post_types"];
-				$share_base_check_interval = $_POST["share_base_check_interval"];
-				$share_base_posts_per_check = $_POST["share_base_posts_per_check"];
-				$share_rush_new_content_term = $_POST["share_rush_new_content_term"];
-						  
-				$share_base_cache_target_twitter = $_POST["share_base_cache_target_twitter"];
-				$share_base_cache_target_facebook = $_POST["share_base_cache_target_facebook"];
-				$share_base_cache_target_gplus = $_POST["share_base_cache_target_gplus"];
-				$share_base_cache_target_pocket = $_POST["share_base_cache_target_pocket"];
-				$share_base_cache_target_hatebu = $_POST["share_base_cache_target_hatebu"];
-			  
-			  	$follow_base_check_interval = $_POST["follow_base_check_interval"];
-				$follow_base_cache_target_feedly = $_POST["follow_base_cache_target_feedly"];
-
-			  	$dynamic_cache_mode = $_POST["dynamic_cache_mode"];
-
-			  	$scheme_migration_mode = $_POST["scheme_migration_mode"];
-
-			  	$data_export_mode =  $_POST["data_export_mode"];
-			  	$data_export_interval = $_POST["data_export_interval"];
-			  
-			  	$data_export_schedule = $_POST['cronbtype'];
-			  
+			 
 			  	$share_base_cache_target = array();
 		  		$follow_base_cache_target = array();	
 			  
-			  	if ( isset( $share_base_custom_post_types ) && $share_base_custom_post_types ) { 
-				  	$share_base_custom_post_types = explode( ',', $share_base_custom_post_types );
+			  	if ( isset( $_POST["share_base_custom_post_types"] ) && $_POST["share_base_custom_post_types"] ) { 
+				  	$share_base_custom_post_types = explode( ',', $_POST["share_base_custom_post_types"] );
 			  		update_option( self::DB_SHARE_CUSTOM_POST_TYPES, $share_base_custom_post_types );
 				} else {
-				  	update_option( self::DB_SHARE_CUSTOM_POST_TYPES, $share_base_custom_post_types );
+				  	update_option( self::DB_SHARE_CUSTOM_POST_TYPES, array() );
 				}
 
-				if ( isset( $share_base_check_interval ) && $share_base_check_interval && is_numeric( $share_base_check_interval ) ) {
-					update_option( self::DB_SHARE_CHECK_INTERVAL, $share_base_check_interval );
+				if ( isset( $_POST["share_base_check_interval"] ) && $_POST["share_base_check_interval"] && is_numeric( $_POST["share_base_check_interval"] ) ) {
+					update_option( self::DB_SHARE_CHECK_INTERVAL, $_POST["share_base_check_interval"] );
 				}
 			  
-				if ( isset( $share_base_posts_per_check ) && $share_base_posts_per_check && is_numeric( $share_base_posts_per_check ) ) {
-					update_option( self::DB_SHARE_POSTS_PER_CHECK, $share_base_posts_per_check );
+				if ( isset( $_POST["share_base_posts_per_check"] ) && $_POST["share_base_posts_per_check"] && is_numeric( $_POST["share_base_posts_per_check"] ) ) {
+					update_option( self::DB_SHARE_POSTS_PER_CHECK, $_POST["share_base_posts_per_check"] );
 				}
 			  
-				if ( isset( $dynamic_cache_mode ) ) {
-					update_option( self::DB_COMMON_DYNAMIC_CACHE, $dynamic_cache_mode );
+				if ( isset( $_POST["dynamic_cache_mode"] ) ) {
+					update_option( self::DB_COMMON_DYNAMIC_CACHE, $_POST["dynamic_cache_mode"] );
 				} 
 			  
-				if ( isset( $share_rush_new_content_term ) && $share_rush_new_content_term && is_numeric( $share_rush_new_content_term ) ) {
-					update_option( self::DB_SHARE_NEW_CONTENT_TERM, $share_rush_new_content_term );
+				if ( isset( $_POST["share_rush_new_content_term"] ) && $_POST["share_rush_new_content_term"] && is_numeric( $_POST["share_rush_new_content_term"] ) ) {
+					update_option( self::DB_SHARE_NEW_CONTENT_TERM, $_POST["share_rush_new_content_term"] );
 				}
 					
-				if ( isset( $data_export_mode ) ) {
-					update_option( self::DB_COMMON_DATA_EXPORT, $data_export_mode );
+				if ( isset( $_POST["data_export_mode"] ) ) {
+					update_option( self::DB_COMMON_DATA_EXPORT, $_POST["data_export_mode"] );
 				} 			  
 
-				if ( isset( $data_export_interval ) && $data_export_interval && is_numeric( $data_export_interval ) ) {
-					update_option( self::DB_COMMON_DATA_EXPORT_INTERVAL, $data_export_interval );
+				if ( isset( $_POST["data_export_interval"] ) && $_POST["data_export_interval"] && is_numeric( $_POST["data_export_interval"] ) ) {
+					update_option( self::DB_COMMON_DATA_EXPORT_INTERVAL, $_POST["data_export_interval"] );
 				}
 			  
-				if ( isset( $share_base_cache_target_twitter ) && $share_base_cache_target_twitter ) {
+				if ( isset( $_POST["share_base_cache_target_twitter"] ) && $_POST["share_base_cache_target_twitter"] ) {
 					$share_base_cache_target[self::REF_SHARE_TWITTER] = true;
 				} else {
 				  	$share_base_cache_target[self::REF_SHARE_TWITTER] = false;
 				}
 			  
-				if ( isset( $share_base_cache_target_facebook ) && $share_base_cache_target_facebook ) {
+				if ( isset( $_POST["share_base_cache_target_facebook"] ) && $_POST["share_base_cache_target_facebook"] ) {
 				  	if ( Common_Util::extension_loaded_php_xml() ) {
 						$share_base_cache_target[self::REF_SHARE_FACEBOOK] = true;
 					} else {
@@ -108,13 +85,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 				  	$share_base_cache_target[self::REF_SHARE_FACEBOOK] = false;
 				}
 			  
-				if ( isset( $share_base_cache_target_gplus ) && $share_base_cache_target_gplus ) {
+				if ( isset( $_POST["share_base_cache_target_gplus"] ) && $_POST["share_base_cache_target_gplus"] ) {
 					$share_base_cache_target[self::REF_SHARE_GPLUS] = true;
 				} else {
 				  	$share_base_cache_target[self::REF_SHARE_GPLUS] = false;
 				}
 			  
-				if ( isset( $share_base_cache_target_pocket ) && $share_base_cache_target_pocket ) {
+				if ( isset( $_POST["share_base_cache_target_pocket"] ) && $_POST["share_base_cache_target_pocket"] ) {
 				  	if ( Common_Util::extension_loaded_php_xml() ) {
 						$share_base_cache_target[self::REF_SHARE_POCKET] = true;
 					} else {
@@ -124,7 +101,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 				  	$share_base_cache_target[self::REF_SHARE_POCKET] = false;
 				}
 			  
-				if ( isset( $share_base_cache_target_hatebu ) && $share_base_cache_target_hatebu ) {
+				if ( isset( $_POST["share_base_cache_target_hatebu"] ) && $_POST["share_base_cache_target_hatebu"] ) {
 					$share_base_cache_target[self::REF_SHARE_HATEBU] = true;
 				} else {
 				  	$share_base_cache_target[self::REF_SHARE_HATEBU] = false;
@@ -134,11 +111,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 					update_option( self::DB_SHARE_CACHE_TARGET, $share_base_cache_target );
 				}
 	  
-	  			if ( isset( $follow_base_check_interval ) && $follow_base_check_interval && is_numeric( $follow_base_check_interval ) ) {
-					update_option( self::DB_FOLLOW_CHECK_INTERVAL, $follow_base_check_interval );
+	  			if ( isset( $_POST["follow_base_check_interval"] ) && $_POST["follow_base_check_interval"] && is_numeric( $_POST["follow_base_check_interval"] ) ) {
+					update_option( self::DB_FOLLOW_CHECK_INTERVAL, $_POST["follow_base_check_interval"] );
 				}
 	  			  
-				if ( isset( $follow_base_cache_target_feedly ) && $follow_base_cache_target_feedly ) {
+				if ( isset( $_POST["follow_base_cache_target_feedly"] ) && $_POST["follow_base_cache_target_feedly"] ) {
 					$follow_base_cache_target[self::REF_FOLLOW_FEEDLY] = true;
 				} else {
 				  	$follow_base_cache_target[self::REF_FOLLOW_FEEDLY] = false;
@@ -148,22 +125,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 					update_option( self::DB_FOLLOW_CACHE_TARGET, $follow_base_cache_target );
 				}
 			  			  
-				if ( isset( $scheme_migration_mode ) && $scheme_migration_mode ) {
+				if ( isset( $_POST["scheme_migration_mode"] ) && $_POST["scheme_migration_mode"] ) {
 				  	update_option( self::DB_COMMON_SCHEME_MIGRATION_MODE, self::OPT_COMMON_SCHEME_MIGRATION_MODE_ON );
 				} else {
 				  	update_option( self::DB_COMMON_SCHEME_MIGRATION_MODE, self::OPT_COMMON_SCHEME_MIGRATION_MODE_OFF );
 				}			  				  
 			  
-			  	if ( $data_export_schedule == 'mon' ) {
+			  	if ( isset( $_POST['cronbtype'] ) && $_POST['cronbtype'] == 'mon' ) {
 					update_option( self::DB_COMMON_DATA_EXPORT_SCHEDULE, $_POST['moncronminutes'] . ' ' . $_POST['moncronhours'] . ' ' . $_POST['moncronmday'] . ' * *' );
 				}
-			  	if ( $data_export_schedule == 'week' ) {
+			  	if ( isset( $_POST['cronbtype'] ) && $_POST['cronbtype'] == 'week' ) {
 				  	update_option( self::DB_COMMON_DATA_EXPORT_SCHEDULE, $_POST['weekcronminutes'] . ' ' . $_POST['weekcronhours'] . ' * * ' . $_POST['weekcronwday'] );
 				}
-			  	if ( $data_export_schedule == 'day' ) {
+			  	if ( isset( $_POST['cronbtype'] ) && $_POST['cronbtype'] == 'day' ) {
 				  	update_option( self::DB_COMMON_DATA_EXPORT_SCHEDULE, $_POST['daycronminutes'] . ' ' . $_POST['daycronhours'] . ' * * *' );
 				}
-			  	if ( $data_export_schedule == 'hour' ) {
+			  	if ( isset( $_POST['cronbtype'] ) && $_POST['cronbtype'] == 'hour' ) {
 				  	update_option( self::DB_COMMON_DATA_EXPORT_SCHEDULE, $_POST['hourcronminutes'] . ' * * * *' );				  	
 				}
 			  			  	  
@@ -340,6 +317,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 		  											break;
 		  										case self::OPT_COMMON_ACCESS_BASED_ASYNC_CACHE:
 		  											_e( 'enabled (Asynchronous Cache)', self::DOMAIN );
+											  		break;
 								  				case self::OPT_COMMON_ACCESS_BASED_2ND_CACHE:
 													_e( 'enabled (Asynchronous 2nd Cache)', self::DOMAIN );								  
 		  											break;

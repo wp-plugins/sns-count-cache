@@ -167,6 +167,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 		  											break;
 		  										case self::OPT_COMMON_ACCESS_BASED_ASYNC_CACHE:
 		  											_e( 'enabled (Asynchronous Cache)', self::DOMAIN );
+											  		break;
 								  				case self::OPT_COMMON_ACCESS_BASED_2ND_CACHE:
 													_e( 'enabled (Asynchronous 2nd Cache)', self::DOMAIN );								  
 		  											break;

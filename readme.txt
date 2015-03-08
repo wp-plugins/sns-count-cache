@@ -15,7 +15,7 @@ This plugin gets and caches SNS share count in the background, and provides func
 SNS Count Cache gets share count for Twitter and Facebook, Google Plus, Pocket, Hatena Bookmark and caches these count in the background. 
 This plugin may help you to shorten page loading time because the share count can be retrieved not through network but through the cache using given functions.
 
-Notice: PHP Version 5.3+ is required in order to activate and execute this plugin.
+Notice: PHP Version 5.3+ is required in order to activate this plugin.
 
 The following shows functions to get share count from the cache:
 
@@ -87,6 +87,7 @@ There are no questions.
 
 = 0.5.0 =
 * Added: function to cache share count for both old and new url in https migration. 
+* Fixed: share count of Facebook becomes invalid when the count is more than four digits.
 
 == Upgrade Notice ==
 The following functions are deprecated.
