@@ -226,10 +226,21 @@ class Share_Rush_Cache_Engine extends Share_Cache_Engine {
 			  	
 			  	Common_Util::log( '[' . __METHOD__ . '] post_id: ' . $post_ID );
 			  
-			  	$this->cache( $post_ID, $this->target_sns, $cache_expiration );
+			  	$transient_ID = $this->get_transient_ID( $post_ID );
+	  
+	  			$url = get_permalink( $post_ID );
+
+				$options = array(
+					'transient_id' => $transient_ID,
+				  	'post_id' => $post_ID,
+					'target_url' => $url,
+				  	'target_sns' => $this->target_sns,
+					'cache_expiration' => $cache_expiration
+				);
+			  
+			  	$this->cache( $options );
 			  
 			  	if ( ! is_null( $this->delegate ) && method_exists( $this->delegate, 'order_cache' ) ) {
-				  	$options = array( 'post_id' => $post_ID );
 		  			$this->delegate->order_cache( $this, $options );
 	  			}			  
 			}
@@ -307,6 +318,9 @@ class Share_Rush_Cache_Engine extends Share_Cache_Engine {
   	public function initialize_cache() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
+	  	$transient_ID = $this->get_transient_ID( $this->offset_suffix );
+	  
+	  	update_option( $transient_ID, 0 );
   	}  
 
     /**

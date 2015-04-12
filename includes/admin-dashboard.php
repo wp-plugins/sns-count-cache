@@ -44,6 +44,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 	<div class="wrap">
 		<h2><a href="admin.php?page=scc-dashboard"><?php _e( 'SNS Count Cache', self::DOMAIN ) ?></a></h2>
 		<div class="sns-cnt-cache">
+		  	<div id="scc-dashboard">
 			  		<h3 class="nav-tab-wrapper">
 					  	<a class="nav-tab nav-tab-active" href="admin.php?page=scc-dashboard">Dashboard</a>
 					  	<a class="nav-tab" href="admin.php?page=scc-cache-status">Cache Status</a>
@@ -207,7 +208,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  		</div>
 			  
 					<div class="metabox-holder">
-						<div id="share-site-summary" class="postbox">
+						<div id="site-summary-cache" class="site-summary postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
 							<h3 class="hndle"><span><?php _e( 'Cache Status', self::DOMAIN ) ?></span></h3>  	
 							<div class="inside">			  
@@ -222,125 +223,26 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 											<th><?php _e( 'State - No Cache', self::DOMAIN ) ?></th>
 										</tr>
 									</thead>
-									<tbody>
-	
-									<?php
-												  
-									$share_base_cache_target = $this->share_base_cache_target ;
-									unset( $share_base_cache_target[self::REF_CRAWL_DATE] );
-			
-									$count = 1;
-									  
-									$posts_count = 0;
-									$primary_full_cache_count = 0;
-									$primary_partial_cache_count = 0;
-									$primary_no_cache_count = 0;
-									
-									$secondary_full_cache_count = 0;
-									$secondary_partial_cache_count = 0;
-									$secondary_no_cache_count = 0;
-				  
-									set_time_limit( $this->extended_max_execution_time  );
-			
-									if ( $site_query->have_posts() ) {
-										while ( $site_query->have_posts() ) {
-											$site_query->the_post();
-										  
-											$posts_count++;
-									  
-											$transient_id = self::OPT_SHARE_BASE_TRANSIENT_PREFIX . get_the_ID();
-																	  
-											if ( false === ( $sns_counts = get_transient( $transient_id ) ) ) {								  
-												$primary_no_cache_count++;
-											} else {
-												$full_cache_flag = true;
-												$partial_cache_flag = false;	
-											  
-												foreach ( $share_base_cache_target as $key => $value ) {
-													if ( $value ) {
-														if ( isset( $sns_counts[$key] ) && $sns_counts[$key] >= 0 ) {
-															$partial_cache_flag = true;
-														} else {
-															$full_cache_flag = false;
-														}
-													}
-												}
-											  
-												if ( $partial_cache_flag && $full_cache_flag ) {
-													$primary_full_cache_count++;
-												} else if ( $partial_cache_flag && ! $full_cache_flag ) {
-													$primary_partial_cache_count++;
-												} else {
-													$primary_no_cache_count++;
-												}				
-											}
-										  
-											$full_cache_flag = true;
-											$partial_cache_flag = false;
-											foreach ( $share_base_cache_target as $key => $value ) {
-												if ( $value ) {								
-										  
-													$meta_key = self::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
-													$sns_count = get_post_meta( get_the_ID(), $meta_key, true );
-													
-													if ( isset( $sns_count ) && $sns_count >= 0  ) {
-														$partial_cache_flag  = true;
-													} else {
-														$full_cache_flag = false;
-													}
-												  
-												}
-											}
-											if ( $partial_cache_flag && $full_cache_flag ) {
-												$secondary_full_cache_count++;
-											} else if ( $partial_cache_flag && ! $full_cache_flag ) {
-												$secondary_partial_cache_count++;								  
-											} else {
-												$secondary_no_cache_count++;
-											}										  
-										}
-										wp_reset_postdata();
-									}
-							
-									set_time_limit( $this->original_max_execution_time  );
-			
-									?>
-							  
+									<tbody>							  
 										<tr>
 											<td><?php _e( 'Primary Cache', self::DOMAIN ); ?></td>
 											<td>
-												<?php
-													if ( $primary_full_cache_count == $posts_count ) {
-														_e( 'Completed', self::DOMAIN );
-													} else if ( ( $primary_full_cache_count + $primary_partial_cache_count ) == $posts_count ) {
-														_e( 'Partially Completed', self::DOMAIN );  	
-													} else {
-														_e( 'Ongoing', self::DOMAIN );
-													}
-												?>
+											  	<img class="loading" src="<?php echo $this->loading_img_url; ?>" /><span data-scc="pcs"></span>
 											</td>
-											<td class="share-count"><?php echo $posts_count; ?></td>
-											<td class="share-count full-cache"><?php echo $primary_full_cache_count ; ?></td>
-											<td class="share-count partial-cache"><?php echo $primary_partial_cache_count ; ?></td>
-											<td class="share-count no-cache"><?php echo $primary_no_cache_count; ?></td>							  	
+										  	<td class="share-count"><img class="loading" src="<?php echo $this->loading_img_url; ?>" /><span data-scc='pc'></span></td>
+											<td class="share-count full-cache"><img class="loading" src="<?php echo $this->loading_img_url; ?>" /><span data-scc='pfcc'></span></td>
+											<td class="share-count partial-cache"><img class="loading" src="<?php echo $this->loading_img_url; ?>" /><span data-scc='ppcc'></span></td>
+											<td class="share-count no-cache"><img class="loading" src="<?php echo $this->loading_img_url; ?>" /><span data-scc='pncc'></span></td>							  	
 										</tr>
 										<tr>
 											<td><?php _e( 'Secondary Cache', self::DOMAIN ); ?></td>
 											<td>
-												<?php
-													if ( $secondary_full_cache_count == $posts_count ) {
-														_e( 'Completed', self::DOMAIN );
-													} else if ( ( $secondary_full_cache_count + $secondary_partial_cache_count ) == $posts_count ) {
-														_e( 'Partially Completed', self::DOMAIN );  	
-													} else {
-														_e( 'Ongoing', self::DOMAIN );
-													}
-												?>
+												<img class="loading" src="<?php echo $this->loading_img_url; ?>" /><span data-scc="scs"></span>
 											</td>							  
-											<td class="share-count"><?php echo $posts_count; ?></td>
-											<td class="share-count full-cache"><?php echo $secondary_full_cache_count; ?></td>
-											<td class="share-count partial-cache"><?php echo $secondary_partial_cache_count; ?></td>
-											<td class="share-count no-cache"><?php echo $secondary_no_cache_count; ?></td>							  	
+										  	<td class="share-count"><img class="loading" src="<?php echo $this->loading_img_url; ?>" /><span data-scc='pc'></span></td>
+											<td class="share-count full-cache"><img class="loading" src="<?php echo $this->loading_img_url; ?>" /><span data-scc='sfcc'></span></td>
+											<td class="share-count partial-cache"><img class="loading" src="<?php echo $this->loading_img_url; ?>" /><span data-scc='spcc'></span></td>
+											<td class="share-count no-cache"><img class="loading" src="<?php echo $this->loading_img_url; ?>" /><span data-scc='sncc'></span></td>							  	
 										</tr>
 									</tbody>
 								</table>
@@ -349,7 +251,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  		</div>				  
 		  
 					<div class="metabox-holder">
-						<div id="share-site-summary" class="postbox">
+						<div id="site-summary-count" class="site-summary postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
 							<h3 class="hndle"><span><?php _e( 'Share Count', self::DOMAIN ) ?></span></h3>  	
 							<div class="inside">
@@ -357,6 +259,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 									<thead>
 										<tr>
 											<?php
+									  			$share_base_cache_target = $this->share_base_cache_target ;
+												unset( $share_base_cache_target[self::REF_CRAWL_DATE] );
 																		
 												foreach ( $share_base_cache_target as $key => $value ){	
 													if ( $value ) {
@@ -370,72 +274,28 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 										<tr>
 									<?php
 			
-									$sum = array();
-									foreach ( $share_base_cache_target as $key => $value ) {
-										if( $value ){
-											$sum[$key] = 0;
-										}
-									}
-			
-									set_time_limit( $this->extended_max_execution_time  );
-			
-									if ( $site_query->have_posts() ) {
-										while ( $site_query->have_posts() ) {
-											$site_query->the_post();			  
-			
-											$transient_id = self::OPT_SHARE_BASE_TRANSIENT_PREFIX . get_the_ID();
-																	  
-											if ( false === ( $sns_counts = get_transient( $transient_id ) ) ) {
-									  
-												foreach ( $share_base_cache_target as $key => $value ) {
-													if( $value ){
-													  /**
-														echo '<td class="not-cached share-count">';
-														_e( 'N/A', self::DOMAIN );
-														echo '</td>';
-														*/
-														
-														$meta_key = self::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
-														$sns_counts[$key] = get_post_meta( get_the_ID(), $meta_key, true );
-															
-														if ( isset( $sns_counts[$key] ) &&  $sns_counts[$key] >= 0 ) {
-															 $sum[$key] = $sum[$key] + $sns_counts[$key];	
-														}								  								 										  
-													}
-												}
-											  
-											} else {
-				  
-												foreach ( $share_base_cache_target as $key => $value ) {
-													if ( $value ) {										  
-														if ( isset( $sns_counts[$key] ) && $sns_counts[$key] >= 0 ) {
-															$sum[$key] = $sum[$key] + $sns_counts[$key];
-														} 								  
-													}
-												}
-																			  
-											}
-										}
-									}
-			
 									foreach ( $share_base_cache_target as $key => $value ) {
 										if ( $value ) {
-											echo '<td class="share-count">';
-											echo number_format( (int) $sum[$key] );
-											echo '</td>';							  	
+										  	if ( $key == self::REF_SHARE_GPLUS ){
+												echo '<td class="share-count">';
+											  	echo '<img class="loading" src="' . $this->loading_img_url . '" /><span data-scc="gplus"></span>';
+												echo '</td>';													  	
+											} else {
+												echo '<td class="share-count">';
+											  	echo '<img class="loading" src="' . $this->loading_img_url . '" /><span data-scc="' . strtolower( $key ) . '"></span>';
+												echo '</td>';													  
+											}
+					  	
 										}
 									}
-			
-									wp_reset_postdata();
-			
-									set_time_limit( $this->original_max_execution_time  );
-			
+
 									?>
 										</tr>
 									</tbody>
 								</table>
 						  	</div>								  								  
 						 </div>
-			  		</div>		  		  
+			  		</div>
+		  	</div>
 		</div>
      </div>

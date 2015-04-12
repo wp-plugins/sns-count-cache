@@ -33,8 +33,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 	if ( isset( $_POST['_wpnonce'] ) && $_POST['_wpnonce'] ) {
 		if( check_admin_referer( __FILE__, '_wpnonce' ) ) {
 		  
-			if( isset( $_POST["update_all_options"] ) && $_POST["update_all_options"] === 'Update All Options' ) {
+		 	 if( isset( $_POST["update_all_options"] ) && $_POST["update_all_options"] === __( 'Update All Options', self::DOMAIN ) ) {
 			 
+			  	$wp_error = new WP_Error();
+			  
 			  	$share_base_cache_target = array();
 		  		$follow_base_cache_target = array();	
 			  
@@ -76,11 +78,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 				}
 			  
 				if ( isset( $_POST["share_base_cache_target_facebook"] ) && $_POST["share_base_cache_target_facebook"] ) {
-				  	if ( Common_Util::extension_loaded_php_xml() ) {
-						$share_base_cache_target[self::REF_SHARE_FACEBOOK] = true;
-					} else {
-					  	$share_base_cache_target[self::REF_SHARE_FACEBOOK] = false;
-					}
+					$share_base_cache_target[self::REF_SHARE_FACEBOOK] = true;
 				} else {
 				  	$share_base_cache_target[self::REF_SHARE_FACEBOOK] = false;
 				}
@@ -92,11 +90,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 				}
 			  
 				if ( isset( $_POST["share_base_cache_target_pocket"] ) && $_POST["share_base_cache_target_pocket"] ) {
-				  	if ( Common_Util::extension_loaded_php_xml() ) {
-						$share_base_cache_target[self::REF_SHARE_POCKET] = true;
-					} else {
-					  	$share_base_cache_target[self::REF_SHARE_POCKET] = false;
-					}
+					$share_base_cache_target[self::REF_SHARE_POCKET] = true;
 				} else {
 				  	$share_base_cache_target[self::REF_SHARE_POCKET] = false;
 				}
@@ -143,24 +137,34 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  	if ( isset( $_POST['cronbtype'] ) && $_POST['cronbtype'] == 'hour' ) {
 				  	update_option( self::DB_COMMON_DATA_EXPORT_SCHEDULE, $_POST['hourcronminutes'] . ' * * * *' );				  	
 				}
-			  			  	  
+
+
 				$this->reactivate_plugin();
+
+			  	set_transient( self::OPT_COMMON_ERROR_MESSAGE, $wp_error->get_error_messages(), 10 );
+			  
+			   	wp_safe_redirect( menu_page_url( 'scc-setting', false ) );
 			  
 			}
 
-			if( isset( $_POST["reset_data"] ) && $_POST["reset_data"] === 'Reset' ) {
+		  	if( isset( $_POST["reset_data"] ) && $_POST["reset_data"] === __( 'Reset', self::DOMAIN ) ) {
 			  	Common_Util::log( '[' . __METHOD__ . '] reset' );
 			  
 	  			$this->export_engines[self::REF_COMMON_EXPORT]->reset_export();
+			  
+			  	wp_safe_redirect( menu_page_url( 'scc-setting', false ) );
+
 			}
 		  
-			if( isset( $_POST["export_data"] ) && $_POST["export_data"] === 'Export' ) {
+		  	if( isset( $_POST["export_data"] ) && $_POST["export_data"] === __( 'Export', self::DOMAIN ) ) {
 			  	Common_Util::log( '[' . __METHOD__ . '] export' );
 			  
 	  			$this->export_engines[self::REF_COMMON_EXPORT]->execute_export( NULL );
+			  
+			  	wp_safe_redirect( menu_page_url('scc-setting', false ) );
 			}
 		  
-			if( isset( $_POST["clear_share_base_cache"] ) && $_POST["clear_share_base_cache"] === 'Clear Cache' ) {
+		  	if( isset( $_POST["clear_share_base_cache"] ) && $_POST["clear_share_base_cache"] === __( 'Clear Cache', self::DOMAIN ) ) {
 			  	Common_Util::log( '[' . __METHOD__ . '] clear cache' );
 			  
 	  			$this->cache_engines[self::REF_SHARE_BASE]->clear_cache();
@@ -170,10 +174,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  
 			  	$this->cache_engines[self::REF_SHARE_2ND]->initialize_cache();
 			  
-			  	set_time_limit( $this->original_max_execution_time ); 
+			  	set_time_limit( $this->original_max_execution_time );
+			  
+			  	wp_safe_redirect( menu_page_url('scc-setting', false ) );
 			}
 
-			if( isset( $_POST["clear_follow_base_cache"] ) && $_POST["clear_follow_base_cache"] === 'Clear Cache' ) {
+		  	if( isset( $_POST["clear_follow_base_cache"] ) && $_POST["clear_follow_base_cache"] === __( 'Clear Cache', self::DOMAIN ) ) {
 			  	Common_Util::log( '[' . __METHOD__ . '] clear cache' );
 			  
 	  			$this->cache_engines[self::REF_FOLLOW_BASE]->clear_cache();
@@ -183,7 +189,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  
 			  	$this->cache_engines[self::REF_FOLLOW_2ND]->initialize_cache();
 			  
-			  	set_time_limit( $this->original_max_execution_time  ); 
+			  	set_time_limit( $this->original_max_execution_time  );
+			  
+			  	wp_safe_redirect( menu_page_url('scc-setting', false ) );
 			}			  
 		}  
 	}
@@ -191,6 +199,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 	?>
 	<div class="wrap">
 	  	<h2><a href="admin.php?page=scc-setting"><?php _e( 'SNS Count Cache', self::DOMAIN ) ?></a></h2>
+			<?php
+				if ( $messages = get_transient( self::OPT_COMMON_ERROR_MESSAGE  ) ) {
+			?>
+			<div class="error">
+	  			<ul>
+			  	<?php
+	  				foreach( $messages as $message ) {
+				?>
+			  		<li><?php echo esc_html( $message ); ?></li>
+			  	<?php
+					}
+	  			?>
+	  			</ul>
+			</div>
+			<?php
+	  				delete_option( self::OPT_COMMON_ERROR_MESSAGE );
+				}
+			?>
 			<div class="sns-cnt-cache">
 
 			  		<h3 class="nav-tab-wrapper">
@@ -200,7 +226,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 					  	<a class="nav-tab nav-tab-active" href="admin.php?page=scc-setting">Setting</a>
 					  	<a class="nav-tab" href="admin.php?page=scc-help">Help</a>
 			  		</h3>
-
+					<p id="options-menu">
+                    	<a href="#current-parameter"><?php _e( 'Current Setting', self::DOMAIN ); ?></a> | <a href="#share-base-cache"><?php _e( 'Share Base Cache', self::DOMAIN ); ?></a> | <a href="#share-rush-cache"><?php _e( 'Share Rush Cache', self::DOMAIN ); ?></a> | <a href="#follow-base-cache"><?php _e( 'Follow Base Cache', self::DOMAIN ); ?></a> | <a href="#common-dynamic-cache"><?php _e( 'Dynamic Cache', self::DOMAIN ); ?></a> | <a href="#common-data-export"><?php _e( 'Data Export', self::DOMAIN ); ?></a> | <a href="#common-exported-file"><?php _e( 'Exported File', self::DOMAIN ); ?></a>
+			  		</p>
 					<div class="metabox-holder">
 						<div id="current-parameter" class="postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
@@ -502,7 +530,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 												  	<option value="2"<?php if ( $this->dynamic_cache_mode == self::OPT_COMMON_ACCESS_BASED_ASYNC_CACHE ) echo ' selected="selected"'; ?>><?php _e( 'Asynchronous Cache', self::DOMAIN ) ?></option>
 												  	<option value="3"<?php if ( $this->dynamic_cache_mode == self::OPT_COMMON_ACCESS_BASED_2ND_CACHE ) echo ' selected="selected"'; ?>><?php _e( 'Asynchronous 2nd Cache', self::DOMAIN ) ?></option>
 							  					</select>
-							  					<label><?php _e('Default: None', self::DOMAIN) ?></label>
+							  					<label><?php _e('Default: Asynchronous 2nd Cache', self::DOMAIN) ?></label>
 						  					</td>
 					  					</tr>
 									</table>
@@ -705,7 +733,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						</form>
 					</div>  
 					<div class="metabox-holder">
-					  	<div id="exported-file" class="postbox">					  
+					  	<div id="common-exported-file" class="postbox">					  
 							<div class="handlediv" title="Click to toggle"><br></div>
 								<h3 class="hndle"><span><?php _e('Exported File', self::DOMAIN) ?></span></h3>  
 							<div class="inside">

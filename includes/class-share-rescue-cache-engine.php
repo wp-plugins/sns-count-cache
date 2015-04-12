@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 /*
 
-Copyright (C) 2014 Daisuke Maruyama
+Copyright (C) 2014 - 2015 Daisuke Maruyama
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -260,36 +260,34 @@ class Share_Rescue_Cache_Engine extends Share_Cache_Engine {
 	  	
 	  	$rescue_post_IDs = array_slice( $no_cache_post_IDs, 0, $this->posts_per_check, true );
 	  
+	  	unset( $no_cache_post_IDs );
+	  
 	  	Common_Util::log( $rescue_post_IDs );
 	  
 	  	foreach ( $rescue_post_IDs as $post_ID => $priority ) {
 		  	Common_Util::log( '[' . __METHOD__ . '] post_id: ' . $post_ID );	
-			  
-			$this->cache( $post_ID, $this->target_sns, $cache_expiration );
+
+			$transient_ID = $this->get_transient_ID( $post_ID );
+	  
+	  		$url = get_permalink( $post_ID );		  
+
+			$options = array(
+				'transient_id' => $transient_ID,
+			  	'post_id' => $post_ID,
+				'target_url' => $url,
+		  		'target_sns' => $this->target_sns,
+				'cache_expiration' => $cache_expiration
+			);
+		  
+			$this->cache( $options );
 			  
 			if ( ! is_null( $this->delegate ) && method_exists( $this->delegate, 'order_cache' ) ) {
-				$options = array( 'post_id' => $post_ID );
 		  		$this->delegate->order_cache( $this, $options );
 	  		}
 		}
 	  
 	}
-  
-  	/**
-	 * Get and cache data for a given post
-	 *
-	 * @since 0.1.1
-	 */
-  	public function direct_cache( $post_ID ) {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-		
-	  	$cache_expiration = $this->get_cache_expiration();
-		  
-		Common_Util::log( '[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration );	
-	  		  	  
-	  	return $this->cache( $post_ID, $this->target_sns, $cache_expiration );
-	}  
-  
+
   	/**
 	 * Get cache expiration based on current number of total post and page
 	 *

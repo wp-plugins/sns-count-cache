@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 /*
 
-Copyright (C) 2014 Daisuke Maruyama
+Copyright (C) 2014 - 2015 Daisuke Maruyama
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -55,207 +55,173 @@ class Share_Crawler extends Data_Crawler {
 	 *
 	 * @since 0.1.1
 	 */	    
-  	public function get_data( $cache_target, $url ) {
+  	public function get_data( $target_sns, $url ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
 	  	$url = rawurlencode( $url );
 	  
-		$sns_counts = array();
-	  	
-	  	if ( isset( $cache_target[SNS_Count_Cache::REF_SHARE_HATEBU] ) && $cache_target[SNS_Count_Cache::REF_SHARE_HATEBU] ) {
-	  		$sns_counts[SNS_Count_Cache::REF_SHARE_HATEBU] = ( int )$this->get_hatebu_count( $url );
+	  	$query_urls = $this->build_query_urls( $target_sns, $url );
+	  	  
+	  	return $this->extract_count( $target_sns, Common_Util::multi_remote_get( $query_urls, 10 ) );
+  	}
+
+  	/**
+	 * build query
+	 *
+	 * @since 0.5.1
+	 */	     
+  	private function build_query_urls( $target_sns, $url ) {
+		Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
+	  
+	  	$query_urls = array();
+	  
+	  	if ( isset( $url ) ) {
+		  if ( isset( $target_sns[SNS_Count_Cache::REF_SHARE_HATEBU] ) && $target_sns[SNS_Count_Cache::REF_SHARE_HATEBU] ) {
+	  			$query_urls[SNS_Count_Cache::REF_SHARE_HATEBU] = 'http://api.b.st-hatena.com/entry.count?url=' . $url;
+		  }
+		  
+		  if ( isset( $target_sns[SNS_Count_Cache::REF_SHARE_TWITTER] ) && $target_sns[SNS_Count_Cache::REF_SHARE_TWITTER] ) {
+	  			$query_urls[SNS_Count_Cache::REF_SHARE_TWITTER] = 'http://urls.api.twitter.com/1/urls/count.json?url=' . $url;
+		  }
+	  
+		  if ( isset( $target_sns[SNS_Count_Cache::REF_SHARE_FACEBOOK] ) && $target_sns[SNS_Count_Cache::REF_SHARE_FACEBOOK] ) {
+		  		$query_urls[SNS_Count_Cache::REF_SHARE_FACEBOOK] = 'https://api.facebook.com/method/links.getStats?urls=' . $url . '&format=json';		  
+		  }
+	  
+		  if ( isset( $target_sns[SNS_Count_Cache::REF_SHARE_GPLUS] ) && $target_sns[SNS_Count_Cache::REF_SHARE_GPLUS] ) {
+	  			$query_urls[SNS_Count_Cache::REF_SHARE_GPLUS] = 'https://apis.google.com/_/+1/fastbutton?url=' . $url;
+		  }
+	  
+		  if ( isset( $target_sns[SNS_Count_Cache::REF_SHARE_POCKET] ) && $target_sns[SNS_Count_Cache::REF_SHARE_POCKET] ) {
+		  		$query_urls[SNS_Count_Cache::REF_SHARE_POCKET] = 'http://widgets.getpocket.com/v1/button?v=1&count=horizontal&url=' . $url;
+		  }
 	  	}
 	  
-	  	if ( isset( $cache_target[SNS_Count_Cache::REF_SHARE_TWITTER] ) && $cache_target[SNS_Count_Cache::REF_SHARE_TWITTER] ) {
-	  		$sns_counts[SNS_Count_Cache::REF_SHARE_TWITTER] = ( int )$this->get_twitter_count( $url );
-		}
+	  	return $query_urls;
+	  	
+  	}
+  
+  	/**
+	 * extract count data from retrieved content
+	 *
+	 * @since 0.5.1
+	 */
+  	private function extract_count( $target_sns, $contents ) {
+	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-	  	if ( isset( $cache_target[SNS_Count_Cache::REF_SHARE_FACEBOOK] ) && $cache_target[SNS_Count_Cache::REF_SHARE_FACEBOOK] ) {
-		  	if ( Common_Util::extension_loaded_php_xml() ) {
-		  		$sns_counts[SNS_Count_Cache::REF_SHARE_FACEBOOK] = ( int )$this->get_facebook_count( $url );
-			} else {
-			  	Common_Util::log( '[' . __METHOD__ . '] php-xml is not installed.' );
+	  	$sns_counts = array();
+
+	  	$extract_date = date_i18n( 'Y/m/d H:i:s' );
+	  
+	  	Common_Util::log( $contents );
+	  
+		foreach ( $contents as $key => $content ) {  
+	  
+			if ( $key == SNS_Count_Cache::REF_SHARE_HATEBU ) {
+			  
+			  	if ( isset( $content['data'] ) && empty( $content['error'] ) && is_numeric( $content['data'] ) ) {
+				  	$count = ( int )$content['data'];
+				} else if ( empty( $content['data'] ) && empty( $content['error'] ) ) {
+			  		$count = 0;
+				} else {
+				  	$count = -1;
+				}
+			  
+			  	$sns_counts[SNS_Count_Cache::REF_SHARE_HATEBU] = $count;
+			  
+			} else if ( $key == SNS_Count_Cache::REF_SHARE_FACEBOOK ) {
+			  
+			  	if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
+				  
+				  	$json = json_decode( $content['data'], true );
+			  
+			  		if ( isset( $json[0]['total_count'] ) && is_numeric( $json[0]['total_count'] ) ) {
+				  		$count = ( int )$json[0]['total_count'];
+					} else {
+				  		$count = -1;
+					}
+				} else {
+					$count = -1;
+				}
+			  
+			  	$sns_counts[SNS_Count_Cache::REF_SHARE_FACEBOOK] = $count;
+			  
+			} else if ( $key == SNS_Count_Cache::REF_SHARE_TWITTER ) {
+			  
+			  	if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
+					$json = json_decode( $content['data'], true );
+	  
+			  		if ( isset( $json['count'] ) && is_numeric( $json['count'] ) ) {
+				  		$count = ( int )$json['count'];
+					} else {
+				  		$count = -1;
+					}
+				} else {
+				  	$count = -1;
+				}
+			  
+			  	$sns_counts[SNS_Count_Cache::REF_SHARE_TWITTER] = $count;
+			  
+			} else if ( $key == SNS_Count_Cache::REF_SHARE_GPLUS ) {
+			  
+			  	if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
+			  
+			  		$return_code = preg_match( '/\[2,([0-9.]+),\[/', $content['data'], $matches );
+			  	
+			  		if ( $return_code && isset( $matches[1] ) && is_numeric( $matches[1] ) ) {
+						$count = ( int )$matches[1];   
+					} else {
+				  		$count = -1;		
+					}
+				} else {
+					$count = -1;
+				}
+			  
+			  	$sns_counts[SNS_Count_Cache::REF_SHARE_GPLUS] = $count;	
+			    	
+			} else if ( $key == SNS_Count_Cache::REF_SHARE_POCKET ) {
+			  
+			  	if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
+			  
+			  		$return_code = preg_match( '/<em\sid=\"cnt\">([0-9]+)<\/em>/i', $content['data'], $matches );
+			  	
+			  		if ( $return_code && isset( $matches[1] ) && is_numeric( $matches[1] ) ) {
+						$count = ( int )$matches[1];
+					} else {
+				  		$count = -1;
+					}
+				} else {
+					$count = -1;
+				}
+			  
+			  	$sns_counts[SNS_Count_Cache::REF_SHARE_POCKET] = $count;
 			}
 		  
 		}
 	  
-	  	if ( isset( $cache_target[SNS_Count_Cache::REF_SHARE_GPLUS] ) && $cache_target[SNS_Count_Cache::REF_SHARE_GPLUS] ) {
-	  		$sns_counts[SNS_Count_Cache::REF_SHARE_GPLUS] = ( int )$this->get_gplus_count( $url );		  
-		}
-	  
-	  	if ( isset( $cache_target[SNS_Count_Cache::REF_SHARE_POCKET] ) && $cache_target[SNS_Count_Cache::REF_SHARE_POCKET] ) {
-		  	if ( Common_Util::extension_loaded_php_xml() ) {
-		  		$sns_counts[SNS_Count_Cache::REF_SHARE_POCKET] = ( int )$this->get_pocket_count( $url );
-			} else {
-			  	Common_Util::log( '[' . __METHOD__ . '] php-xml is not installed.' );
-			}
-		}
-	  
-	  	if ( isset( $cache_target[SNS_Count_Cache::REF_SHARE_TOTAL] ) && $cache_target[SNS_Count_Cache::REF_SHARE_TOTAL] ) {
+	  	if ( isset( $target_sns[SNS_Count_Cache::REF_SHARE_TOTAL] ) && $target_sns[SNS_Count_Cache::REF_SHARE_TOTAL] ) {
 		 
 		  	$total = 0;
 		  
 		  	foreach ( $sns_counts as $key => $value ) {
-			  	if ( isset( $value) && $value >= 0 ) {
+			  	if ( isset( $value ) && $value >= 0 ) {
 			  		$total = $total + $value;
 				}
 		  	}
 		  
-		  	$sns_counts[SNS_Count_Cache::REF_SHARE_TOTAL] = $total;
-		}	  
+		  	$sns_counts[SNS_Count_Cache::REF_SHARE_TOTAL] = ( int )$total;
+		}
 
-	  	if ( isset( $cache_target[SNS_Count_Cache::REF_CRAWL_DATE] ) && $cache_target[SNS_Count_Cache::REF_CRAWL_DATE] ) {
-	  		$sns_counts[SNS_Count_Cache::REF_CRAWL_DATE] = date_i18n( 'Y/m/d H:i:s' );
+	  	if ( isset( $target_sns[SNS_Count_Cache::REF_CRAWL_DATE] ) && $target_sns[SNS_Count_Cache::REF_CRAWL_DATE] ) {
+	  		$sns_counts[SNS_Count_Cache::REF_CRAWL_DATE] = $extract_date;
 		}
 	  
-		return $sns_counts;	
-  	}
+	  	return $sns_counts;
+	  
+  	}  
   
-  	/**
-	 * Get share count for Hatena Bookmark
-	 *
-	 * @since 0.1.0
-	 */	      
-	public function get_hatebu_count( $url ) {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-	  	  
-	  	$query = 'http://api.b.st-hatena.com/entry.count?url=' . $url;
-	  
-		$hatebu = $this->remote_get( $query );
-	  
-		return isset( $hatebu ) ? intval($hatebu) : -1;
-	}
 
-  	/**
-	 * Get share count for Twitter
-	 *
-	 * @since 0.1.0
-	 */	        
-	public function get_twitter_count( $url ) {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-	  	  
-	  	$query = 'http://urls.api.twitter.com/1/urls/count.json?url=' . $url;
-	  
-		$json = $this->remote_get( $query );
-	  
-		$twitter = json_decode( $json, true );
-	  
-		return isset( $twitter['count'] ) ? intval( $twitter['count'] ) : -1;
-	}
-
-  	/**
-	 * Get share count for Facebook
-	 *
-	 * @since 0.1.0
-	 */	        
-	public function get_facebook_count( $url ) {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-	  
-	  	$query = 'http://www.facebook.com/plugins/like.php?href=' . $url . '&width&layout=standard&action=like&show_faces=false&share=false&height=35&locale=ja_JP';
-	  
-	  	Common_Util::log( '[' . __METHOD__ . '] facebookquery: ' . $query );
-	  
-		$html = $this->remote_get( $query );
-	  
-	  	$dom = new DOMDocument( '1.0', 'UTF-8' );
-		$dom->preserveWhiteSpace = false;
-		$dom->formatOutput = true;
-	  
-	  	$dom->loadHTML( $html );
-	  	
-		$xpath = new DOMXPath( $dom );
-	  
-	  	$result = $xpath->query( '//*[@id="u_0_2"]' )->item(0);
-	  
-		Common_Util::log( '[' . __METHOD__ . '] count element: ' . $result->nodeValue );
-	  	
-	  	if ( preg_match( '/([0-9,]+)/', $result->nodeValue, $match ) ) {
-	  		$count = str_replace( ',', '', $match[1] );
-		  	Common_Util::log( '[' . __METHOD__ . '] count: ' . $count );
-		} else {
-		  	$count = 0;
-		}
-	  
-		return isset( $count ) ? intval( $count ) : -1;	  
-	  
-	}
-
-  	/**
-	 * Get share count for Google Plus
-	 *
-	 * @since 0.1.0
-	 */	          
-	public function get_gplus_count( $url ) {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-	  
-	  	$query = 'https://apis.google.com/_/+1/fastbutton?url=' . $url;
-	  
-	  	$html = $this->remote_get( $query );
-    
-    	preg_match( '/\[2,([0-9.]+),\[/', $html, $count );
-	  
-	  	return isset( $count[1] ) ? intval( $count[1] ) : -1;
-	}
-  
-  	/**
-	 * Get share count for Pocket
-	 *
-	 * @since 0.1.0
-	 */	            
-  	public function get_pocket_count( $url ) {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-		
-		$query = 'http://widgets.getpocket.com/v1/button?v=1&count=horizontal&url=' . $url;
-	  
-		$html = $this->remote_get( $query );
-	  	
-	  	$dom = new DOMDocument( '1.0', 'UTF-8' );
-		$dom->preserveWhiteSpace = false;
-		$dom->formatOutput = true;
-		$dom->loadXml( $html );
  
-		$xpath = new DOMXPath( $dom );
-	  
-	  	$result = $xpath->query( '//em[@id = "cnt"]' )->item(0);
-	  
-		Common_Util::log( '[' . __METHOD__ . '] count: ' . $result->nodeValue );
-	  
-		return isset( $result->nodeValue ) ? intval( $result->nodeValue ) : -1;
-  	}
-  
-  	/**
-	 * Get content from given URL using cURL
-	 *
-	 * @since 0.1.0
-	 */	          
-	private function remote_get( $url ) {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-	  
-	  	global $wp_version;
-	  
-		$curl = curl_init();
-	  
-		curl_setopt( $curl, CURLOPT_URL, $url );
-	  	curl_setopt( $curl, CURLOPT_USERAGENT, 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ) );	  	
-	  	//curl_setopt( $curl, CURLOPT_FAILONERROR, true );
-		curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
-		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
-		curl_setopt( $curl, CURLOPT_TIMEOUT, $this->timeout );
-	  	//curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, false );
-	  	//curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, false );
-	  
-		$curl_results = curl_exec( $curl );
-	  
-		if ( curl_error( $curl ) ) {
-		  	Common_Util::log( '[' . __METHOD__ . '] curl_error: ' + curl_error( $curl ) );
-			die( curl_error( $curl ) );
-		}
-	  
-	  	curl_close( $curl );
-	  
-		return $curl_results;
-	}
-
 }
 
 ?>

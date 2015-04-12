@@ -2,7 +2,7 @@
 /*
 Plugin Name: SNS Count Cache
 Description: SNS Count Cache gets share count for Twitter and Facebook, Google Plus, Pocket, Hatena Bookmark and caches these count in the background. This plugin may help you to shorten page loading time because the share count can be retrieved not through network but through the cache using given functions.
-Version: 0.5.0
+Version: 0.5.1 RC1
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -11,7 +11,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 /*
 
-Copyright (C) 2014 Daisuke Maruyama
+Copyright (C) 2014 - 2015 Daisuke Maruyama
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -59,7 +59,7 @@ require_once ( dirname( __FILE__ ) . '/includes/class-follow-crawler.php' );
 
 if ( ! class_exists( 'SNS_Count_Cache' ) ) {
 
-class SNS_Count_Cache implements Cache_Order {
+final class SNS_Count_Cache implements Cache_Order {
 
 	/**
 	 * Prefix of share cache ID
@@ -170,7 +170,17 @@ class SNS_Count_Cache implements Cache_Order {
 	 * Type of scheme migration mode
 	 */	   
   	const OPT_COMMON_SCHEME_MIGRATION_MODE_ON = true;
-    
+
+    /**
+	 * Error message
+	 */	    
+  	const OPT_COMMON_ERROR_MESSAGE = 'scc_error_message';
+
+      /**
+	 * Update message
+	 */	    
+  	const OPT_COMMON_UPDATE_MESSAGE = 'scc_update_message';
+  
 	/**
 	 * Option key for custom post types for share base cache
 	 */  
@@ -339,7 +349,7 @@ class SNS_Count_Cache implements Cache_Order {
 	/**
 	 * Plugin version, used for cache-busting of style and script file references.
 	 */	
-	private $version = '0.4.0';
+	private $version = '0.5.1';
 
 	/**
 	 * Instances of crawler
@@ -445,6 +455,11 @@ class SNS_Count_Cache implements Cache_Order {
 	 * Extended max execution time
 	 */
 	private $extended_max_execution_time = 300;
+
+  	/**
+	 * URL of loding image
+	 */  
+  	private $loading_img_url = '';
   
   	/**
 	 * Instance
@@ -466,9 +481,14 @@ class SNS_Count_Cache implements Cache_Order {
 	  	add_action( 'admin_menu', array($this, 'action_admin_menu' ) );
 	  
 		add_action( 'admin_print_styles', array( $this, 'register_admin_styles' ) );
-		add_action( 'admin_enqueue_scripts', array($this, 'register_admin_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'register_admin_scripts' ) );
+	  
+	  	//add_action( 'admin_notices', array( $this, 'notice_page' ) );
 
-		add_action( 'plugins_loaded', array( $this, 'initialize' ) );  
+		add_action( 'plugins_loaded', array( $this, 'initialize' ) );
+	  
+	  	add_action( 'wp_ajax_scc_cache_info', array( $this, 'get_cache_info' ) );
+	  
 	}
 
     /**
@@ -504,7 +524,7 @@ class SNS_Count_Cache implements Cache_Order {
 	  	$this->follow_base_check_interval = ! empty( $follow_base_check_interval ) ? intval( $follow_base_check_interval ) : self::OPT_FOLLOW_BASE_CHECK_INTERVAL;
 	  	  
 	  	$dynamic_cache_mode = get_option( self::DB_COMMON_DYNAMIC_CACHE );
-	  	$this->dynamic_cache_mode = ! empty( $dynamic_cache_mode ) ? $dynamic_cache_mode : self::OPT_COMMON_ACCESS_BASED_CACHE_NONE;
+	  	$this->dynamic_cache_mode = ! empty( $dynamic_cache_mode ) ? $dynamic_cache_mode : self::OPT_COMMON_ACCESS_BASED_2ND_CACHE;
 	  
 	  	$share_rush_new_content_term = get_option( self::DB_SHARE_NEW_CONTENT_TERM );
 	  	$this->share_rush_new_content_term = ! empty( $share_rush_new_content_term ) ? intval( $share_rush_new_content_term ) : self::OPT_SHARE_RUSH_NEW_CONTENT_TERM;
@@ -526,10 +546,10 @@ class SNS_Count_Cache implements Cache_Order {
 		if ( ! $this->share_base_cache_target ) {
 			$this->share_base_cache_target[self::REF_SHARE_TWITTER] = true;
 			$this->share_base_cache_target[self::REF_SHARE_GPLUS] = true;
-		  	if ( Common_Util::extension_loaded_php_xml() ) {
-			  	$this->share_base_cache_target[self::REF_SHARE_FACEBOOK] = true;
-				$this->share_base_cache_target[self::REF_SHARE_POCKET] = true;
-			}
+		  	
+			$this->share_base_cache_target[self::REF_SHARE_FACEBOOK] = true;
+			$this->share_base_cache_target[self::REF_SHARE_POCKET] = true;
+		  	
 			$this->share_base_cache_target[self::REF_SHARE_HATEBU] = true;
 		}
 	  
@@ -614,6 +634,7 @@ class SNS_Count_Cache implements Cache_Order {
 	  	$this->cache_engines[self::REF_SHARE_2ND] = Share_Second_Cache_Engine::get_instance();
 		$this->cache_engines[self::REF_SHARE_2ND]->initialize( $options );	  
 
+	  /*
 	  	// Share rescue cache engine
 	  	$options = array(
 		  	'delegate' => $this,
@@ -628,6 +649,7 @@ class SNS_Count_Cache implements Cache_Order {
 	  
 	  	$this->cache_engines[self::REF_SHARE_RESCUE] = Share_Rescue_Cache_Engine::get_instance();
 		$this->cache_engines[self::REF_SHARE_RESCUE]->initialize( $options );	  
+		*/
 	  
 	  	// Follow base cache engine
 	  	$options = array(
@@ -709,7 +731,8 @@ class SNS_Count_Cache implements Cache_Order {
 	  	WP_Cron_Util::clear_scheduled_hook( 'scc_basecache_prime' );
 	  	WP_Cron_Util::clear_scheduled_hook( 'scc_rushcache_prime' );	  
 		WP_Cron_Util::clear_scheduled_hook( 'scc_2ndcache_prime' );
-	  
+	  	WP_Cron_Util::clear_scheduled_hook( 'scc_share_rescuecache_prime' );
+	    
 	  	$tmp_max_execution_time = ini_get( 'max_execution_time' );
 	  
 	  	if ( isset( $tmp_max_execution_time ) && $tmp_max_execution_time > 0 ) {
@@ -717,6 +740,8 @@ class SNS_Count_Cache implements Cache_Order {
 		} else {
 		  	$this->original_max_execution_time = 30;
 		}
+	  
+	  	$this->loading_img_url = plugins_url( '/images/loading.gif', __FILE__ );
 	  
   	}
   
@@ -755,8 +780,9 @@ class SNS_Count_Cache implements Cache_Order {
 		$screen = get_current_screen();
 	  
 		if ( in_array( $screen->id, $this->plugin_screen_hook_suffix ) ) {
-			wp_enqueue_script( self::DOMAIN . '-admin-script-1' , plugins_url( ltrim( '/js/jquery.sns-count-cache.js', '/' ) , __FILE__ ), array( 'jquery' ) );
-			wp_enqueue_script( self::DOMAIN . '-admin-script-2' , plugins_url( ltrim( '/js/prettify.js', '/' ) , __FILE__ ), array( 'jquery' ) );
+			wp_enqueue_script( self::DOMAIN . '-admin-script-1' , plugins_url( ltrim( '/js/prettify.js', '/' ) , __FILE__ ), array( 'jquery' ) );
+		  	wp_enqueue_script( self::DOMAIN . '-admin-script-2' , plugins_url( ltrim( '/js/jquery.scc-cache-info.min.js', '/' ) , __FILE__ ), array( 'jquery' ) );
+		  	wp_localize_script( self::DOMAIN . '-admin-script-2', 'scc', array( 'endpoint' => admin_url('admin-ajax.php'), 'action' => 'scc_cache_info' ) );
 		}
 	} 
 
@@ -846,12 +872,12 @@ class SNS_Count_Cache implements Cache_Order {
     public function action_admin_menu() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 
-	  	$this->plugin_screen_hook_suffix[] = add_menu_page( 'SNS Count Cache', 'SNS Count Cache', 8, 'scc-dashboard', array( $this, 'dashboard_page' ), 'dashicons-share' );
-	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', 'Dashboard', 'Dashboard', 8, 'scc-dashboard', array( $this, 'dashboard_page' ) );
-	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', 'Cache Status', 'Cache Status', 8, 'scc-cache-status', array( $this, 'cache_status_page' ) );
-	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', 'Share Count', 'Share Count', 8, 'scc-share-count', array( $this, 'share_count_page' ) );
-	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', 'Setting', 'Setting', 8, 'scc-setting', array( $this, 'setting_page' ) );
-	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', 'Help', 'Help', 8, 'scc-help', array( $this, 'help_page' ) );
+	  	$this->plugin_screen_hook_suffix[] = add_menu_page( 'SNS Count Cache', 'SNS Count Cache', 'administrator', 'scc-dashboard', array( $this, 'dashboard_page' ), 'dashicons-share' );
+	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', 'Dashboard | SNS Count Cache', 'Dashboard', 'administrator', 'scc-dashboard', array( $this, 'dashboard_page' ) );
+	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', 'Cache Status | SNS Count Cache', 'Cache Status', 'administrator', 'scc-cache-status', array( $this, 'cache_status_page' ) );
+	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', 'Share Count | SNS Count Cache', 'Share Count', 'administrator', 'scc-share-count', array( $this, 'share_count_page' ) );
+	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', 'Setting | SNS Count Cache', 'Setting', 'administrator', 'scc-setting', array( $this, 'setting_page' ) );
+	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', 'Help | SNS Count Cache', 'Help', 'administrator', 'scc-help', array( $this, 'help_page' ) );
     }
 
    /**
@@ -899,6 +925,10 @@ class SNS_Count_Cache implements Cache_Order {
     public function help_page() {
 		include_once( dirname( __FILE__ ) . '/includes/admin-help.php' );
   	}
+  
+  	public function notice_page() {
+		include_once( dirname( __FILE__ ) . '/includes/admin-notice.php' );
+  	}	
         
   	/**
 	 * Return type of dynamic cache processing
@@ -987,28 +1017,29 @@ class SNS_Count_Cache implements Cache_Order {
 	  	  
 	  	switch ( get_class( $engine ) ) {
 			case 'Share_Lazy_Cache_Engine':
-		  		$this->cache_engines[self::REF_SHARE_2ND]->cache( $options['post_id'], $this->share_base_cache_target, NULL );
+		  		$this->cache_engines[self::REF_SHARE_2ND]->cache( $options );
 		 		break;
 		  	case 'Share_Rescue_Cache_Engine':
-		  		$this->cache_engines[self::REF_SHARE_2ND]->cache( $options['post_id'], $this->share_base_cache_target, NULL );
+		  		$this->cache_engines[self::REF_SHARE_2ND]->cache( $options );
 		  		break;
 		  	case 'Share_Base_Cache_Engine':
-		  		$this->cache_engines[self::REF_SHARE_2ND]->cache( $options['post_id'], $this->share_base_cache_target, NULL );
+		  		$this->cache_engines[self::REF_SHARE_2ND]->cache( $options );
 		  		break;
 		  	case 'Share_Rush_Cache_Engine':
-		  		$this->cache_engines[self::REF_SHARE_2ND]->cache( $options['post_id'], $this->share_base_cache_target, NULL );
+		  		$this->cache_engines[self::REF_SHARE_2ND]->cache( $options );
 		  		break;
 		  	case 'Follow_Lazy_Cache_Engine':
-		  		$this->cache_engines[self::REF_FOLLOW_2ND]->cache( NULL, $this->follow_base_cache_target, NULL );
+		  		$this->cache_engines[self::REF_FOLLOW_2ND]->cache( $options );
 		  		break;		  
 		  	case 'Follow_Base_Cache_Engine':
-		  		$this->cache_engines[self::REF_FOLLOW_2ND]->cache( NULL, $this->follow_base_cache_target, NULL );
+		  		$this->cache_engines[self::REF_FOLLOW_2ND]->cache( $options );
 		  		break;
 		}
 	  
   	}
   
   	private function pagination( $numpages = '', $pagerange = '', $paged='', $inherit_param = true ) {
+	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
  
   		if ( empty( $pagerange ) ) {
     		$pagerange = 2;
@@ -1032,60 +1063,234 @@ class SNS_Count_Cache implements Cache_Order {
     		}
   		}
 	  
-	  	if ( $inherit_param ) {
-	  		$pagination_args = array(
-    			'base' => get_pagenum_link(1) . '%_%',
-    			'format' => '&paged=%#%',
-    			'total' => $numpages,
-    			'current' => $paged,
-    			'show_all' => False,
-    			'end_size' => 1,
-    			'mid_size' => $pagerange,
-    			'prev_next' => True,
-    			'prev_text' => __('&laquo;'),
-    			'next_text' => __('&raquo;'),
-    			'type' => 'plain',
-    			'add_args' => false,
-    			'add_fragment' => ''
-  				);
-		} else {
+	  	$pagination_args  = array();
+	    	
+	 	$url = parse_url( get_pagenum_link(1) );
+		$base_url = $url['scheme'] . '://' . $url['host'] . $url['path'];
 		  
-		  	$url = parse_url( get_pagenum_link(1) );
-		  	$base_url = $url['scheme'] . '://' . $url['host'] . $url['path'];
+		parse_str ( $url['query'], $query );
+		 
+		$base_url = $base_url . '?page=' . $query['page'];
 		  
-		  	parse_str ( $url['query'], $query );
-		  
-		  	$base_url = $base_url . '?page=' . $query['page'];
+		Common_Util::log( '[' . __METHOD__ . '] base url: ' . $base_url );
 
-		  	$pagination_args = array(
-    			'base' => $base_url . '%_%',
-    			'format' => '&paged=%#%',
-    			'total' => $numpages,
-    			'current' => $paged,
-    			'show_all' => False,
-    			'end_size' => 1,
-    			'mid_size' => $pagerange,
-    			'prev_next' => True,
-    			'prev_text' => __('&laquo;'),
-    			'next_text' => __('&raquo;'),
-    			'type' => 'plain',
-    			'add_args' => false,
-    			'add_fragment' => ''
+		$pagination_args = array(
+    		'base' => $base_url . '%_%',
+    		'format' => '&paged=%#%',
+    		'total' => $numpages,
+    		'current' => $paged,
+    		'show_all' => false,
+    		'end_size' => 1,
+    		'mid_size' => $pagerange,
+    		'prev_next' => true,
+    		'prev_text' => __('&laquo;'),
+    		'next_text' => __('&raquo;'),
+    		'type' => 'plain',
+    		'add_args' => '',
+    		'add_fragment' => ''
   			);
+		
+		$paginate_links = paginate_links( $pagination_args );
+	  
+	  	if ( $inherit_param ) {
+		  	Common_Util::log( '[' . __METHOD__ . '] inherit param: true' );
+					  
+		} else {
+
+		  	Common_Util::log( '[' . __METHOD__ . '] inherit param: false' );
+		  		  
+		  	$pattern = '/(&#038;action=cache&#038;post_id=[0-9]+&#038;_wpnonce=.{10})/';
 		  
+		  	Common_Util::log( '[' . __METHOD__ . '] paginate_links: ' . $paginate_links );		  	
+		  	Common_Util::log( $paginate_links );
+
+		  	$paginate_links = preg_replace($pattern, '', $paginate_links);
+
+		  	Common_Util::log( '[' . __METHOD__ . '] paginate_links: ' . $paginate_links );
+		  		  		  	  
 		}
-			
-	  	$paginate_links = paginate_links($pagination_args);
-  
+	    
   		if ( $paginate_links ) {
     		echo "<nav class='pagination'>";
       		echo "<span class='page-numbers page-num'>Page " . $paged . " of " . $numpages . "</span> ";
       		echo $paginate_links;
     		echo "</nav>";
   		}
- 
+			
 	}
   
+  	public function get_cache_info() {
+	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
+	  
+		$share_base_cache_target = $this->share_base_cache_target ;
+		unset( $share_base_cache_target[self::REF_CRAWL_DATE] );
+			
+		$count = 1;
+									  
+		$posts_count = 0;
+		$primary_full_cache_count = 0;
+		$primary_partial_cache_count = 0;
+		$primary_no_cache_count = 0;
+									
+		$secondary_full_cache_count = 0;
+		$secondary_partial_cache_count = 0;
+		$secondary_no_cache_count = 0;
+
+		$sum = array();
+		$return = array();
+	  
+		foreach ( $share_base_cache_target as $key => $value ) {
+			if( $value ){
+				$sum[$key] = 0;
+			}
+		}	  
+	  
+		$query_args = array(
+			'post_type' => $this->share_base_cache_post_types,
+			'post_status' => 'publish',
+			'nopaging' => true,
+			'update_post_term_cache' => false,
+			'update_post_meta_cache' => false
+			);
+
+		$site_query = new WP_Query( $query_args );
+	  
+		set_time_limit( $this->extended_max_execution_time  );
+			
+		if ( $site_query->have_posts() ) {
+			while ( $site_query->have_posts() ) {
+				$site_query->the_post();
+										  
+				$posts_count++;
+
+			  	$full_cache_flag = true;
+				$partial_cache_flag = false;		
+			  
+				$transient_id = self::OPT_SHARE_BASE_TRANSIENT_PREFIX . get_the_ID();
+																	  
+				if ( false === ( $sns_counts = get_transient( $transient_id ) ) ) {
+
+		  
+					foreach ( $share_base_cache_target as $key => $value ) {
+						  
+						if( $value ){
+							$meta_key = self::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
+							$sns_counts[$key] = get_post_meta( get_the_ID(), $meta_key, true );
+															
+							if ( isset( $sns_counts[$key] ) &&  $sns_counts[$key] >= 0 ) {
+								$sum[$key] = $sum[$key] + $sns_counts[$key];
+							  	$partial_cache_flag  = true;
+							} else {
+							  	$full_cache_flag = false;
+							}
+						}
+					}
+
+					if ( $partial_cache_flag && $full_cache_flag ) {
+						$secondary_full_cache_count++;
+					} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+						$secondary_partial_cache_count++;								  
+					} else {
+						$secondary_no_cache_count++;
+					}
+
+					$primary_no_cache_count++;				  
+				  
+				} else {
+			  
+					foreach ( $share_base_cache_target as $key => $value ) {
+						if ( $value ) {										  
+							if ( isset( $sns_counts[$key] ) && $sns_counts[$key] >= 0 ) {
+								$sum[$key] = $sum[$key] + $sns_counts[$key];
+							  	$partial_cache_flag = true;
+							} else {
+							  	$full_cache_flag = false;
+							}
+						}
+					}				  
+				  
+					if ( $partial_cache_flag && $full_cache_flag ) {
+						$primary_full_cache_count++;
+					} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+						$primary_partial_cache_count++;
+					} else {
+						$primary_no_cache_count++;
+					}
+				  
+			  		$full_cache_flag = true;
+					$partial_cache_flag = false;					  	
+				  
+					foreach ( $share_base_cache_target as $key => $value ) {
+						  
+						if( $value ){
+							$meta_key = self::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
+							$sns_counts[$key] = get_post_meta( get_the_ID(), $meta_key, true );
+															
+							if ( isset( $sns_counts[$key] ) &&  $sns_counts[$key] >= 0 ) {
+							  	$partial_cache_flag  = true;
+							} else {
+							  	$full_cache_flag = false;
+							}
+						}
+					}
+
+					if ( $partial_cache_flag && $full_cache_flag ) {
+						$secondary_full_cache_count++;
+					} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+						$secondary_partial_cache_count++;								  
+					} else {
+						$secondary_no_cache_count++;
+					}				  
+				  
+				}
+			}
+			wp_reset_postdata();
+		}
+		
+		set_time_limit( $this->original_max_execution_time  );
+	  
+	  	foreach ( $share_base_cache_target as $key => $value ) {
+		  	if ( $key == self::REF_SHARE_GPLUS ){
+				$return['share_count']['gplus'] = number_format( (int) $sum[$key] );
+			} else {
+				$return['share_count'][strtolower( $key )] = number_format( (int) $sum[$key] );
+			}
+		}	  	
+
+	  	$return['post_count'] = $posts_count;
+	  	$return['primary']['full_cache_count'] = $primary_full_cache_count; 
+	  	$return['primary']['partial_cache_count'] = $primary_partial_cache_count; 
+	  	$return['primary']['no_cache_count'] = $primary_no_cache_count; 
+	  	$return['secondary']['full_cache_count'] = $secondary_full_cache_count; 
+	  	$return['secondary']['partial_cache_count'] = $secondary_partial_cache_count; 
+	  	$return['secondary']['no_cache_count'] = $secondary_no_cache_count; 	 	  
+	  
+		if ( $primary_full_cache_count == $posts_count ) {
+			$return['primary']['cache_status'] = __( 'Completed', self::DOMAIN );
+		} else if ( ( $primary_full_cache_count + $primary_partial_cache_count ) == $posts_count ) {
+			$return['primary']['cache_status'] = __( 'Partially Completed', self::DOMAIN );  	
+		} else {
+			$return['primary']['cache_status'] = __( 'Ongoing', self::DOMAIN );
+		}
+	  
+		if ( $secondary_full_cache_count == $posts_count ) {
+			$return['secondary']['cache_status'] = __( 'Completed', self::DOMAIN );
+		} else if ( ( $secondary_full_cache_count + $secondary_partial_cache_count ) == $posts_count ) {
+			$return['secondary']['cache_status'] = __( 'Partially Completed', self::DOMAIN );  	
+		} else {
+			$return['secondary']['cache_status'] = __( 'Ongoing', self::DOMAIN );
+		}	  	
+
+
+	  	$callback = $_GET["callback"];
+	  
+	  	header('Content-type: application/javascript; charset=utf-8');
+	  	
+	  	echo $callback . '(' . json_encode( $return ) . ')';
+
+	  	die();
+  	}
+      
 }
 
 SNS_Count_Cache::get_instance();

@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 /*
 
-Copyright (C) 2014 Daisuke Maruyama
+Copyright (C) 2014 - 2015 Daisuke Maruyama
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -155,8 +155,18 @@ class Follow_Second_Cache_Engine extends Cache_Engine {
 	 */	    
 	public function execute_cache() {
 	 	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-		
-	  	$this->cache( NULL, $this->target_sns, NULL );
+
+	  	$url = get_feed_link();
+	  
+	  	$transient_ID = $this->get_transient_ID( 'follow' );	  
+
+		$options = array(
+			'transient_id' => $transient_ID,
+			'target_url' => $url,
+		  	'target_sns' => $this->target_sns,
+		);
+	  
+	  	$this->cache( $options );
 	  	
 	}
   
@@ -165,21 +175,21 @@ class Follow_Second_Cache_Engine extends Cache_Engine {
 	 *
 	 * @since 0.1.1
 	 */  	
-  	public function cache( $post_ID, $target_sns, $cache_expiration ) {
+  	public function cache( $options = array() ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-		$transient_ID = $this->get_transient_ID( 'follow' );
+	  	$transient_id = $options['transient_id'];
+		$target_url = $options['target_url'];
+		$target_sns = $options['target_sns'];
 			  		  
-  		if ( false !== ( $sns_followers = get_transient( $transient_ID ) ) ) {
+  		if ( false !== ( $sns_followers = get_transient( $transient_id ) ) ) {
 				  
 			foreach ( $target_sns as $key => $value ) {
 					  
 				$meta_key = $this->meta_key_prefix . strtolower( $key );
 					  
 				if ( $value ) {
-					if ( isset( $sns_followers[$key] ) && $sns_followers[$key] >= 0 ) {
-						Common_Util::log( '[' . __METHOD__ . '] meta_key: ' . $meta_key . ' SNS: ' . $key . ' post_ID: ' . $post_ID . ' - ' . $sns_followers[$key] );
-						  
+					if ( isset( $sns_followers[$key] ) && $sns_followers[$key] >= 0 ) { 
 					  	update_option( $meta_key, $sns_followers[$key] );
 					}
 				}

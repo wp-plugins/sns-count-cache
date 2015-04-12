@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 /*
 
-Copyright (C) 2014 Daisuke Maruyama
+Copyright (C) 2014 - 2015 Daisuke Maruyama
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -75,7 +75,7 @@ abstract class Data_Crawler {
 	 *
 	 * @since 0.1.1
 	 */  
-	abstract public function get_data( $cache_target, $url );  
+	abstract public function get_data( $target_sns, $url );  
   
 }
 

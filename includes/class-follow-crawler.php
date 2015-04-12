@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 /*
 
-Copyright (C) 2014 Daisuke Maruyama
+Copyright (C) 2014 - 2015 Daisuke Maruyama
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -55,70 +55,83 @@ class Follow_Crawler extends Data_Crawler {
 	 *
 	 * @since 0.1.1
 	 */	    
-  	public function get_data( $cache_target, $url ) {
+  	public function get_data( $target_sns, $url ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
+	  
+	  	Common_Util::log( '[' . __METHOD__ . '] Feedly' );
 	  
 	  	$url = rawurlencode( $url );
 	  
-		$sns_counts = array();
-	  	
-	  	if ( isset( $cache_target[SNS_Count_Cache::REF_FOLLOW_FEEDLY] ) && $cache_target[SNS_Count_Cache::REF_FOLLOW_FEEDLY] ) {
-	  		$sns_counts[SNS_Count_Cache::REF_FOLLOW_FEEDLY] = ( int )$this->get_feedly_follow( $url );
-	  	}
-
-		return $sns_counts;	
+	  	$query_urls = $this->build_query_urls( $target_sns, $url );
+	  	  
+	  	return $this->extract_count( $target_sns, Common_Util::multi_remote_get( $query_urls, 10 ) );	  
+	  
   	}
   
-  	/**
-	 * Get share count for Twitter
+ 	/**
+	 * build query
 	 *
-	 * @since 0.1.0
-	 */	        
-	public function get_feedly_follow( $url ) {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-	  	  
-	  	$query = 'http://cloud.feedly.com/v3/feeds/feed%2F' . $url;
+	 * @since 0.5.1
+	 */	     
+  	private function build_query_urls( $target_sns, $url ) {
+		Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-		$json = $this->remote_get( $query );
-	 
-		$feedly = json_decode( $json, true );
+	  	$query_urls = array();
+	  
+	  	if ( isset( $url ) ) {
+			if ( isset( $target_sns[SNS_Count_Cache::REF_FOLLOW_FEEDLY] ) && $target_sns[SNS_Count_Cache::REF_FOLLOW_FEEDLY] ) {
+	  			$query_urls[SNS_Count_Cache::REF_FOLLOW_FEEDLY] = 'http://cloud.feedly.com/v3/feeds/feed%2F' . $url;
+			}
+	  	}
+	    
+	  	return $query_urls;
 	  	
-		return isset( $feedly['subscribers'] ) ? intval( $feedly['subscribers'] ) : null;
-	}
+  	}  	
 
   	/**
-	 * Get content from given URL using cURL
+	 * extract count data from retrieved content
 	 *
-	 * @since 0.1.0
-	 */	          
-	private function remote_get( $url ) {
+	 * @since 0.5.1
+	 */
+  	private function extract_count( $target_sns, $contents ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-	  	global $wp_version;
-	  	  
-		$curl = curl_init();
+	  	$sns_counts = array();
+
+	  	$extract_date = date_i18n( 'Y/m/d H:i:s' );
 	  
-		curl_setopt( $curl, CURLOPT_URL, $url );
-  		curl_setopt( $curl, CURLOPT_USERAGENT, 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ) );	  	
-		//curl_setopt( $curl, CURLOPT_FAILONERROR, true );
-		curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
-		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
-		curl_setopt( $curl, CURLOPT_TIMEOUT, $this->timeout );
-	  	//curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, false );
-	  	//curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, false );
-	  	  
-		$curl_results = curl_exec( $curl );
+	  	Common_Util::log( $contents );
 	  
-		if ( curl_error( $curl ) ) {
-		  	Common_Util::log( '[' . __METHOD__ . '] curl_error: ' + curl_error( $curl ) );
-			die( curl_error( $curl ) );
+		foreach ( $contents as $key => $content ) {  
+	  
+			if ( $key == SNS_Count_Cache::REF_FOLLOW_FEEDLY ) {
+			  
+			  	if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
+				  	$json = json_decode( $content['data'], true );
+				  
+			  		if ( isset( $json['subscribers'] ) && is_numeric( $json['subscribers'] ) ) {
+				  		$count = ( int )$json['subscribers'];
+					} else {
+				  		$count = -1;
+					}
+				} else {
+				  	$count = -1;
+				}
+			  
+			  	$sns_counts[SNS_Count_Cache::REF_FOLLOW_FEEDLY] = $count;
+			  
+			} 
+		}
+
+	  	if ( isset( $target_sns[SNS_Count_Cache::REF_CRAWL_DATE] ) && $target_sns[SNS_Count_Cache::REF_CRAWL_DATE] ) {
+	  		$sns_counts[SNS_Count_Cache::REF_CRAWL_DATE] = $extract_date;
 		}
 	  
-	  	curl_close( $curl );
+	  	return $sns_counts;
 	  
-		return $curl_results;
-	}
-
+  	}  
+  
+  
 }
 
 ?>

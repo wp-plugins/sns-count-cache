@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 /*
 
-Copyright (C) 2014 Daisuke Maruyama
+Copyright (C) 2014 - 2015 Daisuke Maruyama
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -156,11 +156,22 @@ class Follow_Base_Cache_Engine extends Follow_Cache_Engine {
 	  	$cache_expiration = $this->get_cache_expiration();
 		  
 		Common_Util::log( '[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration );
-	
-		$this->cache( NULL, $this->target_sns, $cache_expiration );
+	  
+	  	$url = get_feed_link();
+	  
+	  	$transient_ID = $this->get_transient_ID( 'follow' );
+	  
+		$options = array(
+			'transient_id' => $transient_ID,
+			'target_url' => $url,
+		  	'target_sns' => $this->target_sns,
+			'cache_expiration' => $cache_expiration
+		);	  
+	  									  	
+		$this->cache( $options );
 	  
 		if ( ! is_null( $this->delegate ) && method_exists( $this->delegate, 'order_cache' ) ) {
-		  	$this->delegate->order_cache( $this, NULL );
+		  	$this->delegate->order_cache( $this, $options );
 	  	}
 	  
 	}
@@ -174,10 +185,21 @@ class Follow_Base_Cache_Engine extends Follow_Cache_Engine {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 		
 	  	$cache_expiration = $this->get_cache_expiration();
-		  
+
 		Common_Util::log( '[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration );	
-	  		  	  
-	  	return $this->cache( $this->target_sns, $cache_expiration );
+
+	  	$url = get_feed_link();
+	  
+	  	$transient_ID = $this->get_transient_ID( 'follow' );
+	  
+		$options = array(
+			'ransient_id' => $transient_ID,
+			'target_url' => $url,
+		  	'target_sns' => $this->target_sns,
+			'cache_expiration' => $cache_expiration
+		);
+	  
+	  	return $this->cache( $options );
 	}      
   
   	/**

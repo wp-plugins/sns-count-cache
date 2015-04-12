@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 /*
 
-Copyright (C) 2014 Daisuke Maruyama
+Copyright (C) 2014 - 2015 Daisuke Maruyama
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -183,7 +183,83 @@ class Common_Util {
 		} else {
 		  	return false;
 		}	  
-  	}    
+  	} 
+  
+  	/**
+	 * get cout data from SNS
+	 *
+	 * @since 0.5.1
+	 */
+    public static function multi_remote_get( $urls, $timeout = 0 ) {
+
+	  	global $wp_version;
+	  
+        $mh = curl_multi_init();
+        $ch = array();
+        $response = array();
+
+        if ( empty( $urls ) ) {
+            return $response; 
+        }
+
+        foreach ( $urls as $key => $url ) {
+            $ch[$key] = curl_init();
+          
+            curl_setopt( $ch[$key], CURLOPT_URL, $url );
+            curl_setopt( $ch[$key], CURLOPT_USERAGENT, 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ) );
+            curl_setopt( $ch[$key], CURLOPT_FOLLOWLOCATION, true );
+            curl_setopt( $ch[$key], CURLOPT_RETURNTRANSFER, true );
+            curl_setopt( $ch[$key], CURLOPT_SSL_VERIFYPEER, false );
+            curl_setopt( $ch[$key], CURLOPT_SSL_VERIFYHOST, false );
+            
+            if ( $timeout > 0 ) {
+                curl_setopt( $ch[$key], CURLOPT_CONNECTTIMEOUT, $timeout ); 
+                curl_setopt( $ch[$key], CURLOPT_TIMEOUT, $timeout );
+            }
+            
+            curl_multi_add_handle( $mh, $ch[$key] );
+        }
+
+	  /*
+		$running = null;
+
+		do {
+		  	$mrc = curl_multi_exec( $mh, $running ); 
+		} while ( $mrc == CURLM_CALL_MULTI_PERFORM );
+	  
+		while ( $running && $mrc == CURLM_OK ) {
+			if ( curl_multi_select( $mh ) != -1 ) {
+				do {
+					$mrc = curl_multi_exec( $mh, $running );
+				} while ( $mrc == CURLM_CALL_MULTI_PERFORM );
+			}
+		}
+	  */	  
+	  
+        $active = null;
+
+        do {
+          curl_multi_exec( $mh, $active );
+          curl_multi_select( $mh );
+        } while ( $active > 0);
+
+        foreach($urls as $key => $url){
+            $response[$key]['error'] = curl_error( $ch[$key] );
+
+            if( ! empty( $response[$key]['error'] ) ) {
+                $response[$key]['data']  = '';
+            } else {
+                $response[$key]['data']  = curl_multi_getcontent( $ch[$key] );
+            }
+            
+            curl_multi_remove_handle( $mh, $ch[$key] );
+            curl_close( $ch[$key] );
+        }
+
+        curl_multi_close( $mh );
+
+        return $response; 
+    }    
   
 }
 

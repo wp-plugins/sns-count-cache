@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 /*
 
-Copyright (C) 2014 Daisuke Maruyama
+Copyright (C) 2014 - 2015 Daisuke Maruyama
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -150,12 +150,6 @@ class Share_Base_Cache_Engine extends Share_Cache_Engine {
 		
 	  	$transient_ID = $this->get_transient_ID( $this->offset_suffix );
 		
-	  /*
-		if ( false === ( $posts_offset = get_transient( $transient_ID ) ) ) {
-			$posts_offset = 0;
-		}
-		*/
-
 		if ( false === ( $posts_offset = get_option( $transient_ID ) ) ) {
 			$posts_offset = 0;
 		}
@@ -170,7 +164,6 @@ class Share_Base_Cache_Engine extends Share_Cache_Engine {
 			$posts_offset = 0;
 		}
 
-	  	//set_transient( $transient_ID, $posts_offset, $this->check_interval + $this->check_interval );	
 	  	update_option( $transient_ID, $posts_offset );
 	}
     
@@ -190,15 +183,36 @@ class Share_Base_Cache_Engine extends Share_Cache_Engine {
 		  
 		Common_Util::log( '[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration );
 		
+	  /*
+	  	if ( $posts_offset == 0 ) {
+		  
+		  	$transient_ID = $this->get_transient_ID( 'home' );
+		  	$url = home_url( '/' );
+		  
+			$options = array(
+				'transient_id' => $transient_ID,
+				'target_url' => $url,
+				'target_sns' => $this->target_sns,
+				'cache_expiration' => $cache_expiration
+			);
+		  
+			$this->cache( $options );
+			  
+			if ( ! is_null( $this->delegate ) && method_exists( $this->delegate, 'order_cache' ) ) {
+		  		$this->delegate->order_cache( $this, $options );
+	  		}		  	
+		}
+		*/
+	  
 		$query_args = array(
-				'post_type' => $this->post_types,
-				'post_status' => 'publish',
-				'offset' => $posts_offset,
-				'posts_per_page' => $this->posts_per_check,
-				'no_found_rows' => true,
-				'update_post_term_cache' => false,
-				'update_post_meta_cache' => false
-				);
+			'post_type' => $this->post_types,
+			'post_status' => 'publish',
+			'offset' => $posts_offset,
+			'posts_per_page' => $this->posts_per_check,
+			'no_found_rows' => true,
+			'update_post_term_cache' => false,
+			'update_post_meta_cache' => false
+		);
 
 		$posts_query = new WP_Query( $query_args );
 
@@ -208,12 +222,23 @@ class Share_Base_Cache_Engine extends Share_Cache_Engine {
 			  
 			  	$post_ID = get_the_ID();
 			  	
-			  	Common_Util::log( '[' . __METHOD__ . '] post_id: ' . $post_ID );	
+			  	Common_Util::log( '[' . __METHOD__ . '] post_id: ' . $post_ID );
 			  
-			  	$this->cache( $post_ID, $this->target_sns, $cache_expiration );
+			  	$transient_ID = $this->get_transient_ID( $post_ID );
+	  
+	  			$url = get_permalink( $post_ID );
+			  
+			  	$options = array(
+					'transient_id' => $transient_ID,
+				  	'post_id' => $post_ID,
+				  	'target_url' => $url,
+				  	'target_sns' => $this->target_sns,
+				  	'cache_expiration' => $cache_expiration
+				);
+			  
+			  	$this->cache( $options );
 			  
 			  	if ( ! is_null( $this->delegate ) && method_exists( $this->delegate, 'order_cache' ) ) {
-				  	$options = array( 'post_id' => $post_ID );
 		  			$this->delegate->order_cache( $this, $options );
 	  			}
 			}
@@ -229,16 +254,27 @@ class Share_Base_Cache_Engine extends Share_Cache_Engine {
 	 */
   	public function direct_cache( $post_ID, $second_sync = false ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-		
+			  
 	  	$cache_expiration = $this->get_cache_expiration();
 		  
 		Common_Util::log( '[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration );
+
+		$transient_ID = $this->get_transient_ID( $post_ID );
 	  
-	  	$result = $this->cache( $post_ID, $this->target_sns, $cache_expiration );
+	  	$url = get_permalink( $post_ID );
+
+		$options = array(
+			'transient_id' => $transient_ID,
+		  	'post_id' => $post_ID,
+			'target_url' => $url,
+		  	'target_sns' => $this->target_sns,
+			'cache_expiration' => $cache_expiration
+		);
+	  
+	  	$result = $this->cache( $options );
 
 	  	if ( $second_sync ) {
 			if ( ! is_null( $this->delegate ) && method_exists( $this->delegate, 'order_cache' ) ) {
-				$options = array( 'post_id' => $post_ID );
 		  		$this->delegate->order_cache( $this, $options );
 	  		}
 	  	}
@@ -269,6 +305,10 @@ class Share_Base_Cache_Engine extends Share_Cache_Engine {
   	public function initialize_cache() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
+	  	$transient_ID = $this->get_transient_ID( $this->offset_suffix );
+	  
+	  	update_option( $transient_ID, 0 );
+	  	  
   	}  
 
     /**

@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 /*
 
-Copyright (C) 2014 Daisuke Maruyama
+Copyright (C) 2014 - 2015 Daisuke Maruyama
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -102,7 +102,7 @@ class Follow_Lazy_Cache_Engine extends Follow_Cache_Engine {
 	  	if ( isset( $options['scheme_migration_mode'] ) ) $this->scheme_migration_mode = $options['scheme_migration_mode'];
 	  	if ( isset( $options['scheme_migration_exclude_keys'] ) ) $this->scheme_migration_exclude_keys = $options['scheme_migration_exclude_keys'];
 	  
-		add_action( $this->execute_cron, array( $this, 'execute_cache' ), 10, 1 );
+		add_action( $this->execute_cron, array( $this, 'execute_cache' ), 10, 0 );
 
   	}  
 
@@ -129,7 +129,7 @@ class Follow_Lazy_Cache_Engine extends Follow_Cache_Engine {
 		Common_Util::log( '[' . __METHOD__ . '] check_latency: ' . $this->check_latency );
 		Common_Util::log( '[' . __METHOD__ . '] next_exec_time: ' . $next_exec_time );
 		
-	  	wp_schedule_single_event( $next_exec_time, $this->execute_cron, array( Common_Util::short_hash( $next_exec_time ) ) ); 
+	  	wp_schedule_single_event( $next_exec_time, $this->execute_cron, array() ); 
 	}  
 
    	/**
@@ -137,17 +137,28 @@ class Follow_Lazy_Cache_Engine extends Follow_Cache_Engine {
 	 *
 	 * @since 0.4.0
 	 */	    
-	public function execute_cache( $hash ) {
+	public function execute_cache() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 		
 	  	$cache_expiration = $this->get_cache_expiration();
 		  
 		Common_Util::log( '[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration );
 
-	  	$this->cache( NULL, $this->target_sns, $cache_expiration );
+	  	$url = get_feed_link();
+	  
+	  	$transient_ID = $this->get_transient_ID( 'follow' );	  
+
+		$options = array(
+			'transient_id' => $transient_ID,
+			'target_url' => $url,
+		  	'target_sns' => $this->target_sns,
+			'cache_expiration' => $cache_expiration
+		);
+	  
+	  	$this->cache( $options );
 	  
 		if ( ! is_null( $this->delegate ) && method_exists( $this->delegate, 'order_cache' ) ) {
-		  	$this->delegate->order_cache( $this, NULL );
+		  	$this->delegate->order_cache( $this, $options );
 	  	}		  
 	}
   

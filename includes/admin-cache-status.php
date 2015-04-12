@@ -50,6 +50,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 				  	$post_id = $_GET["post_id"];
 				    										  	
 				  	$this->retrieve_share_cache( $post_id, true );
+				  
+				  Common_Util::log( '[' . __METHOD__ . '] redirect destination: ' . menu_page_url( 'scc-setting', false ) );
+				  
+				  	wp_safe_redirect( menu_page_url( 'scc-setting', false ), 303 );
+				  //exit();
+				  
 				}
 			  
 			}

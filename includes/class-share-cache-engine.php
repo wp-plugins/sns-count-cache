@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 /*
 
-Copyright (C) 2014 Daisuke Maruyama
+Copyright (C) 2014 - 2015 Daisuke Maruyama
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -62,23 +62,24 @@ abstract class Share_Cache_Engine extends Cache_Engine {
 	 *
 	 * @since 0.1.1
 	 */  	
-  	public function cache( $post_ID, $target_sns, $cache_expiration ) {
+  	public function cache( $options = array() ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-
-	  	Common_Util::log( '[' . __METHOD__ . '] post_id: ' . $post_ID );
-
-		$transient_ID = $this->get_transient_ID( $post_ID );
 	  
-		$url = get_permalink( $post_ID );
+	  	$transient_id = $options['transient_id'];
+		$target_url = $options['target_url'];
+		$target_sns = $options['target_sns'];
+		$cache_expiration = $options['cache_expiration'];
 
-	  	Common_Util::log( '[' . __METHOD__ . '] target url: ' . $url );	  
+		Common_Util::log( '[' . __METHOD__ . '] current memory usage: ' . round( memory_get_usage( true )/1024/1024, 2 ) . ' MB' );	  
 	  
-	  	$data = $this->crawler->get_data( $target_sns, $url );
+	  	Common_Util::log( '[' . __METHOD__ . '] target url: ' . $target_url );	  
+	  
+	  	$data = $this->crawler->get_data( $target_sns, $target_url );
   
 		Common_Util::log( $data );
 
-	  	if ( $this->scheme_migration_mode && Common_Util::is_secure_url( $url ) ) {
-		  	$url = Common_Util::get_normal_url( $url );
+	  	if ( $this->scheme_migration_mode && Common_Util::is_secure_url( $target_url ) ) {
+		  	$target_url = Common_Util::get_normal_url( $target_url );
 
 		  	$target_sns_migrated = $target_sns;
 		  	
@@ -86,14 +87,14 @@ abstract class Share_Cache_Engine extends Cache_Engine {
 			  	unset( $target_sns_migrated[$sns_key] );
 		  	}
 		  
-	  		Common_Util::log( '[' . __METHOD__ . '] target url: ' . $url );
+	  		Common_Util::log( '[' . __METHOD__ . '] target url: ' . $target_url );
 		  
-		  	$migrated_data = $this->crawler->get_data( $target_sns_migrated, $url );
+		  	$migrated_data = $this->crawler->get_data( $target_sns_migrated, $target_url );
 
 			Common_Util::log( $migrated_data );
 
 		  	foreach ( $target_sns_migrated as $key => $value ) {
-				if ( $value && is_numeric( $migrated_data[$key] ) && $migrated_data[$key] > 0 ){
+				if ( $value && isset( $migrated_data[$key] ) && is_numeric( $migrated_data[$key] ) && $migrated_data[$key] > 0 ){
 				  	$data[$key] = $data[$key] + $migrated_data[$key];
 				}
 			}
@@ -101,10 +102,13 @@ abstract class Share_Cache_Engine extends Cache_Engine {
 		}	  
 	  
 	  	if ( $data ) {	  
-			$result = set_transient( $transient_ID, $data, $cache_expiration ); 
+			$result = set_transient( $transient_id, $data, $cache_expiration ); 
 			  
 			Common_Util::log( '[' . __METHOD__ . '] set_transient result: ' . $result );
 	  	}
+	  
+	  	Common_Util::log( '[' . __METHOD__ . '] current memory usage: ' . round( memory_get_usage( true )/1024/1024, 2 ) . ' MB' );
+		Common_Util::log( '[' . __METHOD__ . '] max memory usage: ' . round( memory_get_peak_usage( true )/1024/1024, 2 ) . ' MB' );
 	  
 	  	return $data;
   	} 

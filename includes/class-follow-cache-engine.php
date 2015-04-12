@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 /*
 
-Copyright (C) 2014 Daisuke Maruyama
+Copyright (C) 2014 - 2015 Daisuke Maruyama
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -63,21 +63,26 @@ abstract class Follow_Cache_Engine extends Cache_Engine {
 	 *
 	 * @since 0.4.0
 	 */  	
-  	public function cache( $post_ID, $target_sns, $cache_expiration ) {
+  	public function cache( $options = array() ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-	  	$url = get_feed_link();
+	  	//$url = get_feed_link();
 	  
-	  	Common_Util::log( '[' . __METHOD__ . '] feed: ' . $url );
+	  	$transient_id = $options['transient_id'];
+		$target_url = $options['target_url'];
+		$target_sns = $options['target_sns'];
+		$cache_expiration = $options['cache_expiration'];
 	  
-		$transient_ID = $this->get_transient_ID( 'follow' );
+	  	Common_Util::log( '[' . __METHOD__ . '] feed: ' . $target_url );
+	  
+	  	//$transient_ID = $this->get_transient_ID( 'follow' );
 	  								
-	  	$data = $this->crawler->get_data( $target_sns, $url );
+	  	$data = $this->crawler->get_data( $target_sns, $target_url );
 			  
 		Common_Util::log( $data );
 
-	  	if ( $this->scheme_migration_mode && Common_Util::is_secure_url( $url ) ) {
-		  	$url = Common_Util::get_normal_url( $url );
+	  	if ( $this->scheme_migration_mode && Common_Util::is_secure_url( $target_url ) ) {
+		  	$target_url = Common_Util::get_normal_url( $target_url );
 
 		  	$target_sns_migrated = $target_sns;
 		  	
@@ -85,14 +90,14 @@ abstract class Follow_Cache_Engine extends Cache_Engine {
 			  	unset( $target_sns_migrated[$sns_key] );
 		  	}
 		  
-	  		Common_Util::log( '[' . __METHOD__ . '] feed: ' . $url );
+	  		Common_Util::log( '[' . __METHOD__ . '] feed: ' . $target_url );
 		  
-		  	$migrated_data = $this->crawler->get_data( $target_sns_migrated, $url );
+		  	$migrated_data = $this->crawler->get_data( $target_sns_migrated, $target_url );
 
 			Common_Util::log( $migrated_data );
 
 		  	foreach ( $target_sns_migrated as $key => $value ) {
-				if ( $value && is_numeric( $migrated_data[$key] ) && $migrated_data[$key] > 0 ){
+				if ( $value && isset( $migrated_data[$key] ) && is_numeric( $migrated_data[$key] ) && $migrated_data[$key] > 0 ){
 				  	$data[$key] = $data[$key] + $migrated_data[$key];
 				}
 			}
@@ -100,7 +105,7 @@ abstract class Follow_Cache_Engine extends Cache_Engine {
 		}	  
 	  
 	  	if ( $data ) {	  
-			$result = set_transient( $transient_ID, $data, $cache_expiration ); 
+			$result = set_transient( $transient_id, $data, $cache_expiration ); 
 			  
 			Common_Util::log( '[' . __METHOD__ . '] set_transient result: ' . $result );
 	  	}

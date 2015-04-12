@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 /*
 
-Copyright (C) 2014 Daisuke Maruyama
+Copyright (C) 2014 - 2015 Daisuke Maruyama
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -179,7 +179,17 @@ class Share_Second_Cache_Engine extends Cache_Engine {
 			  
 				$post_ID = get_the_ID();
 			  	
-				$this->cache( $post_ID, $this->target_sns, 0 );
+				$transient_ID = $this->get_transient_ID( $post_ID );
+	  
+	  			$url = get_permalink( $post_ID );			  
+
+				$options = array(
+					'transient_id' => $transient_ID,
+					'post_id' => $post_ID,
+		  			'target_sns' => $this->target_sns
+				);
+			  
+				$this->cache( $options );
 			  	 
 			}
 		}
@@ -192,12 +202,14 @@ class Share_Second_Cache_Engine extends Cache_Engine {
 	 *
 	 * @since 0.1.1
 	 */  	
-  	public function cache( $post_ID, $target_sns, $cache_expiration ) {
+  	public function cache( $options = array() ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
+	    			
+	  	$transient_id = $options['transient_id'];
+	  	$target_sns = $options['target_sns'];
+	  	$post_ID = $options['post_id'];
 	  
-  		$transient_ID = $this->get_transient_ID( $post_ID );
-  
-  		if ( false !== ( $sns_counts = get_transient( $transient_ID ) ) ) {
+  		if ( false !== ( $sns_counts = get_transient( $transient_id ) ) ) {
 		  	foreach ( $target_sns as $key => $value ) {
 					  				  
 				if ( $value ) {
@@ -205,10 +217,8 @@ class Share_Second_Cache_Engine extends Cache_Engine {
 				  	$meta_key = $this->meta_key_prefix . strtolower( $key );
 				  
 					if ( ! is_null( $sns_counts[$key] ) && $sns_counts[$key] >= 0 ) {
-						Common_Util::log( '[' . __METHOD__ . '] meta_key: ' . $meta_key . ' SNS: ' . $key . ' post_ID: ' . $post_ID . ' - ' . $sns_counts[$key] );
-						  	
-				  		update_post_meta($post_ID, $meta_key, $sns_counts[$key]);
-						//$data[$key][$post_ID] = $sns_counts[$key];
+					  	//$post_ID = url_to_postid( $target_url );
+				  		update_post_meta( $post_ID, $meta_key, $sns_counts[$key]);
 					}
 				}
 			}
