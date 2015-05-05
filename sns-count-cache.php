@@ -2,7 +2,7 @@
 /*
 Plugin Name: SNS Count Cache
 Description: SNS Count Cache gets share count for Twitter and Facebook, Google Plus, Pocket, Hatena Bookmark and caches these count in the background. This plugin may help you to shorten page loading time because the share count can be retrieved not through network but through the cache using given functions.
-Version: 0.5.1 RC1
+Version: 0.5.1
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -460,7 +460,12 @@ final class SNS_Count_Cache implements Cache_Order {
 	 * URL of loding image
 	 */  
   	private $loading_img_url = '';
-  
+
+  	/**
+	 * ajax action
+	 */  
+  	private $ajax_action = 'scc_cache_info';
+ 
   	/**
 	 * Instance
 	 */
@@ -487,8 +492,9 @@ final class SNS_Count_Cache implements Cache_Order {
 
 		add_action( 'plugins_loaded', array( $this, 'initialize' ) );
 	  
-	  	add_action( 'wp_ajax_scc_cache_info', array( $this, 'get_cache_info' ) );
+	  	add_action( 'wp_ajax_' . $this->ajax_action, array( $this, 'get_cache_info' ) ); 
 	  
+	  	add_action( 'wp_dashboard_setup', array( $this, 'add_wp_dashboard_widget' ) );
 	}
 
     /**
@@ -524,7 +530,7 @@ final class SNS_Count_Cache implements Cache_Order {
 	  	$this->follow_base_check_interval = ! empty( $follow_base_check_interval ) ? intval( $follow_base_check_interval ) : self::OPT_FOLLOW_BASE_CHECK_INTERVAL;
 	  	  
 	  	$dynamic_cache_mode = get_option( self::DB_COMMON_DYNAMIC_CACHE );
-	  	$this->dynamic_cache_mode = ! empty( $dynamic_cache_mode ) ? $dynamic_cache_mode : self::OPT_COMMON_ACCESS_BASED_2ND_CACHE;
+	  	$this->dynamic_cache_mode = isset( $dynamic_cache_mode ) ? $dynamic_cache_mode : self::OPT_COMMON_ACCESS_BASED_2ND_CACHE;
 	  
 	  	$share_rush_new_content_term = get_option( self::DB_SHARE_NEW_CONTENT_TERM );
 	  	$this->share_rush_new_content_term = ! empty( $share_rush_new_content_term ) ? intval( $share_rush_new_content_term ) : self::OPT_SHARE_RUSH_NEW_CONTENT_TERM;
@@ -781,8 +787,9 @@ final class SNS_Count_Cache implements Cache_Order {
 	  
 		if ( in_array( $screen->id, $this->plugin_screen_hook_suffix ) ) {
 			wp_enqueue_script( self::DOMAIN . '-admin-script-1' , plugins_url( ltrim( '/js/prettify.js', '/' ) , __FILE__ ), array( 'jquery' ) );
+		  
 		  	wp_enqueue_script( self::DOMAIN . '-admin-script-2' , plugins_url( ltrim( '/js/jquery.scc-cache-info.min.js', '/' ) , __FILE__ ), array( 'jquery' ) );
-		  	wp_localize_script( self::DOMAIN . '-admin-script-2', 'scc', array( 'endpoint' => admin_url('admin-ajax.php'), 'action' => 'scc_cache_info' ) );
+		  	wp_localize_script( self::DOMAIN . '-admin-script-2', 'scc', array( 'endpoint' => admin_url( 'admin-ajax.php' ), 'action' => $this->ajax_action, 'nonce' => wp_create_nonce( $this->ajax_action ) ) );
 		}
 	} 
 
@@ -872,6 +879,8 @@ final class SNS_Count_Cache implements Cache_Order {
     public function action_admin_menu() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 
+	  	$this->plugin_screen_hook_suffix[] = 'dashboard';
+	  
 	  	$this->plugin_screen_hook_suffix[] = add_menu_page( 'SNS Count Cache', 'SNS Count Cache', 'administrator', 'scc-dashboard', array( $this, 'dashboard_page' ), 'dashicons-share' );
 	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', 'Dashboard | SNS Count Cache', 'Dashboard', 'administrator', 'scc-dashboard', array( $this, 'dashboard_page' ) );
 	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', 'Cache Status | SNS Count Cache', 'Cache Status', 'administrator', 'scc-cache-status', array( $this, 'cache_status_page' ) );
@@ -880,6 +889,25 @@ final class SNS_Count_Cache implements Cache_Order {
 	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', 'Help | SNS Count Cache', 'Help', 'administrator', 'scc-help', array( $this, 'help_page' ) );
     }
 
+   /**
+     * Add widget to wordpress dashboard
+     *
+	 * @since 0.5.1
+	 */	    
+  	public function add_wp_dashboard_widget() {
+	  	wp_add_dashboard_widget( 'scc_dashboard', 'SNS Count Cache', array( $this, 'wp_dashboard_page' ) );	  	
+	}
+  
+   /**
+     * Option page implementation
+     *
+	 * @since 0.5.1
+	 */	  	
+ 	public function wp_dashboard_page() {
+	  	include_once( dirname( __FILE__ ) . '/includes/admin-dashboard-widget.php' );
+	}
+  
+  
    /**
      * Option page implementation
      *
@@ -1037,7 +1065,12 @@ final class SNS_Count_Cache implements Cache_Order {
 		}
 	  
   	}
-  
+
+  	/**
+	 * Return pagination
+	 *
+	 * @since 0.4.0
+	 */  
   	private function pagination( $numpages = '', $pagerange = '', $paged='', $inherit_param = true ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
  
@@ -1093,21 +1126,12 @@ final class SNS_Count_Cache implements Cache_Order {
 		$paginate_links = paginate_links( $pagination_args );
 	  
 	  	if ( $inherit_param ) {
-		  	Common_Util::log( '[' . __METHOD__ . '] inherit param: true' );
-					  
+		  	Common_Util::log( '[' . __METHOD__ . '] inherit param: true' );					  
 		} else {
-
 		  	Common_Util::log( '[' . __METHOD__ . '] inherit param: false' );
 		  		  
 		  	$pattern = '/(&#038;action=cache&#038;post_id=[0-9]+&#038;_wpnonce=.{10})/';
-		  
-		  	Common_Util::log( '[' . __METHOD__ . '] paginate_links: ' . $paginate_links );		  	
-		  	Common_Util::log( $paginate_links );
-
-		  	$paginate_links = preg_replace($pattern, '', $paginate_links);
-
-		  	Common_Util::log( '[' . __METHOD__ . '] paginate_links: ' . $paginate_links );
-		  		  		  	  
+		  	$paginate_links = preg_replace($pattern, '', $paginate_links);		  		  		  	  
 		}
 	    
   		if ( $paginate_links ) {
@@ -1118,177 +1142,193 @@ final class SNS_Count_Cache implements Cache_Order {
   		}
 			
 	}
-  
+
+  	/**
+	 * Return cache information through ajax interface
+	 *
+	 * @since 0.5.1
+	 */    
   	public function get_cache_info() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-	  
-		$share_base_cache_target = $this->share_base_cache_target ;
-		unset( $share_base_cache_target[self::REF_CRAWL_DATE] );
+
+		if ( isset( $_REQUEST['nonce'] ) && wp_verify_nonce( $_REQUEST['nonce'], $this->ajax_action ) ) {
+			if ( current_user_can( 'administrator' ) ) {  
+				$share_base_cache_target = $this->share_base_cache_target ;
+				unset( $share_base_cache_target[self::REF_CRAWL_DATE] );
 			
-		$count = 1;
+				$count = 1;
 									  
-		$posts_count = 0;
-		$primary_full_cache_count = 0;
-		$primary_partial_cache_count = 0;
-		$primary_no_cache_count = 0;
+				$posts_count = 0;
+				$primary_full_cache_count = 0;
+				$primary_partial_cache_count = 0;
+				$primary_no_cache_count = 0;
 									
-		$secondary_full_cache_count = 0;
-		$secondary_partial_cache_count = 0;
-		$secondary_no_cache_count = 0;
+				$secondary_full_cache_count = 0;
+				$secondary_partial_cache_count = 0;
+				$secondary_no_cache_count = 0;
 
-		$sum = array();
-		$return = array();
+				$sum = array();
+				$return = array();
 	  
-		foreach ( $share_base_cache_target as $key => $value ) {
-			if( $value ){
-				$sum[$key] = 0;
-			}
-		}	  
+				foreach ( $share_base_cache_target as $key => $value ) {
+					if( $value ){
+						$sum[$key] = 0;
+					}
+				}	  
 	  
-		$query_args = array(
-			'post_type' => $this->share_base_cache_post_types,
-			'post_status' => 'publish',
-			'nopaging' => true,
-			'update_post_term_cache' => false,
-			'update_post_meta_cache' => false
-			);
+				$query_args = array(
+					'post_type' => $this->share_base_cache_post_types,
+					'post_status' => 'publish',
+					'nopaging' => true,
+					'update_post_term_cache' => false,
+					'update_post_meta_cache' => false
+					);
 
-		$site_query = new WP_Query( $query_args );
+				set_time_limit( $this->extended_max_execution_time  );
 	  
-		set_time_limit( $this->extended_max_execution_time  );
+				$site_query = new WP_Query( $query_args );
 			
-		if ( $site_query->have_posts() ) {
-			while ( $site_query->have_posts() ) {
-				$site_query->the_post();
+				if ( $site_query->have_posts() ) {
+					while ( $site_query->have_posts() ) {
+						$site_query->the_post();
 										  
-				$posts_count++;
+						$posts_count++;
 
-			  	$full_cache_flag = true;
-				$partial_cache_flag = false;		
+			  			$full_cache_flag = true;
+						$partial_cache_flag = false;		
 			  
-				$transient_id = self::OPT_SHARE_BASE_TRANSIENT_PREFIX . get_the_ID();
+						$transient_id = self::OPT_SHARE_BASE_TRANSIENT_PREFIX . get_the_ID();
 																	  
-				if ( false === ( $sns_counts = get_transient( $transient_id ) ) ) {
+						if ( false === ( $sns_counts = get_transient( $transient_id ) ) ) {
 
-		  
-					foreach ( $share_base_cache_target as $key => $value ) {
+							foreach ( $share_base_cache_target as $key => $value ) {
 						  
-						if( $value ){
-							$meta_key = self::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
-							$sns_counts[$key] = get_post_meta( get_the_ID(), $meta_key, true );
+								if( $value ){
+									$meta_key = self::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
+									$sns_counts[$key] = get_post_meta( get_the_ID(), $meta_key, true );
 															
-							if ( isset( $sns_counts[$key] ) &&  $sns_counts[$key] >= 0 ) {
-								$sum[$key] = $sum[$key] + $sns_counts[$key];
-							  	$partial_cache_flag  = true;
-							} else {
-							  	$full_cache_flag = false;
+									if ( isset( $sns_counts[$key] ) && $sns_counts[$key] !== '' &&  $sns_counts[$key] >= 0 ) {
+										$sum[$key] = $sum[$key] + $sns_counts[$key];
+							  			$partial_cache_flag  = true;
+									} else {
+							  			$full_cache_flag = false;
+									}
+								}
 							}
-						}
-					}
 
-					if ( $partial_cache_flag && $full_cache_flag ) {
-						$secondary_full_cache_count++;
-					} else if ( $partial_cache_flag && ! $full_cache_flag ) {
-						$secondary_partial_cache_count++;								  
-					} else {
-						$secondary_no_cache_count++;
-					}
+							if ( $partial_cache_flag && $full_cache_flag ) {
+								$secondary_full_cache_count++;
+							} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+								$secondary_partial_cache_count++;								  
+							} else {
+								$secondary_no_cache_count++;
+							}
 
-					$primary_no_cache_count++;				  
+							$primary_no_cache_count++;				  
 				  
-				} else {
+						} else {
 			  
-					foreach ( $share_base_cache_target as $key => $value ) {
-						if ( $value ) {										  
-							if ( isset( $sns_counts[$key] ) && $sns_counts[$key] >= 0 ) {
-								$sum[$key] = $sum[$key] + $sns_counts[$key];
-							  	$partial_cache_flag = true;
+							foreach ( $share_base_cache_target as $key => $value ) {
+								if ( $value ) {										  
+									if ( isset( $sns_counts[$key] ) && $sns_counts[$key] >= 0 ) {
+										$sum[$key] = $sum[$key] + $sns_counts[$key];
+							  			$partial_cache_flag = true;
+									} else {
+							  			$full_cache_flag = false;
+									}
+								}
+							}				  
+				  
+							if ( $partial_cache_flag && $full_cache_flag ) {
+								$primary_full_cache_count++;
+							} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+								$primary_partial_cache_count++;
 							} else {
-							  	$full_cache_flag = false;
+								$primary_no_cache_count++;
 							}
-						}
-					}				  
 				  
-					if ( $partial_cache_flag && $full_cache_flag ) {
-						$primary_full_cache_count++;
-					} else if ( $partial_cache_flag && ! $full_cache_flag ) {
-						$primary_partial_cache_count++;
-					} else {
-						$primary_no_cache_count++;
-					}
+			  				$full_cache_flag = true;
+							$partial_cache_flag = false;					  	
 				  
-			  		$full_cache_flag = true;
-					$partial_cache_flag = false;					  	
-				  
-					foreach ( $share_base_cache_target as $key => $value ) {
+							foreach ( $share_base_cache_target as $key => $value ) {
 						  
-						if( $value ){
-							$meta_key = self::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
-							$sns_counts[$key] = get_post_meta( get_the_ID(), $meta_key, true );
+								if( $value ){
+									$meta_key = self::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
+									$sns_counts[$key] = get_post_meta( get_the_ID(), $meta_key, true );
 															
-							if ( isset( $sns_counts[$key] ) &&  $sns_counts[$key] >= 0 ) {
-							  	$partial_cache_flag  = true;
-							} else {
-							  	$full_cache_flag = false;
+									if ( isset( $sns_counts[$key] ) && $sns_counts[$key] !== '' &&  $sns_counts[$key] >= 0 ) {
+							  			$partial_cache_flag  = true;
+									} else {
+							  			$full_cache_flag = false;
+									}
+								}
 							}
+
+							if ( $partial_cache_flag && $full_cache_flag ) {
+								$secondary_full_cache_count++;
+							} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+								$secondary_partial_cache_count++;								  
+							} else {
+								$secondary_no_cache_count++;
+							}
+						  
 						}
 					}
-
-					if ( $partial_cache_flag && $full_cache_flag ) {
-						$secondary_full_cache_count++;
-					} else if ( $partial_cache_flag && ! $full_cache_flag ) {
-						$secondary_partial_cache_count++;								  
-					} else {
-						$secondary_no_cache_count++;
-					}				  
-				  
+					wp_reset_postdata();
 				}
-			}
-			wp_reset_postdata();
-		}
 		
-		set_time_limit( $this->original_max_execution_time  );
+				set_time_limit( $this->original_max_execution_time  );
 	  
-	  	foreach ( $share_base_cache_target as $key => $value ) {
-		  	if ( $key == self::REF_SHARE_GPLUS ){
-				$return['share_count']['gplus'] = number_format( (int) $sum[$key] );
-			} else {
-				$return['share_count'][strtolower( $key )] = number_format( (int) $sum[$key] );
-			}
-		}	  	
+	  			foreach ( $share_base_cache_target as $key => $value ) {
+					
+				  	if ( $value && isset( $sum[$key] ) ) {
+				  		if ( $key == self::REF_SHARE_GPLUS ){
+							$return['share_count']['gplus'] = number_format( (int) $sum[$key] );
+						} else {
+							$return['share_count'][strtolower( $key )] = number_format( (int) $sum[$key] );
+						}
+					}
+				}	  	
 
-	  	$return['post_count'] = $posts_count;
-	  	$return['primary']['full_cache_count'] = $primary_full_cache_count; 
-	  	$return['primary']['partial_cache_count'] = $primary_partial_cache_count; 
-	  	$return['primary']['no_cache_count'] = $primary_no_cache_count; 
-	  	$return['secondary']['full_cache_count'] = $secondary_full_cache_count; 
-	  	$return['secondary']['partial_cache_count'] = $secondary_partial_cache_count; 
-	  	$return['secondary']['no_cache_count'] = $secondary_no_cache_count; 	 	  
+	  			$return['post_count'] = $posts_count;
+	  			$return['primary']['full_cache_count'] = $primary_full_cache_count; 
+	  			$return['primary']['partial_cache_count'] = $primary_partial_cache_count; 
+	  			$return['primary']['no_cache_count'] = $primary_no_cache_count; 
+	  			$return['secondary']['full_cache_count'] = $secondary_full_cache_count; 
+	  			$return['secondary']['partial_cache_count'] = $secondary_partial_cache_count; 
+	  			$return['secondary']['no_cache_count'] = $secondary_no_cache_count; 	 	  
 	  
-		if ( $primary_full_cache_count == $posts_count ) {
-			$return['primary']['cache_status'] = __( 'Completed', self::DOMAIN );
-		} else if ( ( $primary_full_cache_count + $primary_partial_cache_count ) == $posts_count ) {
-			$return['primary']['cache_status'] = __( 'Partially Completed', self::DOMAIN );  	
-		} else {
-			$return['primary']['cache_status'] = __( 'Ongoing', self::DOMAIN );
-		}
+				if ( $primary_full_cache_count == $posts_count ) {
+					$return['primary']['cache_status'] = __( 'Completed', self::DOMAIN );
+				} else if ( ( $primary_full_cache_count + $primary_partial_cache_count ) == $posts_count ) {
+					$return['primary']['cache_status'] = __( 'Partially Completed', self::DOMAIN );  	
+				} else {
+					$return['primary']['cache_status'] = __( 'Ongoing', self::DOMAIN );
+				}
 	  
-		if ( $secondary_full_cache_count == $posts_count ) {
-			$return['secondary']['cache_status'] = __( 'Completed', self::DOMAIN );
-		} else if ( ( $secondary_full_cache_count + $secondary_partial_cache_count ) == $posts_count ) {
-			$return['secondary']['cache_status'] = __( 'Partially Completed', self::DOMAIN );  	
-		} else {
-			$return['secondary']['cache_status'] = __( 'Ongoing', self::DOMAIN );
-		}	  	
+				if ( $secondary_full_cache_count == $posts_count ) {
+					$return['secondary']['cache_status'] = __( 'Completed', self::DOMAIN );
+				} else if ( ( $secondary_full_cache_count + $secondary_partial_cache_count ) == $posts_count ) {
+					$return['secondary']['cache_status'] = __( 'Partially Completed', self::DOMAIN );  	
+				} else {
+					$return['secondary']['cache_status'] = __( 'Ongoing', self::DOMAIN );
+				}	  	
 
-
-	  	$callback = $_GET["callback"];
+	  			$callback = $_REQUEST["callback"];
 	  
-	  	header('Content-type: application/javascript; charset=utf-8');
+	  			header('Content-type: application/javascript; charset=utf-8');
 	  	
-	  	echo $callback . '(' . json_encode( $return ) . ')';
-
-	  	die();
+	  			echo $callback . '(' . json_encode( $return ) . ')';
+			} else {
+        		status_header( '403' );
+        		echo 'Forbidden';			  	
+			}
+		} else {
+        	status_header( '403' );
+        	echo 'Forbidden';
+    	}
+	  
+    	die();
   	}
       
 }
@@ -1319,17 +1359,11 @@ function scc_get_share( $options = array( 'id' => '', 'url' => '', 'sns' => '' )
   
   	if ( false !== ( $sns_counts = get_transient( $transient_ID ) ) ) {
 	  	if ( $sns_key ) {
-		  
-		  	$sns_count = $sns_counts[$sns_key];
-		  			  	
-			if ( isset( $sns_count ) && $sns_count >= 0 ) { 
-				$sns_counts[$sns_key] = $sns_count;
-			} else {
+			if ( ! isset( $sns_counts[$sns_key] ) || $sns_counts[$sns_key] < 0 ) { 				
 				$sns_counts[$sns_key] = 0;
-			}					  						  		  	
+			}
 		  	return $sns_counts[$sns_key];
-		} else {
-		  	
+		} else {		  	
 		  	foreach ( $sns_counts as $key => $value ) {
 			  	if ( isset( $value ) && $value >= 0 ) {
 				  	$sns_counts[$key] = $value;
@@ -1361,8 +1395,18 @@ function scc_get_share( $options = array( 'id' => '', 'url' => '', 'sns' => '' )
 		  	case SNS_Count_Cache::OPT_COMMON_ACCESS_BASED_SYNC_CACHE:
 		  			$sns_counts = $sns_count_cache->retrieve_share_cache( $post_ID, true );
 					if ( $sns_key ) {
+					  	if ( ! isset( $sns_counts[$sns_key] ) || $sns_counts[$sns_key] < 0 ) { 				
+							$sns_counts[$sns_key] = 0;
+						}					  	
 		  				return $sns_counts[$sns_key];
 					} else {
+		  				foreach ( $sns_counts as $key => $value ) {
+			  				if ( isset( $value ) && $value >= 0 ) {
+				  				$sns_counts[$key] = $value;
+							} else {
+				  				$sns_counts[$key] = 0;
+							}
+		  				}							  	
 		  				return $sns_counts;
 					}	  
 		  			break;
@@ -1385,15 +1429,14 @@ function scc_get_share( $options = array( 'id' => '', 'url' => '', 'sns' => '' )
 		  	case SNS_Count_Cache::OPT_COMMON_ACCESS_BASED_2ND_CACHE:
 		  			$sns_count_cache->reserve_share_cache( $post_ID );
 		  			if ( $sns_key ) {
-					    $meta_key = SNS_Count_Cache::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $sns_key );
-					  	
+					    $meta_key = SNS_Count_Cache::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $sns_key );					  	
 						$sns_count = get_post_meta( $post_ID, $meta_key, true );
 							  	
-						if ( isset( $sns_count ) && $sns_count >= 0) { 
+						if ( isset( $sns_count ) && $sns_count !== '' && $sns_count >= 0) { 
 							$sns_counts[$sns_key] = $sns_count;
 						} else {
 							$sns_counts[$sns_key] = 0;
-						}					  						  
+						}
 		  				return $sns_counts[$sns_key];
 					} else {
 					  	$base_cache_target = $sns_count_cache->get_share_base_cache_target();
@@ -1401,10 +1444,9 @@ function scc_get_share( $options = array( 'id' => '', 'url' => '', 'sns' => '' )
 					  	foreach ( $base_cache_target as $key => $value ) {
 					  		if ( $value ) {
 							    $meta_key = SNS_Count_Cache::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
-							  
 							  	$sns_count = get_post_meta( $post_ID, $meta_key, true );
 							  	
-							  	if ( isset( $sns_count ) && $sns_count >= 0 ) { 
+							  	if ( isset( $sns_count ) && $sns_count !== '' && $sns_count >= 0 ) { 
 							  		$sns_counts[$key] = $sns_count;
 								} else {
 								  	$sns_counts[$key] = 0;
@@ -1443,14 +1485,9 @@ function scc_get_follow( $options = array( 'id' => '', 'sns' => '' ) ) {
   
   	if ( false !== ( $sns_followers = get_transient( $transient_ID ) ) ) {
 	  	if ( $sns_key ) {
-		  	$sns_follower = $sns_followers[$sns_key];
-		  	
-		  	if ( isset( $sns_follower ) && $sns_follower >= 0 ){
-			  	$sns_followers[$sns_key] = $sns_follower;
-			} else {
-			  	$sns_followers[$sns_key] = 0;
+			if ( ! isset( $sns_followers[$sns_key] ) || $sns_followers[$sns_key] < 0 ) { 				
+				$sns_followers[$sns_key] = 0;
 			}
-		  
 		  	return $sns_followers[$sns_key];
 		} else {
 		  	foreach ( $sns_followers as $key => $value ) {
@@ -1484,9 +1521,19 @@ function scc_get_follow( $options = array( 'id' => '', 'sns' => '' ) ) {
 		  	case SNS_Count_Cache::OPT_COMMON_ACCESS_BASED_SYNC_CACHE:
 		  			$sns_followers = $sns_count_cache->retrieve_follow_cache();
 					if ( $sns_key ) {
+					  	if ( ! isset( $sns_followers[$sns_key] ) || $sns_followers[$sns_key] < 0 ) { 				
+							$sns_followers[$sns_key] = 0;
+						}						  
 		  				return $sns_followers[$sns_key];
 					} else {
-		  				return $sns_followers;
+		  				foreach ( $sns_followers as $key => $value ) {
+			  				if ( isset( $value ) && $value >= 0 ) {
+				  				$sns_followers[$key] = $value;
+							} else {
+				  				$sns_followers[$key] = 0;
+							}
+		  				}				
+						return $sns_followers;
 					}	  
 		  			break;
 		  	case SNS_Count_Cache::OPT_COMMON_ACCESS_BASED_ASYNC_CACHE:
@@ -1511,13 +1558,16 @@ function scc_get_follow( $options = array( 'id' => '', 'sns' => '' ) ) {
 		  			if ( $sns_key ) {
 					    $meta_key = SNS_Count_Cache::OPT_FOLLOW_2ND_META_KEY_PREFIX . strtolower( $sns_key );
 					  					  
-					  	$sns_follower = get_option( $meta_key );
-					  
-					  	if ( isset( $sns_follower ) && $sns_follower >= 0 ) { 
-					  		$sns_followers[$sns_key] = $sns_follower;
-						} else {
-						  	$sns_followers[$sns_key] = 0;
+						if ( false !== ( $sns_follower = get_option( $meta_key ) ) ) {						
+							if ( $sns_follower >= 0 ) { 
+							  	$sns_followers[$sns_key] = $sns_follower;
+							} else {
+								$sns_followers[$sns_key] = 0;
+							}
+						}else {
+							$sns_followers[$sns_key] = 0;
 						}					  
+					  
 		  				return $sns_followers[$sns_key];
 					} else {
 					  	$base_cache_target = $sns_count_cache->get_follow_base_cache_target();
@@ -1526,11 +1576,13 @@ function scc_get_follow( $options = array( 'id' => '', 'sns' => '' ) ) {
 					  		if ( $value ) {
 							    $meta_key = SNS_Count_Cache::OPT_FOLLOW_2ND_META_KEY_PREFIX . strtolower( $key );
 							  
-							  	$sns_follower = get_option( $meta_key );
-							  
-							  	if ( isset( $sns_follower ) && $sns_follower >= 0 ) { 
-							  		$sns_followers[$key] = $sns_follower;
-								} else {
+							  	if ( false !== ( $sns_follower = get_option( $meta_key ) ) ) {						
+							  		if ( $sns_follower >= 0 ) { 
+							  			$sns_followers[$key] = $sns_follower;
+									} else {
+								  		$sns_followers[$key] = 0;
+									}
+								}else {
 								  	$sns_followers[$key] = 0;
 								}
 							}

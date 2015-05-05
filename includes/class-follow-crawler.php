@@ -3,7 +3,6 @@
 class-sns-follow-crawler.php
 
 Description: This class is a data crawler whitch get share count using given API and cURL
-Version: 0.3.0
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later

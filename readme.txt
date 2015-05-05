@@ -3,7 +3,7 @@ Contributors: marubon
 Donate link: 
 Tags: performance, SNS, social, cache, share
 Requires at least: 3.7
-Tested up to: 4.1.1
+Tested up to: 4.2.1
 Stable tag: 0.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -88,6 +88,11 @@ There are no questions.
 = 0.5.0 =
 * Added: function to cache share count for both old and new url in https migration. 
 * Fixed: share count of Facebook becomes invalid when the count is more than four digits.
+
+= 0.5.1 =
+* Improved: Each retrieval time of SNS count is shortened. 
+* Improved: loading time of dashboard page is shortened using ajax loading technique.
+* Fixed: SNS count of facebook can be 0.
 
 == Upgrade Notice ==
 The following functions are deprecated.

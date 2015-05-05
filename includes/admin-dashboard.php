@@ -3,7 +3,6 @@
 admin-dashboard.php
 
 Description: Option page implementation
-Version: 0.4.0
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -12,7 +11,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 /*
 
-Copyright (C) 2014 Daisuke Maruyama
+Copyright (C) 2014 - 2015 Daisuke Maruyama
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -52,160 +51,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 					  	<a class="nav-tab" href="admin.php?page=scc-setting">Setting</a>
 					  	<a class="nav-tab" href="admin.php?page=scc-help">Help</a>
 			  		</h3>
-					<div class="metabox-holder">
-						<div id="current-parameter" class="postbox">
-							<div class="handlediv" title="Click to toggle"><br></div>
-							<h3 class="hndle"><span><?php _e( 'Current Setting', self::DOMAIN ) ?></span></h3>  	
-							<div class="inside">
-							  	<p><?php _e( 'The following describes registered parameters.', self::DOMAIN ) ?></p>
-								<table class="view-table">				  
-									<thead>
-			  							<tr>
-						  					<th><?php _e( 'Function', self::DOMAIN ) ?></th>
-											<th><?php _e( 'Parameter', self::DOMAIN ) ?></th>
-											<th><?php _e( 'Value', self::DOMAIN ) ?></th>
-			  							</tr>
-									</thead>
-									<tbody>
-			  						<tr>
-						 				<td><?php _e( 'Share Base Cache', self::DOMAIN) ?></td><td><?php _e('Target SNS', self::DOMAIN ) ?></td>
-						  				<td>
-							  				<?php
-					  							$target_sns = array();
-					  							if ( isset( $this->share_base_cache_target[self::REF_SHARE_TWITTER] ) && $this->share_base_cache_target[self::REF_SHARE_TWITTER] ) {
-									  				$target_sns[] = 'Twitter';
-												}
-					  							if ( isset( $this->share_base_cache_target[self::REF_SHARE_FACEBOOK] ) && $this->share_base_cache_target[self::REF_SHARE_FACEBOOK] ) {
-									  				$target_sns[] = 'Facebook';
-												}
-					  							if ( isset( $this->share_base_cache_target[self::REF_SHARE_GPLUS] ) && $this->share_base_cache_target[self::REF_SHARE_GPLUS] ) {
-									  				$target_sns[] = 'Google+';
-												}
-					  							if ( isset( $this->share_base_cache_target[self::REF_SHARE_POCKET] ) && $this->share_base_cache_target[self::REF_SHARE_POCKET] ) {
-									  				$target_sns[] = 'Pocket';
-												}
-					  							if ( isset( $this->share_base_cache_target[self::REF_SHARE_HATEBU] ) && $this->share_base_cache_target[self::REF_SHARE_HATEBU] ) {
-									  				$target_sns[] = 'Hatena Bookmark';
-												}
-							  					echo implode( ", ", $target_sns );
-							  				?>
-						  				</td>
-			  						</tr>
-			  						<tr>
-						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Additional custom post types', self::DOMAIN ) ?></td>
-						  				<td><?php								  
-											  	if ( ! empty( $this->share_base_custom_post_types ) && $this->share_base_custom_post_types ) {
-												  	echo implode( ',', $this->share_base_custom_post_types );
-												} else {
-											  		_e( 'N/A', self::DOMAIN );
-												}
-										  	?>
-									  	</td>
-			  						</tr>									  
-			  						<tr>
-						 				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Interval cheking and caching share count', self::DOMAIN ) ?></td>
-						  				<td><?php echo $this->share_base_check_interval . ' seconds'; ?></td>
-			  						</tr>
-			  						<tr>
-						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Number of posts to check at a time', self::DOMAIN ) ?></td>
-						  				<td><?php echo $this->share_base_posts_per_check . ' posts'; ?></td>
-			  						</tr>
-			  						<tr>
-						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Migration mode from http to https', self::DOMAIN ) ?></td>
-						  				<td>
-										  	<?php 
-											  if ( $this->scheme_migration_mode ) {
-													echo 'On'; 
-											  } else {
-													echo 'Off';
-											  }
-										  	?>
-									  	</td>
-			  						</tr>									  
-			  						<tr>
-						  				<td><?php _e( 'Share Rush Cache', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Term considering posted content as new content', self::DOMAIN ) ?></td>
-						  				<td>
-							  				<?php 
-								  			if ( $this->share_rush_new_content_term == 1 ) {
-								  				echo $this->share_rush_new_content_term . ' day';
-								  			} else if ( $this->share_rush_new_content_term > 1 ) {
-												echo $this->share_rush_new_content_term . ' days';
-								  			}
-							  				?>
-						  				</td>
-			  						</tr>
-			  						<tr>
-						 				<td><?php _e( 'Follow Base Cache', self::DOMAIN) ?></td><td><?php _e('Target SNS', self::DOMAIN ) ?></td>
-						  				<td>
-							  				<?php
-					  							$target_sns = array();
-					  							if ( isset( $this->follow_base_cache_target[self::REF_FOLLOW_FEEDLY] ) && $this->follow_base_cache_target[self::REF_FOLLOW_FEEDLY] ) {
-									  				$target_sns[] = 'Feedly';
-												}
-							  					echo implode( ", ", $target_sns );
-							  				?>
-						  				</td>
-			  						</tr>	
-			  						<tr>
-						 				<td><?php _e( 'Follow Base Cache', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Interval cheking and caching follower count', self::DOMAIN ) ?></td>
-						  				<td><?php echo $this->follow_base_check_interval . ' seconds'; ?></td>
-			  						</tr>						  
-			  						<tr>
-										<td><?php _e( 'Dynamic Cache', self::DOMAIN) ?></td><td><?php _e( 'Dynamic caching based on user access', self::DOMAIN ) ?></td><td>
-						  				<?php
-					  						switch ( $this->dynamic_cache_mode ) {
-		  										case self::OPT_COMMON_ACCESS_BASED_CACHE_NONE:
-		  											_e( 'disabled', self::DOMAIN );
-		  											break;
-		  										case self::OPT_COMMON_ACCESS_BASED_SYNC_CACHE:
-		  											_e( 'enabled (Synchronous Cache)', self::DOMAIN );
-		  											break;
-		  										case self::OPT_COMMON_ACCESS_BASED_ASYNC_CACHE:
-		  											_e( 'enabled (Asynchronous Cache)', self::DOMAIN );
-											  		break;
-								  				case self::OPT_COMMON_ACCESS_BASED_2ND_CACHE:
-													_e( 'enabled (Asynchronous 2nd Cache)', self::DOMAIN );								  
-		  											break;
-											}
-						  				?>
-						  				</td>
-			  						</tr>									  
-			  						<tr>
-										<td><?php _e( 'Data Export', self::DOMAIN) ?></td><td><?php _e( 'Method of data export', self::DOMAIN ) ?></td><td>
-						  				<?php
-					  						switch ( $this->data_export_mode ) {
-		  										case self::OPT_COMMON_DATA_EXPORT_MANUAL:
-		  											_e( 'Manual', self::DOMAIN );
-		  											break;
-		  										case self::OPT_COMMON_DATA_EXPORT_AUTO:
-		  											_e( 'Auto', self::DOMAIN );
-		  											break;
-											}
-						  				?>
-						  				</td>
-			  						</tr>
-									<?php
-										if ( $this->data_export_mode == self::OPT_COMMON_DATA_EXPORT_AUTO ) {
-									?>
-			  						<tr>
-						 				<td><?php _e( 'Data Export', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Interval exporting share count to a csv file', self::DOMAIN ) ?></td>
-									  	<td><?php echo $this->data_export_interval / 3600 . ' hours'; ?></td>
-			  						</tr>
-									<?php
-										}
-									?>
-									</tbody>
-		  						</table>
-						  	</div>								  								  
-						 </div>
-			  		</div>
 			  
 					<div class="metabox-holder">
 						<div id="site-summary-cache" class="site-summary postbox">

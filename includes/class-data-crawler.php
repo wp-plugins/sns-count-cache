@@ -3,7 +3,6 @@
 class-data-crawler.php
 
 Description: This class is abstract class of a data crawler
-Version: 0.3.0
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later

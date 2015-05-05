@@ -1,8 +1,15 @@
-jQuery(document).ready(function($){
+/*
+jquery.scc-cache-info.js
+Author: Daisuke Maruyama
+Author URI: http://marubon.info/
+License: GPL2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+*/
+;jQuery(document).ready(function($){
     return $('#scc-dashboard').each(function(){
         $("span[data-scc]").css('display', 'none');    
         $.ajax({
-            url: scc.endpoint + '?action=' + scc.action,
+            url: scc.endpoint + '?action=' + scc.action + '&nonce=' + scc.nonce,
             dataType: 'jsonp',
             success: function(res){
                         if(res){
@@ -32,7 +39,7 @@ jQuery(document).ready(function($){
                         }
                     },
             error: function(res){
-                    console.log(res);
+                    	$("span[data-scc]").text('?');
                     }
         });
     });

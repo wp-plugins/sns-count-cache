@@ -3,7 +3,6 @@
 class-common-util.php
 
 Description: This class is a common utility  
-Version: 0.3.0
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later

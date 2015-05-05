@@ -3,7 +3,6 @@
 class-follow-base-cache-engine.php
 
 Description: This class is a data cache engine whitch get and cache data using wp-cron at regular intervals  
-Version: 0.4.0
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -193,7 +192,7 @@ class Follow_Base_Cache_Engine extends Follow_Cache_Engine {
 	  	$transient_ID = $this->get_transient_ID( 'follow' );
 	  
 		$options = array(
-			'ransient_id' => $transient_ID,
+			'transient_id' => $transient_ID,
 			'target_url' => $url,
 		  	'target_sns' => $this->target_sns,
 			'cache_expiration' => $cache_expiration
