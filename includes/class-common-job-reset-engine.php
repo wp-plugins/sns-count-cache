@@ -71,16 +71,7 @@ class Common_Job_Reset_Engine extends Engine {
 	 * instance for delegation
 	 */	   
   	private $delegate = NULL;
-  
-	/**
-	 * Class constarctor
-	 * Hook onto all of the actions and filters needed by the plugin.
-	 *
-	 */
-	protected function __construct() {
-	  	Common_Util::log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	}
-  	
+    	
   	/**
 	 * Initialization
 	 *

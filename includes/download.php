@@ -35,7 +35,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 	if ( isset( $_POST['_wpnonce'] ) && $_POST['_wpnonce'] && check_admin_referer( 'mynonce', '_wpnonce' ) ) {	  
 	  	  
-		if ( isset( $_POST["download_data"] ) && $_POST["download_data"] === 'Download' ) {
+		if ( isset( $_POST["download_data"] ) && $_POST["download_data"] === __( 'Download', SNS_Count_Cache::DOMAIN ) ) {
 				
 			if ( file_exists( $abs_path ) ) {
 				  

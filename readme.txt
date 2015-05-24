@@ -3,12 +3,12 @@ Contributors: marubon
 Donate link: 
 Tags: performance, SNS, social, cache, share
 Requires at least: 3.7
-Tested up to: 4.2.1
+Tested up to: 4.2.2
 Stable tag: 0.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-This plugin gets and caches SNS share count in the background, and provides functions to access the cache.
+This plugin gets and caches SNS share count in the background, and help you to shorten page loading time.
 
 == Description ==
 
@@ -89,10 +89,12 @@ There are no questions.
 * Added: function to cache share count for both old and new url in https migration. 
 * Fixed: share count of Facebook becomes invalid when the count is more than four digits.
 
-= 0.5.1 =
+= 0.6.0 =
+* Added: function to cache share count for home page.
 * Improved: Each retrieval time of SNS count is shortened. 
 * Improved: loading time of dashboard page is shortened using ajax loading technique.
 * Fixed: SNS count of facebook can be 0.
+* Fixed: "PHP Notice: has_cap..." is output. 
 
 == Upgrade Notice ==
 The following functions are deprecated.
@@ -102,6 +104,8 @@ The following functions are deprecated.
 * get_scc_gplus()
 * get_scc_pocket()
 * get_scc_hatebu()
+
+Please reconfigure your parameter again because current setting is reset by this upgrade.   
 
 == Arbitrary section ==
 

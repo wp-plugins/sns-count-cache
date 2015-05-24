@@ -45,11 +45,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 		<div class="sns-cnt-cache">
 		  	<div id="scc-dashboard">
 			  		<h3 class="nav-tab-wrapper">
-					  	<a class="nav-tab nav-tab-active" href="admin.php?page=scc-dashboard">Dashboard</a>
-					  	<a class="nav-tab" href="admin.php?page=scc-cache-status">Cache Status</a>
-					  	<a class="nav-tab" href="admin.php?page=scc-share-count">Share Count</a>
-					  	<a class="nav-tab" href="admin.php?page=scc-setting">Setting</a>
-					  	<a class="nav-tab" href="admin.php?page=scc-help">Help</a>
+					  	<a class="nav-tab nav-tab-active" href="admin.php?page=scc-dashboard"><?php _e( 'Dashboard', self::DOMAIN ) ?></a>
+					  	<a class="nav-tab" href="admin.php?page=scc-cache-status"><?php _e( 'Cache Status', self::DOMAIN ) ?></a>
+					  	<a class="nav-tab" href="admin.php?page=scc-share-count"><?php _e( 'Share Count', self::DOMAIN ) ?></a>
+					  	<a class="nav-tab" href="admin.php?page=scc-setting"><?php _e( 'Setting', self::DOMAIN ) ?></a>
+					  	<a class="nav-tab" href="admin.php?page=scc-help"><?php _e( 'Help', self::DOMAIN ) ?></a>
 			  		</h3>
 			  
 					<div class="metabox-holder">
@@ -107,9 +107,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 									  			$share_base_cache_target = $this->share_base_cache_target ;
 												unset( $share_base_cache_target[self::REF_CRAWL_DATE] );
 																		
-												foreach ( $share_base_cache_target as $key => $value ){	
-													if ( $value ) {
-														echo '<th>' . $key . '</th>';	
+												foreach ( $share_base_cache_target as $sns => $active ){	
+													if ( $active ) {
+														echo '<th>' . $sns . '</th>';	
 													}
 												}
 											?>
@@ -119,15 +119,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 										<tr>
 									<?php
 			
-									foreach ( $share_base_cache_target as $key => $value ) {
-										if ( $value ) {
-										  	if ( $key == self::REF_SHARE_GPLUS ){
+									foreach ( $share_base_cache_target as $sns => $active ) {
+										if ( $active ) {
+										  	if ( $sns === self::REF_SHARE_GPLUS ){
 												echo '<td class="share-count">';
 											  	echo '<img class="loading" src="' . $this->loading_img_url . '" /><span data-scc="gplus"></span>';
 												echo '</td>';													  	
 											} else {
 												echo '<td class="share-count">';
-											  	echo '<img class="loading" src="' . $this->loading_img_url . '" /><span data-scc="' . strtolower( $key ) . '"></span>';
+											  	echo '<img class="loading" src="' . $this->loading_img_url . '" /><span data-scc="' . strtolower( $sns ) . '"></span>';
 												echo '</td>';													  
 											}
 					  	

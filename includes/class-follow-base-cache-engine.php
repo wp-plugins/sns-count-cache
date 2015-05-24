@@ -66,16 +66,7 @@ class Follow_Base_Cache_Engine extends Follow_Cache_Engine {
 	 * Offset suffix
 	 */	    
   	private $offset_suffix = 'follow_base_cache_offset';
-  
-	/**
-	 * Class constarctor
-	 * Hook onto all of the actions and filters needed by the plugin.
-	 *
-	 */
-	protected function __construct() {
-	  	Common_Util::log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	}
-  	
+
   	/**
 	 * Initialization
 	 *
@@ -84,7 +75,7 @@ class Follow_Base_Cache_Engine extends Follow_Cache_Engine {
   	public function initialize( $options = array() ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 
-	  	$this->transient_prefix = self::DEF_TRANSIENT_PREFIX;
+	  	$this->cache_prefix = self::DEF_TRANSIENT_PREFIX;
 	  	$this->prime_cron = self::DEF_PRIME_CRON;
 	  	$this->execute_cron = self::DEF_EXECUTE_CRON;
 	  	$this->event_schedule = self::DEF_EVENT_SCHEDULE;
@@ -94,13 +85,11 @@ class Follow_Base_Cache_Engine extends Follow_Cache_Engine {
 	  	if ( isset( $options['crawler'] ) ) $this->crawler = $options['crawler'];	  
 	  	if ( isset( $options['target_sns'] ) ) $this->target_sns = $options['target_sns'];
 	  	if ( isset( $options['check_interval'] ) ) $this->check_interval = $options['check_interval'];
-	  	if ( isset( $options['posts_per_check'] ) ) $this->posts_per_check = $options['posts_per_check'];
-	  	if ( isset( $options['transient_prefix'] ) ) $this->transient_prefix = $options['transient_prefix'];
+	  	if ( isset( $options['cache_prefix'] ) ) $this->cache_prefix = $options['cache_prefix'];
 		if ( isset( $options['prime_cron'] ) ) $this->prime_cron = $options['prime_cron'];
 		if ( isset( $options['execute_cron'] ) ) $this->execute_cron = $options['execute_cron'];
 		if ( isset( $options['event_schedule'] ) ) $this->event_schedule = $options['event_schedule'];
 	  	if ( isset( $options['event_description'] ) ) $this->event_description = $options['event_description'];
-	  	if ( isset( $options['post_types'] ) ) $this->post_types = $options['post_types'];
 	  	if ( isset( $options['scheme_migration_mode'] ) ) $this->scheme_migration_mode = $options['scheme_migration_mode'];
 	  	if ( isset( $options['scheme_migration_exclude_keys'] ) ) $this->scheme_migration_exclude_keys = $options['scheme_migration_exclude_keys'];
 	  	  
@@ -158,21 +147,20 @@ class Follow_Base_Cache_Engine extends Follow_Cache_Engine {
 	  
 	  	$url = get_feed_link();
 	  
-	  	$transient_ID = $this->get_transient_ID( 'follow' );
+	  	$transient_id = $this->get_cache_key( 'follow' );
 	  
 		$options = array(
-			'transient_id' => $transient_ID,
+			'cache_key' => $transient_id,
 			'target_url' => $url,
 		  	'target_sns' => $this->target_sns,
 			'cache_expiration' => $cache_expiration
 		);	  
-	  									  	
+	  	
+	  	// Primary cache
 		$this->cache( $options );
 	  
-		if ( ! is_null( $this->delegate ) && method_exists( $this->delegate, 'order_cache' ) ) {
-		  	$this->delegate->order_cache( $this, $options );
-	  	}
-	  
+	  	// Secondary cache
+	  	$this->delegate_cache( $options ); 	  
 	}
 
   	/**
@@ -189,10 +177,10 @@ class Follow_Base_Cache_Engine extends Follow_Cache_Engine {
 
 	  	$url = get_feed_link();
 	  
-	  	$transient_ID = $this->get_transient_ID( 'follow' );
+	  	$transient_id = $this->get_cache_key( 'follow' );
 	  
 		$options = array(
-			'transient_id' => $transient_ID,
+			'cache_key' => $transient_id,
 			'target_url' => $url,
 		  	'target_sns' => $this->target_sns,
 			'cache_expiration' => $cache_expiration
@@ -230,9 +218,9 @@ class Follow_Base_Cache_Engine extends Follow_Cache_Engine {
   	public function clear_cache() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-		$transient_ID = $this->get_transient_ID( 'follow' );
+		$transient_id = $this->get_cache_key( 'follow' );
 	  	
-	  	delete_transient( $transient_ID );
+	  	delete_transient( $transient_id );
   	}   
   
 }

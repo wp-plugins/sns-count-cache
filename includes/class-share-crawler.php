@@ -32,23 +32,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 class Share_Crawler extends Data_Crawler {
   
   	/**
-	 * Timeout for cURL data retrieval
-	 */	  
-	private $timeout = 10;
-    
-	protected function __construct( $url='', $timeout=10 ) {
+	 * Initialization
+	 *
+	 * @since 0.5.1
+	 */
+  	public function initialize( $options = array() ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-		$this->url = rawurlencode( $url );
-		$this->timeout = $timeout;
-	}
-  
-	public function set_timeout( $timeout ) {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-	  
-		$this->timeout = $timeout;
-	}
-    
+	  	if ( isset( $options['crawl_method'] ) ) $this->crawl_method = $options['crawl_method'];
+	  	if ( isset( $options['timeout'] ) ) $this->timeout = $options['timeout'];
+	  	if ( isset( $options['ssl_verification'] ) ) $this->ssl_verification = $options['ssl_verification'];
+	}  
+      
   	/**
 	 * Implementation of abstract method. this method gets each share count
 	 *
@@ -61,7 +56,15 @@ class Share_Crawler extends Data_Crawler {
 	  
 	  	$query_urls = $this->build_query_urls( $target_sns, $url );
 	  	  
-	  	return $this->extract_count( $target_sns, Common_Util::multi_remote_get( $query_urls, 10 ) );
+	  	$data = array();
+	  
+	  	if ( $this->crawl_method === SNS_Count_Cache::OPT_COMMON_CRAWLER_METHOD_CURL ) {
+		  	$data = Common_Util::multi_remote_get( $query_urls, $this->timeout, $this->ssl_verification, true );
+		} else {
+			$data = Common_Util::multi_remote_get( $query_urls, $this->timeout, $this->ssl_verification, false );  
+		}
+	  
+	  	return $this->extract_count( $target_sns, $data );
   	}
 
   	/**
@@ -113,88 +116,86 @@ class Share_Crawler extends Data_Crawler {
 	  	$extract_date = date_i18n( 'Y/m/d H:i:s' );
 	  
 	  	Common_Util::log( $contents );
-	  
-		foreach ( $contents as $key => $content ) {  
-	  
-			if ( $key == SNS_Count_Cache::REF_SHARE_HATEBU ) {
+
+		foreach ( $contents as $sns => $content ) {
+		  
+			switch ( $sns ) {
+			  	case SNS_Count_Cache::REF_SHARE_HATEBU:
+			  		if ( isset( $content['data'] ) && empty( $content['error'] ) && is_numeric( $content['data'] ) ) {
+				  		$count = ( int )$content['data'];
+					} else if ( empty( $content['data'] ) && empty( $content['error'] ) ) {
+			  			$count = 0;
+					} else {
+				  		$count = -1;
+					}
 			  
-			  	if ( isset( $content['data'] ) && empty( $content['error'] ) && is_numeric( $content['data'] ) ) {
-				  	$count = ( int )$content['data'];
-				} else if ( empty( $content['data'] ) && empty( $content['error'] ) ) {
-			  		$count = 0;
-				} else {
-				  	$count = -1;
-				}
-			  
-			  	$sns_counts[SNS_Count_Cache::REF_SHARE_HATEBU] = $count;
-			  
-			} else if ( $key == SNS_Count_Cache::REF_SHARE_FACEBOOK ) {
-			  
-			  	if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
+			  		$sns_counts[SNS_Count_Cache::REF_SHARE_HATEBU] = $count;
+			  		break;
+			  	case SNS_Count_Cache::REF_SHARE_FACEBOOK:
+			  		if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
 				  
-				  	$json = json_decode( $content['data'], true );
+				  		$json = json_decode( $content['data'], true );
 			  
-			  		if ( isset( $json[0]['total_count'] ) && is_numeric( $json[0]['total_count'] ) ) {
-				  		$count = ( int )$json[0]['total_count'];
+			  			if ( isset( $json[0]['total_count'] ) && is_numeric( $json[0]['total_count'] ) ) {
+				  			$count = ( int )$json[0]['total_count'];
+						} else {
+				  			$count = -1;
+						}
 					} else {
-				  		$count = -1;
+						$count = -1;
 					}
-				} else {
-					$count = -1;
-				}
 			  
-			  	$sns_counts[SNS_Count_Cache::REF_SHARE_FACEBOOK] = $count;
-			  
-			} else if ( $key == SNS_Count_Cache::REF_SHARE_TWITTER ) {
-			  
-			  	if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
-					$json = json_decode( $content['data'], true );
+			  		$sns_counts[SNS_Count_Cache::REF_SHARE_FACEBOOK] = $count;			  
+			  		break;
+			  	case SNS_Count_Cache::REF_SHARE_TWITTER:
+			  		if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
+						$json = json_decode( $content['data'], true );
 	  
-			  		if ( isset( $json['count'] ) && is_numeric( $json['count'] ) ) {
-				  		$count = ( int )$json['count'];
+			  			if ( isset( $json['count'] ) && is_numeric( $json['count'] ) ) {
+				  			$count = ( int )$json['count'];
+						} else {
+				  			$count = -1;
+						}
 					} else {
 				  		$count = -1;
 					}
-				} else {
-				  	$count = -1;
-				}
 			  
-			  	$sns_counts[SNS_Count_Cache::REF_SHARE_TWITTER] = $count;
+			  		$sns_counts[SNS_Count_Cache::REF_SHARE_TWITTER] = $count;			  
+			  		break;
+			  	case SNS_Count_Cache::REF_SHARE_GPLUS:
+			  		if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
 			  
-			} else if ( $key == SNS_Count_Cache::REF_SHARE_GPLUS ) {
-			  
-			  	if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
-			  
-			  		$return_code = preg_match( '/\[2,([0-9.]+),\[/', $content['data'], $matches );
+			  			$return_code = preg_match( '/\[2,([0-9.]+),\[/', $content['data'], $matches );
 			  	
-			  		if ( $return_code && isset( $matches[1] ) && is_numeric( $matches[1] ) ) {
-						$count = ( int )$matches[1];   
+			  			if ( $return_code && isset( $matches[1] ) && is_numeric( $matches[1] ) ) {
+							$count = ( int )$matches[1];   
+						} else {
+				  			$count = -1;		
+						}
 					} else {
-				  		$count = -1;		
+						$count = -1;
 					}
-				} else {
-					$count = -1;
-				}
 			  
-			  	$sns_counts[SNS_Count_Cache::REF_SHARE_GPLUS] = $count;	
-			    	
-			} else if ( $key == SNS_Count_Cache::REF_SHARE_POCKET ) {
+			  		$sns_counts[SNS_Count_Cache::REF_SHARE_GPLUS] = $count;
+			  		break;
+			  	case SNS_Count_Cache::REF_SHARE_POCKET:
+			  		if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
 			  
-			  	if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
-			  
-			  		$return_code = preg_match( '/<em\sid=\"cnt\">([0-9]+)<\/em>/i', $content['data'], $matches );
+			  			$return_code = preg_match( '/<em\sid=\"cnt\">([0-9]+)<\/em>/i', $content['data'], $matches );
 			  	
-			  		if ( $return_code && isset( $matches[1] ) && is_numeric( $matches[1] ) ) {
-						$count = ( int )$matches[1];
+			  			if ( $return_code && isset( $matches[1] ) && is_numeric( $matches[1] ) ) {
+							$count = ( int )$matches[1];
+						} else {
+				  			$count = -1;
+						}
 					} else {
-				  		$count = -1;
+						$count = -1;
 					}
-				} else {
-					$count = -1;
-				}
 			  
-			  	$sns_counts[SNS_Count_Cache::REF_SHARE_POCKET] = $count;
-			}
+			  		$sns_counts[SNS_Count_Cache::REF_SHARE_POCKET] = $count;
+			  		break;
+			  
+		  	}
 		  
 		}
 	  
@@ -202,9 +203,9 @@ class Share_Crawler extends Data_Crawler {
 		 
 		  	$total = 0;
 		  
-		  	foreach ( $sns_counts as $key => $value ) {
-			  	if ( isset( $value ) && $value >= 0 ) {
-			  		$total = $total + $value;
+		  	foreach ( $sns_counts as $sns => $count ) {
+			  	if ( isset( $count ) && $count >= 0 ) {
+			  		$total = $total + $count;
 				}
 		  	}
 		  

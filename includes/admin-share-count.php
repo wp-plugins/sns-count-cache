@@ -35,19 +35,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 	$sort_exec_key = '';
 
 	if( isset( $_GET["action"] ) && $_GET["action"] === 'sort' ) {
-			  
-		if( isset( $_GET["key"] ) ) {
-			$sort_mode = true;
-			$key = $_GET["key"];
+	  			  
+		if ( current_user_can( self::OPT_COMMON_CAPABILITY ) ) {	  
+			if( isset( $_GET["key"] ) ) {
+				$sort_mode = true;
+				$sns = $_GET["key"];
 				    										  	
-			if ( $key === 'Google' ) {
-				$key =  $key . '+';
-			}
+				if ( $sns === 'Google' ) {
+					$sns =  $sns . '+';
+				}
 				  
-			$sort_exec_key = $key;
-			$meta_key = self::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
+				$sort_exec_key = $sns;
+			
+		  		$meta_key = $this->cache_engines[self::REF_SHARE_2ND]->get_cache_key( $sns );
+			}
 		}
-			  
+					  
 	}
 
 	$paged = 1;
@@ -76,7 +79,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 				<div id="share-each-content" class="postbox">
 					<div class="handlediv" title="Click to toggle"><br></div>
 					<h3 class="hndle"><span><?php _e( 'Share Count', self::DOMAIN ) ?></span></h3>  	
-					<div class="inside">
+					<div class="inside">		  
 		  				<table class="view-table">
 							<thead>
 			  					<tr>
@@ -84,13 +87,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 									<th><?php _e( 'Content', self::DOMAIN ) ?></th>
 							  		<?php
 						  						  			
-						  				foreach ( $share_base_cache_target as $key => $value ){	
+						  				foreach ( $share_base_cache_target as $sns => $active ){	
 									  
-									  		if ( $value ) {
+									  		if ( $active ) {
 										  
-						  						$nonce = wp_create_nonce( __FILE__ );
-										  	
-										  		$sort_key = $key;
+										  		$sort_key = $sns;
 										  	
 										  		if ( $sort_key === self::REF_SHARE_GPLUS ) {
 											  		$sort_key =  str_replace( '+', '', $sort_key );
@@ -98,10 +99,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 										  	
 										  		$sort_url = esc_url( 'admin.php?page=scc-share-count&action=sort&key=' . $sort_key );
 										  
-										  		if ( $key === $sort_exec_key ){
-													echo '<th><a class="sort-exec-key" href="' . $sort_url . '">' . esc_html( $key ) . '</th>';		
+										  		if ( $sns === $sort_exec_key ){
+													echo '<th><a class="sort-exec-key" href="' . $sort_url . '">' . esc_html( $sns ) . '</th>';		
 												} else {
-											  		echo '<th><a href="' . $sort_url . '">' . esc_html( $key ) . '</th>';	
+											  		echo '<th><a href="' . $sort_url . '">' . esc_html( $sns ) . '</th>';	
 												}
 									  		}
 										}
@@ -137,7 +138,68 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 								$posts_query = new WP_Query( $query_args );
 
-								$count = ($paged - 1) * $posts_per_page + 1;
+								$count = ( $paged - 1 ) * $posts_per_page + 1;
+
+								if ( $paged === 1 ) {
+								?>
+
+			  					<tr class="home">
+									<td><?php echo '-'; ?></td>
+								  	<td><a href="<?php echo esc_url( home_url( '/' ) ); ?>" target="_blank"><?php echo esc_html(  bloginfo('name') ); ?></a></td>
+									<?php  
+										$transient_id = $this->cache_engines[self::REF_SHARE_BASE]->get_cache_key( 'home' );
+								  				  
+										if (  false !== ( $sns_counts = get_transient( $transient_id ) ) ) {
+
+						  					foreach ( $share_base_cache_target as $sns => $active ) {
+									  			if ( $active ) {										  
+								  					if ( isset( $sns_counts[$sns] ) && $sns_counts[$sns] >= 0 ) {
+					  									echo '<td class="share-count">';
+								  						echo esc_html( number_format( (int) $sns_counts[$sns] ) );
+					  									echo '</td>';
+													} else {
+					  									echo '<td class="not-cached share-count">';
+														_e( 'N/A', self::DOMAIN );
+					  									echo '</td>';
+													}										  
+									  			}
+											}										  
+										  								  
+										} else {
+								  	  
+										  	$option_key = $this->cache_engines[self::REF_SHARE_2ND]->get_cache_key( 'home' );
+										  	
+										  	if ( false !== ( $sns_counts = get_option( $option_key ) ) ) {	
+										  
+						  						foreach ( $share_base_cache_target as $sns => $active ) {
+									  				if( $active ){
+										  
+											  			if ( $sns_counts[$sns] >= 0 ) {
+					  										echo '<td class="share-count">';
+								  							echo esc_html( number_format( (int) $sns_counts[$sns] ) );
+					  										echo '</td>';
+														} else {
+					  										echo '<td class="not-cached share-count">';
+															_e( 'N/A', self::DOMAIN );
+					  										echo '</td>';
+														}
+													}										  							  								 										  
+									  			}
+											} else {
+												foreach ( $share_base_cache_target as $sns => $active ) {
+												  	if( $active ){
+					  									echo '<td class="not-cached share-count">';
+														_e( 'N/A', self::DOMAIN );
+					  									echo '</td>';
+													}
+												}
+											}
+								  								  
+										}
+									?>
+			  					</tr>
+								<?php
+								}
 
 								if ( $posts_query->have_posts() ) {
 									while ( $posts_query->have_posts() ) {
@@ -147,19 +209,36 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 									<td><?php echo $count; ?></td>
 							  		<td><a href="<?php echo esc_url( get_permalink( get_the_ID() ) ); ?>" target="_blank"><?php echo esc_html( get_the_title( get_the_ID() ) ); ?></a></td>
 									<?php  
-										$transient_id = self::OPT_SHARE_BASE_TRANSIENT_PREFIX . get_the_ID();
-							  							  
-										if ( $sort_mode || false === ( $sns_counts = get_transient( $transient_id ) ) ) {
-						  
-						  					foreach ( $share_base_cache_target as $key => $value ) {
-									  			if( $value ){
-										  
-										  			$meta_key = self::OPT_SHARE_2ND_META_KEY_PREFIX . strtolower( $key );
-							  						$sns_counts[$key] = get_post_meta( get_the_ID(), $meta_key, true );
-								  				
-													if ( isset( $sns_counts[$key] ) && $sns_counts[$key] !== '' &&  $sns_counts[$key] >= 0 ) {
+									  	$transient_id = $this->cache_engines[self::REF_SHARE_BASE]->get_cache_key( get_the_ID() );
+							  			
+									  	if( ! $sort_mode && false !== ( $sns_counts = get_transient( $transient_id ) ) ) {
+
+						  					foreach ( $share_base_cache_target as $sns => $active ) {
+									  			if ( $active ) {										  
+								  					if ( isset( $sns_counts[$sns] ) && $sns_counts[$sns] >= 0 ) {
 					  									echo '<td class="share-count">';
-								  						echo esc_html( number_format( (int) $sns_counts[$key] ) );
+								  						echo esc_html( number_format( (int) $sns_counts[$sns] ) );
+					  									echo '</td>';
+													} else {
+					  									echo '<td class="not-cached share-count">';
+														_e( 'N/A', self::DOMAIN );
+					  									echo '</td>';
+													}										  
+									  			}
+											}										
+										
+										} else {
+
+						  					foreach ( $share_base_cache_target as $sns => $active ) {
+									  			if( $active ){
+										  
+												  	$meta_key = $this->cache_engines[self::REF_SHARE_2ND]->get_cache_key( $sns );
+												  	
+							  						$sns_counts[$sns] = get_post_meta( get_the_ID(), $meta_key, true );
+								  				
+													if ( isset( $sns_counts[$sns] ) && $sns_counts[$sns] !== '' &&  $sns_counts[$sns] >= 0 ) {
+					  									echo '<td class="share-count">';
+								  						echo esc_html( number_format( (int) $sns_counts[$sns] ) );
 					  									echo '</td>';
 													} else {
 					  									echo '<td class="not-cached share-count">';
@@ -168,28 +247,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 													}										  								 										  
 									  			}
 											}
-								  
-										} else {
-								  	  
-						  					foreach ( $share_base_cache_target as $key => $value ) {
-									  			if ( $value ) {										  
-								  					if ( isset( $sns_counts[$key] ) && $sns_counts[$key] >= 0 ) {
-					  									echo '<td class="share-count">';
-								  						echo esc_html( number_format( (int) $sns_counts[$key] ) );
-					  									echo '</td>';
-													} else {
-					  									echo '<td class="not-cached share-count">';
-														_e( 'N/A', self::DOMAIN );
-					  									echo '</td>';
-													}										  
-									  			}
-											}
-								  								  
 										}
+									  
 									?>
 			  					</tr>
 								<?php
-										$count++;
+										++$count;
 
 									}
 								}

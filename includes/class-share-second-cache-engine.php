@@ -82,15 +82,6 @@ class Share_Second_Cache_Engine extends Cache_Engine {
 	 */	   
 	private $post_types = array( 'post', 'page' );
   
-	/**
-	 * Class constarctor
-	 * Hook onto all of the actions and filters needed by the plugin.
-	 *
-	 */
-	protected function __construct() {
-	  	Common_Util::log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	}
-  
   	/**
 	 * Initialization
 	 *
@@ -99,7 +90,7 @@ class Share_Second_Cache_Engine extends Cache_Engine {
   	public function initialize( $options = array() ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 
-	  	$this->transient_prefix = self::DEF_TRANSIENT_PREFIX;
+	  	$this->cache_prefix = self::DEF_TRANSIENT_PREFIX;
 	  	$this->prime_cron = self::DEF_PRIME_CRON;
 	  	$this->execute_cron = self::DEF_EXECUTE_CRON;
 	  	$this->event_schedule = self::DEF_EVENT_SCHEDULE;
@@ -108,7 +99,7 @@ class Share_Second_Cache_Engine extends Cache_Engine {
 	  	if ( isset( $options['target_sns'] ) ) $this->target_sns = $options['target_sns'];
 	  	if ( isset( $options['check_interval'] ) ) $this->check_interval = $options['check_interval'];
 	  	if ( isset( $options['posts_per_check'] ) ) $this->posts_per_check = $options['posts_per_check'];
-	  	if ( isset( $options['transient_prefix'] ) ) $this->transient_prefix = $options['transient_prefix'];
+	  	if ( isset( $options['cache_prefix'] ) ) $this->cache_prefix = $options['cache_prefix'];
 		if ( isset( $options['prime_cron'] ) ) $this->prime_cron = $options['prime_cron'];
 		if ( isset( $options['execute_cron'] ) ) $this->execute_cron = $options['execute_cron'];
 		if ( isset( $options['event_schedule'] ) ) $this->event_schedule = $options['event_schedule'];
@@ -178,12 +169,12 @@ class Share_Second_Cache_Engine extends Cache_Engine {
 			  
 				$post_ID = get_the_ID();
 			  	
-				$transient_ID = $this->get_transient_ID( $post_ID );
+				$transient_id = $this->get_cache_key( $post_ID );
 	  
 	  			$url = get_permalink( $post_ID );			  
 
 				$options = array(
-					'transient_id' => $transient_ID,
+					'cache_key' => $transient_id,
 					'post_id' => $post_ID,
 		  			'target_sns' => $this->target_sns
 				);
@@ -204,25 +195,33 @@ class Share_Second_Cache_Engine extends Cache_Engine {
   	public function cache( $options = array() ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	    			
-	  	$transient_id = $options['transient_id'];
+	  	$transient_id = $options['cache_key'];
 	  	$target_sns = $options['target_sns'];
 	  	$post_ID = $options['post_id'];
-	  
-  		if ( false !== ( $sns_counts = get_transient( $transient_id ) ) ) {
-		  	foreach ( $target_sns as $key => $value ) {
+	  	  
+	  	if ( $post_ID != 'home' ) {
+ 			if ( false !== ( $sns_counts = get_transient( $transient_id ) ) ) {
+		  		foreach ( $target_sns as $sns => $active ) {
 					  				  
-				if ( $value ) {
+					if ( $active ) {
 				  
-				  	$meta_key = $this->meta_key_prefix . strtolower( $key );
-				  
-					if ( ! is_null( $sns_counts[$key] ) && $sns_counts[$key] >= 0 ) {
-					  	//$post_ID = url_to_postid( $target_url );
-				  		update_post_meta( $post_ID, $meta_key, $sns_counts[$key]);
+					  	$meta_key = $this->get_cache_key( $sns );
+				  		
+						if ( isset( $sns_counts[$sns] ) && $sns_counts[$sns] >= 0 ) {
+				  			update_post_meta( $post_ID, $meta_key, $sns_counts[$sns] );
+						}
 					}
 				}
-			}
 				  
-		} 
+			} 		  
+		} else {
+		  	if ( false !== ( $sns_counts = get_transient( $transient_id ) ) ) {
+			  	
+			  	$option_key = $this->get_cache_key( 'home' );
+			  	
+			  	update_option( $option_key, $sns_counts );				  
+			} 		  	 
+		}
 			  	  
 	}
 
@@ -244,6 +243,18 @@ class Share_Second_Cache_Engine extends Cache_Engine {
 	 */	     
   	public function initialize_cache() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
+
+	  	$option_key = $this->get_cache_key( 'home' );
+	  
+	  	$sns_counts = array();
+	  	
+		foreach ( $this->target_sns as $sns => $active ) {					  					  
+			if ( $active ) {
+			  	$sns_counts[$sns] = -1;
+			}
+		}
+	  
+		update_option( $option_key, $sns_counts );
 	  
 		$query_args = array(
 			'post_type' => $this->post_types,
@@ -261,12 +272,12 @@ class Share_Second_Cache_Engine extends Cache_Engine {
 			  
 				$post_ID = get_the_ID();
 			  	
-				foreach ( $this->target_sns as $key => $value ) {
+				foreach ( $this->target_sns as $sns => $active ) {
 					  
-					$meta_key = $this->meta_key_prefix . strtolower( $key );
+					$meta_key = $this->get_cache_key( $sns );
 					  
-					if ( $value ) {
-						update_post_meta($post_ID, $meta_key, -1);
+					if ( $active ) {
+						update_post_meta( $post_ID, $meta_key, -1 );
 					}
 				}		  	 
 			}
@@ -281,7 +292,11 @@ class Share_Second_Cache_Engine extends Cache_Engine {
 	 */	     
   	public function clear_cache() {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-	  
+
+		$option_key = $this->get_cache_key( 'home' );
+		 	
+		delete_option( $option_key );
+			
 		$query_args = array(
 			'post_type' => $this->post_types,
 			'post_status' => 'publish',
@@ -298,18 +313,18 @@ class Share_Second_Cache_Engine extends Cache_Engine {
 			  
 				$post_ID = get_the_ID();
 			  	
-				foreach ( $this->target_sns as $key => $value ) {
+				foreach ( $this->target_sns as $sns => $active ) {
 					  
-					$meta_key = $this->meta_key_prefix . strtolower( $key );
+					$meta_key = $this->get_cache_key( $sns );
 					  
-					if ( $value ) {
-						delete_post_meta($post_ID, $meta_key);
+					if ( $active ) {
+						delete_post_meta( $post_ID, $meta_key );
 					}
 				}		  	 
 			}
 		}
 		wp_reset_postdata();
-  	}   
+  	} 
   
 }
 

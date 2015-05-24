@@ -72,15 +72,6 @@ class Share_Rescue_Cache_Engine extends Share_Cache_Engine {
 	 */	    
   	private $meta_key_prefix = 'scc_share_count_';  
   
-	/**
-	 * Class constarctor
-	 * Hook onto all of the actions and filters needed by the plugin.
-	 *
-	 */
-	protected function __construct() {
-	  	Common_Util::log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	}
-  	
   	/**
 	 * Initialization
 	 *
@@ -89,7 +80,7 @@ class Share_Rescue_Cache_Engine extends Share_Cache_Engine {
   	public function initialize( $options = array() ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-	  	$this->transient_prefix = self::DEF_TRANSIENT_PREFIX;
+	  	$this->cache_prefix = self::DEF_TRANSIENT_PREFIX;
 	  	$this->prime_cron = self::DEF_PRIME_CRON;
 	  	$this->execute_cron = self::DEF_EXECUTE_CRON;
 	  	$this->event_schedule = self::DEF_EVENT_SCHEDULE;
@@ -100,7 +91,7 @@ class Share_Rescue_Cache_Engine extends Share_Cache_Engine {
 	  	if ( isset( $options['target_sns'] ) ) $this->target_sns = $options['target_sns'];
 	  	if ( isset( $options['check_interval'] ) ) $this->check_interval = $options['check_interval'];
 	  	if ( isset( $options['posts_per_check'] ) ) $this->posts_per_check = $options['posts_per_check'];
-	  	if ( isset( $options['transient_prefix'] ) ) $this->transient_prefix = $options['transient_prefix'];
+	  	if ( isset( $options['cache_prefix'] ) ) $this->cache_prefix = $options['cache_prefix'];
 		if ( isset( $options['prime_cron'] ) ) $this->prime_cron = $options['prime_cron'];
 		if ( isset( $options['execute_cron'] ) ) $this->execute_cron = $options['execute_cron'];
 		if ( isset( $options['event_schedule'] ) ) $this->event_schedule = $options['event_schedule'];
@@ -206,11 +197,11 @@ class Share_Rescue_Cache_Engine extends Share_Cache_Engine {
 				$full_cache_flag = true;
 				$partial_cache_flag = false;	  
 	  
-				foreach ( $this->target_sns as $key => $value ) {
+				foreach ( $this->target_sns as $sns => $active ) {
 					  		  
-					if ( $value ) {								
-							  
-						$meta_key = $this->meta_key_prefix . strtolower( $key );
+					if ( $active ) {								
+							  				  	
+					  	$meta_key = $this->get_cache_key( $sns );
 			  
 						$sns_count = get_post_meta( get_the_ID(), $meta_key, true );
 									 	
@@ -225,18 +216,18 @@ class Share_Rescue_Cache_Engine extends Share_Cache_Engine {
 			  
 				if ( $partial_cache_flag && $full_cache_flag ) {
 				  	//full cache
-					$transient_ID = $this->get_transient_ID( $post_ID );
+					$transient_id = $this->get_cache_key( $post_ID );
 			  
-			  		if ( false === ( $sns_counts = get_transient( $transient_ID ) ) ) {	
+			  		if ( false === ( $sns_counts = get_transient( $transient_id ) ) ) {	
 				  		if ( $post_ID < $check_range_min || $post_ID > $check_range_max ) {
 							$no_cache_post_IDs[$post_ID] = 1;
 						}
 					}
 				} else if ( $partial_cache_flag && ! $full_cache_flag ) {
 				  	//partial cache
-					$transient_ID = $this->get_transient_ID( $post_ID );
+					$transient_id = $this->get_cache_key( $post_ID );
 			  
-			  		if ( false === ( $sns_counts = get_transient( $transient_ID ) ) ) {	
+			  		if ( false === ( $sns_counts = get_transient( $transient_id ) ) ) {	
 				  		if ( $post_ID < $check_range_min || $post_ID > $check_range_max ) {
 							$no_cache_post_IDs[$post_ID] = 2;
 						}
@@ -266,23 +257,23 @@ class Share_Rescue_Cache_Engine extends Share_Cache_Engine {
 	  	foreach ( $rescue_post_IDs as $post_ID => $priority ) {
 		  	Common_Util::log( '[' . __METHOD__ . '] post_id: ' . $post_ID );	
 
-			$transient_ID = $this->get_transient_ID( $post_ID );
+			$transient_id = $this->get_cache_key( $post_ID );
 	  
 	  		$url = get_permalink( $post_ID );		  
 
 			$options = array(
-				'transient_id' => $transient_ID,
+				'cache_key' => $transient_id,
 			  	'post_id' => $post_ID,
 				'target_url' => $url,
 		  		'target_sns' => $this->target_sns,
 				'cache_expiration' => $cache_expiration
 			);
 		  
+		  	// Primary cache
 			$this->cache( $options );
 			  
-			if ( ! is_null( $this->delegate ) && method_exists( $this->delegate, 'order_cache' ) ) {
-		  		$this->delegate->order_cache( $this, $options );
-	  		}
+		  	// Secondary cache
+		  	$this->delegate_cache( $options ); 
 		}
 	  
 	}

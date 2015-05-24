@@ -35,39 +35,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 		 	 if( isset( $_POST["update_all_options"] ) && $_POST["update_all_options"] === __( 'Update All Options', self::DOMAIN ) ) {
 			 
 			  	$wp_error = new WP_Error();
+			   
+			   	$settings = array();
 			  
 			  	$share_base_cache_target = array();
 		  		$follow_base_cache_target = array();	
 			  
 			  	if ( isset( $_POST["share_base_custom_post_types"] ) && $_POST["share_base_custom_post_types"] ) { 
 				  	$share_base_custom_post_types = explode( ',', $_POST["share_base_custom_post_types"] );
-			  		update_option( self::DB_SHARE_CUSTOM_POST_TYPES, $share_base_custom_post_types );
+				  	$settings[self::DB_SHARE_CUSTOM_POST_TYPES] = $share_base_custom_post_types;
 				} else {
-				  	update_option( self::DB_SHARE_CUSTOM_POST_TYPES, array() );
+				  	$settings[self::DB_SHARE_CUSTOM_POST_TYPES] = array();
 				}
 
 				if ( isset( $_POST["share_base_check_interval"] ) && $_POST["share_base_check_interval"] && is_numeric( $_POST["share_base_check_interval"] ) ) {
-					update_option( self::DB_SHARE_CHECK_INTERVAL, $_POST["share_base_check_interval"] );
+				  	$settings[self::DB_SHARE_CHECK_INTERVAL] = $_POST["share_base_check_interval"];
 				}
 			  
 				if ( isset( $_POST["share_base_posts_per_check"] ) && $_POST["share_base_posts_per_check"] && is_numeric( $_POST["share_base_posts_per_check"] ) ) {
-					update_option( self::DB_SHARE_POSTS_PER_CHECK, $_POST["share_base_posts_per_check"] );
+				  	$settings[self::DB_SHARE_POSTS_PER_CHECK] = $_POST["share_base_posts_per_check"];
 				}
 			  
-				if ( isset( $_POST["dynamic_cache_mode"] ) ) {
-					update_option( self::DB_COMMON_DYNAMIC_CACHE, $_POST["dynamic_cache_mode"] );
+				if ( isset( $_POST["dynamic_cache_mode"] ) && $_POST["dynamic_cache_mode"] ) {
+				  	$settings[self::DB_COMMON_DYNAMIC_CACHE_MODE] = $_POST["dynamic_cache_mode"];
 				} 
-			  
-				if ( isset( $_POST["share_rush_new_content_term"] ) && $_POST["share_rush_new_content_term"] && is_numeric( $_POST["share_rush_new_content_term"] ) ) {
-					update_option( self::DB_SHARE_NEW_CONTENT_TERM, $_POST["share_rush_new_content_term"] );
+			  			   
+			   	if ( isset( $_POST["share_rush_new_content_term"] ) && $_POST["share_rush_new_content_term"] && is_numeric( $_POST["share_rush_new_content_term"] ) ) {
+				  	$settings[self::DB_SHARE_NEW_CONTENT_TERM] = $_POST["share_rush_new_content_term"];
 				}
 					
-				if ( isset( $_POST["data_export_mode"] ) ) {
-					update_option( self::DB_COMMON_DATA_EXPORT, $_POST["data_export_mode"] );
+				if ( isset( $_POST["data_export_mode"] ) && $_POST["data_export_mode"] ) {
+				  	$settings[self::DB_COMMON_DATA_EXPORT_MODE] = $_POST["data_export_mode"];
 				} 			  
 
 				if ( isset( $_POST["data_export_interval"] ) && $_POST["data_export_interval"] && is_numeric( $_POST["data_export_interval"] ) ) {
-					update_option( self::DB_COMMON_DATA_EXPORT_INTERVAL, $_POST["data_export_interval"] );
+				  	$settings[self::DB_COMMON_DATA_EXPORT_INTERVAL] = $_POST["data_export_interval"];
 				}
 			  
 				if ( isset( $_POST["share_base_cache_target_twitter"] ) && $_POST["share_base_cache_target_twitter"] ) {
@@ -101,11 +103,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 				}
 						  
 				if ( ! empty( $share_base_cache_target ) ) {
-					update_option( self::DB_SHARE_CACHE_TARGET, $share_base_cache_target );
+				  	$settings[self::DB_SHARE_CACHE_TARGET] = $share_base_cache_target;
 				}
 	  
 	  			if ( isset( $_POST["follow_base_check_interval"] ) && $_POST["follow_base_check_interval"] && is_numeric( $_POST["follow_base_check_interval"] ) ) {
-					update_option( self::DB_FOLLOW_CHECK_INTERVAL, $_POST["follow_base_check_interval"] );
+				  	$settings[self::DB_FOLLOW_CHECK_INTERVAL] = $_POST["follow_base_check_interval"];
 				}
 	  			  
 				if ( isset( $_POST["follow_base_cache_target_feedly"] ) && $_POST["follow_base_cache_target_feedly"] ) {
@@ -115,34 +117,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 				}
 	  
 				if ( ! empty( $follow_base_cache_target ) ) {
-					update_option( self::DB_FOLLOW_CACHE_TARGET, $follow_base_cache_target );
+				  	$settings[self::DB_FOLLOW_CACHE_TARGET] = $follow_base_cache_target;
 				}
 			  			  
 				if ( isset( $_POST["scheme_migration_mode"] ) && $_POST["scheme_migration_mode"] ) {
-				  	update_option( self::DB_COMMON_SCHEME_MIGRATION_MODE, self::OPT_COMMON_SCHEME_MIGRATION_MODE_ON );
+				  	$settings[self::DB_COMMON_SCHEME_MIGRATION_MODE] = self::OPT_COMMON_SCHEME_MIGRATION_MODE_ON;
 				} else {
-				  	update_option( self::DB_COMMON_SCHEME_MIGRATION_MODE, self::OPT_COMMON_SCHEME_MIGRATION_MODE_OFF );
+				  	$settings[self::DB_COMMON_SCHEME_MIGRATION_MODE] = self::OPT_COMMON_SCHEME_MIGRATION_MODE_OFF;
 				}			  				  
-			  
+
+				if ( isset( $_POST["crawler_ssl_verification"] ) && $_POST["crawler_ssl_verification"] ) {
+				  	$settings[self::DB_COMMON_CRAWLER_SSL_VERIFICATION] = self::OPT_COMMON_CRAWLER_SSL_VERIFY_ON;
+				} else {
+				  	$settings[self::DB_COMMON_CRAWLER_SSL_VERIFICATION] = self::OPT_COMMON_CRAWLER_SSL_VERIFY_OFF;
+				}
+			   
 			  	if ( isset( $_POST['cronbtype'] ) && $_POST['cronbtype'] == 'mon' ) {
-					update_option( self::DB_COMMON_DATA_EXPORT_SCHEDULE, $_POST['moncronminutes'] . ' ' . $_POST['moncronhours'] . ' ' . $_POST['moncronmday'] . ' * *' );
+				  	$settings[self::DB_COMMON_DATA_EXPORT_SCHEDULE] = $_POST['moncronminutes'] . ' ' . $_POST['moncronhours'] . ' ' . $_POST['moncronmday'] . ' * *';
 				}
 			  	if ( isset( $_POST['cronbtype'] ) && $_POST['cronbtype'] == 'week' ) {
-				  	update_option( self::DB_COMMON_DATA_EXPORT_SCHEDULE, $_POST['weekcronminutes'] . ' ' . $_POST['weekcronhours'] . ' * * ' . $_POST['weekcronwday'] );
+				  	$settings[self::DB_COMMON_DATA_EXPORT_SCHEDULE] = $_POST['weekcronminutes'] . ' ' . $_POST['weekcronhours'] . ' * * ' . $_POST['weekcronwday'];
 				}
 			  	if ( isset( $_POST['cronbtype'] ) && $_POST['cronbtype'] == 'day' ) {
-				  	update_option( self::DB_COMMON_DATA_EXPORT_SCHEDULE, $_POST['daycronminutes'] . ' ' . $_POST['daycronhours'] . ' * * *' );
+				  	$settings[self::DB_COMMON_DATA_EXPORT_SCHEDULE] = $_POST['daycronminutes'] . ' ' . $_POST['daycronhours'] . ' * * *';
 				}
 			  	if ( isset( $_POST['cronbtype'] ) && $_POST['cronbtype'] == 'hour' ) {
-				  	update_option( self::DB_COMMON_DATA_EXPORT_SCHEDULE, $_POST['hourcronminutes'] . ' * * * *' );				  	
+				  	$settings[self::DB_COMMON_DATA_EXPORT_SCHEDULE] = $_POST['hourcronminutes'] . ' * * * *';		  	
 				}
 
-
+			   	update_option( self::DB_SETTINGS, $settings );		
+			   
 				$this->reactivate_plugin();
 
 			  	set_transient( self::OPT_COMMON_ERROR_MESSAGE, $wp_error->get_error_messages(), 10 );
 			  
-			   	wp_safe_redirect( menu_page_url( 'scc-setting', false ) );
+			   	//wp_safe_redirect( menu_page_url( 'scc-setting', false ) );
 			  
 			}
 
@@ -151,7 +160,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  
 	  			$this->export_engines[self::REF_COMMON_EXPORT]->reset_export();
 			  
-			  	wp_safe_redirect( menu_page_url( 'scc-setting', false ) );
+			  	//wp_safe_redirect( menu_page_url( 'scc-setting', false ) );
 
 			}
 		  
@@ -160,7 +169,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  
 	  			$this->export_engines[self::REF_COMMON_EXPORT]->execute_export( NULL );
 			  
-			  	wp_safe_redirect( menu_page_url('scc-setting', false ) );
+			  	//wp_safe_redirect( menu_page_url('scc-setting', false ) );
 			}
 		  
 		  	if( isset( $_POST["clear_share_base_cache"] ) && $_POST["clear_share_base_cache"] === __( 'Clear Cache', self::DOMAIN ) ) {
@@ -175,7 +184,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  
 			  	set_time_limit( $this->original_max_execution_time );
 			  
-			  	wp_safe_redirect( menu_page_url('scc-setting', false ) );
+			  	//wp_safe_redirect( menu_page_url('scc-setting', false ) );
 			}
 
 		  	if( isset( $_POST["clear_follow_base_cache"] ) && $_POST["clear_follow_base_cache"] === __( 'Clear Cache', self::DOMAIN ) ) {
@@ -190,7 +199,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  
 			  	set_time_limit( $this->original_max_execution_time  );
 			  
-			  	wp_safe_redirect( menu_page_url('scc-setting', false ) );
+			  	//wp_safe_redirect( menu_page_url('scc-setting', false ) );
 			}			  
 		}  
 	}
@@ -225,7 +234,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 					<a class="nav-tab" href="admin.php?page=scc-help">Help</a>
 			  	</h3>
 				<p id="options-menu">
-                	<a href="#current-parameter"><?php _e( 'Current Setting', self::DOMAIN ); ?></a> | <a href="#share-base-cache"><?php _e( 'Share Base Cache', self::DOMAIN ); ?></a> | <a href="#share-rush-cache"><?php _e( 'Share Rush Cache', self::DOMAIN ); ?></a> | <a href="#follow-base-cache"><?php _e( 'Follow Base Cache', self::DOMAIN ); ?></a> | <a href="#common-dynamic-cache"><?php _e( 'Dynamic Cache', self::DOMAIN ); ?></a> | <a href="#common-data-export"><?php _e( 'Data Export', self::DOMAIN ); ?></a> | <a href="#common-exported-file"><?php _e( 'Exported File', self::DOMAIN ); ?></a>
+                	<a href="#current-parameter"><?php _e( 'Current Setting', self::DOMAIN ); ?></a> | <a href="#share-base-cache"><?php _e( 'Share Base Cache', self::DOMAIN ); ?></a> | <a href="#share-rush-cache"><?php _e( 'Share Rush Cache', self::DOMAIN ); ?></a> | <a href="#follow-base-cache"><?php _e( 'Follow Base Cache', self::DOMAIN ); ?></a> | <a href="#common-dynamic-cache"><?php _e( 'Dynamic Cache', self::DOMAIN ); ?></a> | <a href="#common-data-crawler"><?php _e( 'Crawler', self::DOMAIN ); ?></a> | <a href="#common-data-export"><?php _e( 'Data Export', self::DOMAIN ); ?></a> | <a href="#common-exported-file"><?php _e( 'Exported File', self::DOMAIN ); ?></a>
 			  	</p>
 				<div class="metabox-holder">
 					<div id="current-parameter" class="postbox">
@@ -293,9 +302,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				<td>
 										  	<?php 
 											  if ( $this->scheme_migration_mode ) {
-													echo 'On'; 
+													_e( 'On', self::DOMAIN );
 											  } else {
-													echo 'Off';
+													_e( 'Off', self::DOMAIN );
 											  }
 										  	?>
 									  	</td>
@@ -349,8 +358,34 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 											}
 						  				?>
 						  				</td>
-			  						</tr>									  
+			  						</tr>
 			  						<tr>
+										<td><?php _e( 'Data Crawler', self::DOMAIN) ?></td><td><?php _e( 'Crawl method', self::DOMAIN ) ?></td>
+									  	<td>
+						  				<?php
+					  						switch ( $this->crawler_method ) {
+		  										case self::OPT_COMMON_CRAWLER_METHOD_NORMAL:
+		  											_e( 'Normal (Sequential Retrieval)', self::DOMAIN );
+		  											break;
+		  										case self::OPT_COMMON_CRAWLER_METHOD_CURL:
+		  											_e( 'Extended (Parallel Retrieval)', self::DOMAIN );
+		  											break;
+											}
+						  				?>
+						  				</td>
+			  						</tr>								  
+			  						<tr>
+										<td><?php _e( 'Data Crawler', self::DOMAIN) ?></td><td><?php _e( 'SSL verification', self::DOMAIN ) ?></td>
+									  	<td>
+						  				<?php
+					  						if ( $this->crawler_ssl_verification ) {
+		  										_e( 'On', self::DOMAIN );
+											} else {
+		  										_e( 'Off', self::DOMAIN );	
+											}
+						  				?>
+						  				</td>
+			  						</tr>				  						<tr>
 										<td><?php _e( 'Data Export', self::DOMAIN) ?></td><td><?php _e( 'Method of data export', self::DOMAIN ) ?></td><td>
 						  				<?php
 					  						switch ( $this->data_export_mode ) {
@@ -522,10 +557,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 										<th><label><?php _e( 'Dynamic caching based on user access', self::DOMAIN ) ?></label></th>
 						  				<td>
 							  				<select name="dynamic_cache_mode">
-												<option value="0"<?php if ( $this->dynamic_cache_mode == self::OPT_COMMON_ACCESS_BASED_CACHE_NONE ) echo ' selected="selected"'; ?>><?php _e( 'None', self::DOMAIN ) ?></option>
-												<option value="1"<?php if ( $this->dynamic_cache_mode == self::OPT_COMMON_ACCESS_BASED_SYNC_CACHE ) echo ' selected="selected"'; ?>><?php _e( 'Synchronous Cache', self::DOMAIN ) ?></option>
-												<option value="2"<?php if ( $this->dynamic_cache_mode == self::OPT_COMMON_ACCESS_BASED_ASYNC_CACHE ) echo ' selected="selected"'; ?>><?php _e( 'Asynchronous Cache', self::DOMAIN ) ?></option>
-												<option value="3"<?php if ( $this->dynamic_cache_mode == self::OPT_COMMON_ACCESS_BASED_2ND_CACHE ) echo ' selected="selected"'; ?>><?php _e( 'Asynchronous 2nd Cache', self::DOMAIN ) ?></option>
+												<option value="1"<?php if ( $this->dynamic_cache_mode == self::OPT_COMMON_ACCESS_BASED_CACHE_NONE ) echo ' selected="selected"'; ?>><?php _e( 'None', self::DOMAIN ) ?></option>
+												<option value="2"<?php if ( $this->dynamic_cache_mode == self::OPT_COMMON_ACCESS_BASED_SYNC_CACHE ) echo ' selected="selected"'; ?>><?php _e( 'Synchronous Cache', self::DOMAIN ) ?></option>
+												<option value="3"<?php if ( $this->dynamic_cache_mode == self::OPT_COMMON_ACCESS_BASED_ASYNC_CACHE ) echo ' selected="selected"'; ?>><?php _e( 'Asynchronous Cache', self::DOMAIN ) ?></option>
+												<option value="4"<?php if ( $this->dynamic_cache_mode == self::OPT_COMMON_ACCESS_BASED_2ND_CACHE ) echo ' selected="selected"'; ?>><?php _e( 'Asynchronous 2nd Cache', self::DOMAIN ) ?></option>
 							  				</select>
 							  				<label><?php _e('Default: Asynchronous 2nd Cache', self::DOMAIN) ?></label>
 						  				</td>
@@ -536,6 +571,42 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  					</div>								  								  
 						  	</div>
 						</div>
+					  	<div id="common-data-crawler" class="postbox">
+							<div class="handlediv" title="Click to toggle"><br></div>
+							<h3 class="hndle"><span><?php _e('Data Crawler', self::DOMAIN) ?></span></h3>  
+							<div class="inside">
+								<table class="form-table">
+									<tr>
+						  				<th><label><?php _e( 'Crawl method', self::DOMAIN ) ?></label></th>
+						  				<td>
+						  				<?php
+					  						switch ( $this->crawler_method ) {
+		  										case self::OPT_COMMON_CRAWLER_METHOD_NORMAL:
+		  											_e( 'Normal (Sequential Retrieval)', self::DOMAIN );
+		  											break;
+		  										case self::OPT_COMMON_CRAWLER_METHOD_CURL:
+		  											_e( 'Extended (Parallel Retrieval)', self::DOMAIN );
+		  											break;
+											}
+						  				?>
+						  				</td>
+									</tr>
+			  						<tr>
+						  				<th><label><?php _e( 'SSL verification', self::DOMAIN ) ?></label></th>
+						 				<td>
+							  				<select name="crawler_ssl_verification">
+												<option value="0"<?php if ( $this->crawler_ssl_verification == self::OPT_COMMON_CRAWLER_SSL_VERIFY_OFF ) echo ' selected="selected"'; ?>><?php _e( 'Off', self::DOMAIN ) ?></option>
+												<option value="1"<?php if ( $this->crawler_ssl_verification == self::OPT_COMMON_CRAWLER_SSL_VERIFY_ON ) echo ' selected="selected"'; ?>><?php _e( 'On', self::DOMAIN ) ?></option>
+							  				</select>
+							  				<label><?php _e('Default: On', self::DOMAIN) ?></label>											  
+						  				</td>
+			  						</tr>									  
+						  		</table>
+			  					<div class="submit-button">
+									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ) ?>" />
+			  					</div>								  								  
+						  	</div>
+						</div>  
 						<div id="common-data-export" class="postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
 							<h3 class="hndle"><span><?php _e('Data Export', self::DOMAIN) ?></span></h3>  
@@ -545,8 +616,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 										<th><label><?php _e( 'Method of data export', self::DOMAIN ) ?></label></th>
 						  				<td>
 							  				<select name="data_export_mode">
-												<option value="0"<?php if ( $this->data_export_mode == self::OPT_COMMON_DATA_EXPORT_MANUAL ) echo ' selected="selected"'; ?>><?php _e( 'Manual', self::DOMAIN ) ?></option>
-												<option value="1"<?php if ( $this->data_export_mode == self::OPT_COMMON_DATA_EXPORT_AUTO ) echo ' selected="selected"'; ?> disabled="disabled"><?php _e( 'Auto', self::DOMAIN ) ?></option>
+												<option value="1"<?php if ( $this->data_export_mode == self::OPT_COMMON_DATA_EXPORT_MANUAL ) echo ' selected="selected"'; ?>><?php _e( 'Manual', self::DOMAIN ) ?></option>
+												<option value="2"<?php if ( $this->data_export_mode == self::OPT_COMMON_DATA_EXPORT_AUTO ) echo ' selected="selected"'; ?> disabled="disabled"><?php _e( 'Auto', self::DOMAIN ) ?></option>
 							  				</select>
 							  				<label><?php _e('Default: Manual', self::DOMAIN) ?></label>
 						  				</td>

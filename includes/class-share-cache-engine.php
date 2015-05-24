@@ -64,7 +64,7 @@ abstract class Share_Cache_Engine extends Cache_Engine {
   	public function cache( $options = array() ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-	  	$transient_id = $options['transient_id'];
+	  	$cache_key = $options['cache_key'];
 		$target_url = $options['target_url'];
 		$target_sns = $options['target_sns'];
 		$cache_expiration = $options['cache_expiration'];
@@ -82,8 +82,8 @@ abstract class Share_Cache_Engine extends Cache_Engine {
 
 		  	$target_sns_migrated = $target_sns;
 		  	
-		  	foreach ( $this->scheme_migration_exclude_keys as $sns_key ) {
-			  	unset( $target_sns_migrated[$sns_key] );
+		  	foreach ( $this->scheme_migration_exclude_keys as $sns ) {
+			  	unset( $target_sns_migrated[$sns] );
 		  	}
 		  
 	  		Common_Util::log( '[' . __METHOD__ . '] target url: ' . $target_url );
@@ -92,16 +92,16 @@ abstract class Share_Cache_Engine extends Cache_Engine {
 
 			Common_Util::log( $migrated_data );
 
-		  	foreach ( $target_sns_migrated as $key => $value ) {
-				if ( $value && isset( $migrated_data[$key] ) && is_numeric( $migrated_data[$key] ) && $migrated_data[$key] > 0 ){
-				  	$data[$key] = $data[$key] + $migrated_data[$key];
+		  	foreach ( $target_sns_migrated as $sns => $active ) {
+				if ( $active && isset( $migrated_data[$sns] ) && is_numeric( $migrated_data[$sns] ) && $migrated_data[$sns] > 0 ){
+				  	$data[$sns] = $data[$sns] + $migrated_data[$sns];
 				}
 			}
 		  		  
 		}	  
 	  
 	  	if ( $data ) {	  
-			$result = set_transient( $transient_id, $data, $cache_expiration ); 
+			$result = set_transient( $cache_key, $data, $cache_expiration ); 
 			  
 			Common_Util::log( '[' . __METHOD__ . '] set_transient result: ' . $result );
 	  	}

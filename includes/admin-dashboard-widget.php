@@ -44,7 +44,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 		<div class="sns-cnt-cache">
 		  	<div id="scc-dashboard">			  
 				<div id="site-summary-cache" class="site-summary">
-					<h4><span><?php _e( 'Cache Status', self::DOMAIN ) ?></span></h4>						  
+				  	<h4><a href="admin.php?page=scc-cache-status"><?php _e( 'Cache Status', self::DOMAIN ) ?></a></h4>						  
 					<table class="view-table">
 						<thead>
 							<tr>
@@ -81,7 +81,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 					</table>	  							  								  
 				</div>
 			  	<div id="site-summary-count" class="site-summary">		
-					<h4><span><?php _e( 'Share Count', self::DOMAIN ) ?></span></h4>  	
+					<h4><a href="admin.php?page=scc-share-count"><?php _e( 'Share Count', self::DOMAIN ) ?></a></h4>  	
 					<table class="view-table">
 						<thead>
 							<tr>
@@ -89,9 +89,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 									$share_base_cache_target = $this->share_base_cache_target ;
 									unset( $share_base_cache_target[self::REF_CRAWL_DATE] );
 																		
-									foreach ( $share_base_cache_target as $key => $value ){	
-										if ( $value ) {
-											echo '<th>' . $key . '</th>';	
+									foreach ( $share_base_cache_target as $sns => $active ){	
+										if ( $active ) {
+											echo '<th>' . $sns . '</th>';	
 										}
 									}
 								?>
@@ -101,15 +101,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 							<tr>
 								<?php
 			
-									foreach ( $share_base_cache_target as $key => $value ) {
-										if ( $value ) {
-										  	if ( $key == self::REF_SHARE_GPLUS ){
+									foreach ( $share_base_cache_target as $sns => $active ) {
+										if ( $active ) {
+										  	if ( $sns === self::REF_SHARE_GPLUS ){
 												echo '<td class="share-count">';
 											  	echo '<img class="loading" src="' . $this->loading_img_url . '" /><span data-scc="gplus"></span>';
 												echo '</td>';													  	
 											} else {
 												echo '<td class="share-count">';
-											  	echo '<img class="loading" src="' . $this->loading_img_url . '" /><span data-scc="' . strtolower( $key ) . '"></span>';
+											  	echo '<img class="loading" src="' . $this->loading_img_url . '" /><span data-scc="' . strtolower( $sns ) . '"></span>';
 												echo '</td>';													  
 											}
 					  	

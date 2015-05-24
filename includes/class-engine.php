@@ -64,6 +64,7 @@ abstract class Engine {
 	 */
 	protected function __construct() {
 	  	Common_Util::log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+	  	//$this->get_object_id();
 	}
   
   	/**
@@ -74,14 +75,38 @@ abstract class Engine {
   	public static function get_instance() {
 
 	  	$class_name = get_called_class();
+	  
 		if ( ! isset( self::$instance[$class_name] ) ) {
 			self::$instance[$class_name] = new $class_name();
-		  	//self::$instance[$class_name]->initialize($crawler, $options=array());
 		}
 
 		return self::$instance[$class_name];
 	}
-	
+
+    /**
+     * Return object ID
+     *
+	 * @since 0.6.0
+	 */	  
+  	public function get_object_id() {
+	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
+	  	  
+	  	$object_id = spl_object_hash( $this );
+	  
+	  	Common_Util::log( '[' . __METHOD__ . '] object ID: ' . $object_id );
+	  
+	  	return $object_id;
+  	}  
+  
+    /**
+     * Inhibit clone
+     *
+	 * @since 0.6.0
+	 */	  
+  	final public function __clone() {
+	  	throw new Exception('Clone is not allowed against' . get_class( $this ) ); 
+  	}  
+  
   	/**
 	 * Register base schedule for this engine
 	 *

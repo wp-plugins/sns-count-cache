@@ -17,6 +17,7 @@ $db_follow_cache_target = 'scc_follow_cache_target';
 $db_data_export_schedule = 'scc_data_export_schedule';
 $db_http_migration_mode = 'scc_http_migration_mode';
 $db_scheme_migration_mode = 'scc_scheme_migration_mode';
+$db_settings = 'scc_settings';
 
 // For Single site
 if( ! is_multisite() ) {
@@ -34,7 +35,8 @@ if( ! is_multisite() ) {
   	delete_option( $db_follow_cache_target );
   	delete_option( $db_data_export_schedule );
 	delete_option( $db_http_migration_mode );
-  	delete_option( $db_scheme_migration_mode );    
+  	delete_option( $db_scheme_migration_mode );
+  	delete_option( $db_settings );
 } 
 // For Multisite
 else {
@@ -59,7 +61,8 @@ else {
 	  	delete_option( $db_follow_cache_target );
   		delete_option( $db_data_export_schedule );
 		delete_option( $db_http_migration_mode );
-		delete_option( $db_scheme_migration_mode );	  
+		delete_option( $db_scheme_migration_mode );
+		delete_option( $db_settings );	  
     }
     switch_to_blog( $original_blog_id );
 }

@@ -101,16 +101,7 @@ class Common_Data_Export_Engine extends Export_Engine {
 	 * Cache target of follow count
 	 */	            
   	private $follow_target_sns = array();  
-    
-	/**
-	 * Class constarctor
-	 * Hook onto all of the actions and filters needed by the plugin.
-	 *
-	 */
-	protected function __construct() {
-	  	Common_Util::log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	}
-  
+      
   	/**
 	 * Initialization
 	 *
@@ -119,8 +110,8 @@ class Common_Data_Export_Engine extends Export_Engine {
   	public function initialize( $options = array() ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 
-	  	$this->share_meta_key_prefix = self::DEF_SHARE_META_KEY_PREFIX;
-	  	$this->follow_meta_key_prefix = self::DEF_FOLLOW_META_KEY_PREFIX;
+	  	$this->share_cache_key_prefix = self::DEF_SHARE_META_KEY_PREFIX;
+	  	$this->follow_cache_key_prefix = self::DEF_FOLLOW_META_KEY_PREFIX;
 	  	$this->prime_cron = self::DEF_PRIME_CRON;
 	  	$this->execute_cron = self::DEF_EXECUTE_CRON;
 	  	$this->event_schedule = self::DEF_EVENT_SCHEDULE;
@@ -136,8 +127,8 @@ class Common_Data_Export_Engine extends Export_Engine {
 	  	if ( isset( $options['export_exclude_keys'] ) ) $this->export_exclude_keys = $options['export_exclude_keys'];
 	  	if ( isset( $options['export_file_name'] ) ) $this->export_file_name = $options['export_file_name'];
 		if ( isset( $options['post_types'] ) ) $this->post_types = $options['post_types'];
-	  	if ( isset( $options['share_meta_key_prefix'] ) ) $this->share_meta_key_prefix = $options['share_meta_key_prefix']; 
-	  	if ( isset( $options['follow_meta_key_prefix'] ) ) $this->follow_meta_key_prefix = $options['follow_meta_key_prefix']; 
+	  	if ( isset( $options['share_cache_key_prefix'] ) ) $this->share_cache_key_prefix = $options['share_cache_key_prefix']; 
+	  	if ( isset( $options['follow_cache_key_prefix'] ) ) $this->follow_cache_key_prefix = $options['follow_cache_key_prefix']; 
 	  	if ( isset( $options['share_target_sns'] ) ) $this->share_target_sns = $options['share_target_sns'];
 	  	if ( isset( $options['follow_target_sns'] ) ) $this->follow_target_sns = $options['follow_target_sns'];
 	  
@@ -241,7 +232,32 @@ class Common_Data_Export_Engine extends Export_Engine {
 		  		Common_Util::log( '[' . __METHOD__ . '] file exists: ' . $abs_path );
 		  
 		  		$fp = fopen( $abs_path, 'a' );
-		  
+
+			  	$content = '"' . $current_date . '","' . 'home' . '","' . '-' . '","' . get_bloginfo('name') . '","' . home_url( '/' ) . '","' . '-';
+			  
+			  	$option_key = $this->share_cache_key_prefix . strtolower( 'home' );
+			  
+				if ( false !== ( $sns_counts = get_option( $option_key ) ) ) {	
+										  
+					foreach ( $this->share_target_sns as $sns => $active ) {
+					  	if ( ! in_array( $sns, $this->export_exclude_keys ) ) {
+							if( $active ){										  
+								if ( $sns_counts[$sns] >= 0 ) {
+									$data_value = $sns_counts[$sns];
+								} else {
+								  	$data_value = '';
+								}
+							  	$data = $content . '","' . $sns . '","' . 'Share' . '","' . $data_value . '",' . "\r\n";
+							}
+						  	if ( fwrite( $fp, mb_convert_encoding( $data, "SJIS", "UTF-8" ) ) ) {
+			  					Common_Util::log( '[' . __METHOD__ . '] file write succeeded: ' . $data );
+							} else {
+			  					Common_Util::log( '[' . __METHOD__ . '] file wrote failed: ' . $data );
+							}	
+						}
+					}
+				} 	  				  
+			  
 				$query_args = array(
 					'post_type' => $this->post_types,
 					'post_status' => 'publish',
@@ -251,7 +267,7 @@ class Common_Data_Export_Engine extends Export_Engine {
 				);
 
 				$posts_query = new WP_Query( $query_args );
-	  
+			  	
 				if ( $posts_query->have_posts() ) {
 					while ( $posts_query->have_posts() ) {
 						$posts_query->the_post();
@@ -260,21 +276,21 @@ class Common_Data_Export_Engine extends Export_Engine {
 				  
 				 		$content = '"' . $current_date . '","' . $post_ID . '","' . get_post_type( $post_ID ) . '","' . get_the_title( $post_ID ) . '","' . get_permalink( $post_ID ) . '","' . get_post_time( 'Y/m/d H:i', false, $post_ID );
 				  
-						foreach ( $this->share_target_sns as $key => $value ) {
+						foreach ( $this->share_target_sns as $sns => $active ) {
 					  
-					  		if ( ! in_array( $key, $this->export_exclude_keys ) ) {
+					  		if ( ! in_array( $sns, $this->export_exclude_keys ) ) {
 					  
-								$meta_key = $this->share_meta_key_prefix . strtolower( $key );
+								$meta_key = $this->share_cache_key_prefix . strtolower( $sns );
 					  							  
-								if ( $value ) {
+								if ( $active ) {
 								  
 								  	$data_value = get_post_meta( $post_ID, $meta_key, true );
 							  
-							  		if ( $data_value == -1 ){
+							  		if ( $data_value < 0 ){
 								  		$data_value = '';
 							  		}
 								  
-									$data = $content . '","' . $key . '","' . 'Share' . '","' . $data_value . '",' . "\r\n";
+									$data = $content . '","' . $sns . '","' . 'Share' . '","' . $data_value . '",' . "\r\n";
 								}
 				  				if ( fwrite( $fp, mb_convert_encoding( $data, "SJIS", "UTF-8" ) ) ) {
 			  						Common_Util::log( '[' . __METHOD__ . '] file write succeeded: ' . $data );
@@ -286,7 +302,7 @@ class Common_Data_Export_Engine extends Export_Engine {
 					  	
 					  /*
 				  		foreach ( $this->follow_target_sns as $key => $value ) {
-					  		$meta_key = $this->follow_meta_key_prefix . strtolower( $key );
+					  		$meta_key = $this->follow_cache_key_prefix . strtolower( $key );
 					  
 							if ( $value ) {
 							  

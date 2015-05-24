@@ -41,16 +41,7 @@ abstract class Export_Engine extends Engine {
 	 * Meta key for follow second cache
 	 */	    
   	protected $follow_meta_key_prefix = NULL;  
-    
-	/**
-	 * Class constarctor
-	 * Hook onto all of the actions and filters needed by the plugin.
-	 *
-	 */
-	protected function __construct() {
-	  	Common_Util::log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
-	}
-  	
+      	
 }
 
 ?>

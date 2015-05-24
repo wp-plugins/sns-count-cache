@@ -30,24 +30,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 class Follow_Crawler extends Data_Crawler {
-  
+      
   	/**
-	 * Timeout for cURL data retrieval
-	 */	  
-	private $timeout = 10;
-    
-	protected function __construct( $url='', $timeout=10 ) {
+	 * Initialization
+	 *
+	 * @since 0.5.1
+	 */
+  	public function initialize( $options = array() ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-		$this->url = rawurlencode( $url );
-		$this->timeout = $timeout;
-	}
-  
-	public function set_timeout( $timeout ) {
-	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
-	  
-		$this->timeout = $timeout;
-	}
+	  	if ( isset( $options['crawl_method'] ) ) $this->crawl_method = $options['crawl_method'];
+	  	if ( isset( $options['timeout'] ) ) $this->timeout = $options['timeout'];
+	  	if ( isset( $options['ssl_verification'] ) ) $this->ssl_verification = $options['ssl_verification'];
+	}  
     
   	/**
 	 * Implementation of abstract method. this method gets each share count
@@ -63,10 +58,17 @@ class Follow_Crawler extends Data_Crawler {
 	  
 	  	$query_urls = $this->build_query_urls( $target_sns, $url );
 	  	  
-	  	return $this->extract_count( $target_sns, Common_Util::multi_remote_get( $query_urls, 10 ) );	  
+	  	$data = array();
 	  
+	  	if ( $this->crawl_method == SNS_Count_Cache::OPT_COMMON_CRAWLER_METHOD_CURL ) {
+		  	$data = Common_Util::multi_remote_get( $query_urls, $this->timeout, $this->ssl_verification, true );
+		} else {
+			$data = Common_Util::multi_remote_get( $query_urls, $this->timeout, $this->ssl_verification, false );  
+		}
+	  
+	  	return $this->extract_count( $target_sns, $data );
   	}
-  
+	  
  	/**
 	 * build query
 	 *
@@ -101,9 +103,9 @@ class Follow_Crawler extends Data_Crawler {
 	  
 	  	Common_Util::log( $contents );
 	  
-		foreach ( $contents as $key => $content ) {  
+		foreach ( $contents as $sns => $content ) {  
 	  
-			if ( $key == SNS_Count_Cache::REF_FOLLOW_FEEDLY ) {
+			if ( $sns == SNS_Count_Cache::REF_FOLLOW_FEEDLY ) {
 			  
 			  	if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
 				  	$json = json_decode( $content['data'], true );

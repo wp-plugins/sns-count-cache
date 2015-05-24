@@ -37,10 +37,35 @@ abstract class Data_Crawler {
 	protected $url = '';
 
   	/**
+	 * method to crawl
+	 */	      
+  	protected $crawl_method = 1;
+  
+  	/**
+	 * Timeout
+	 */	      
+  	protected $timeout = 10;  	
+
+  	/**
+	 * ssl verification
+	 */	      
+  	protected $ssl_verification = true;  
+  
+  	/**
 	 * Instance
 	 */
   	private static $instance = array();  
 
+	/**
+	 * Class constarctor
+	 * Hook onto all of the actions and filters needed by the plugin.
+	 *
+	 */
+	protected function __construct() {
+	  	Common_Util::log('[' . __METHOD__ . '] (line='. __LINE__ . ')');
+	  	//$this->get_object_id();
+	}  
+  
   	/**
 	 * Get instance
 	 *
@@ -52,22 +77,41 @@ abstract class Data_Crawler {
 	  
 		if( ! isset( self::$instance[$class_name] ) ) {
 			self::$instance[$class_name] = new $class_name();
-		  	//self::$instance[ $c ]->init($crawler, $options=array());
 		}
 
 		return self::$instance[$class_name];
 	}
-  
-  	/**
-	 * Set URL for data crawling
-	 *
-	 * @since 0.1.0
-	 */	      
-	public function set_url( $url ) {
-	  	$this->log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
+
+    /**
+     * Return object ID
+     *
+	 * @since 0.6.0
+	 */	  
+  	public function get_object_id() {
+	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
-		$this->url = rawurlencode( $url );
-	}
+	  	$object_id = spl_object_hash( $this );
+	  
+	  	Common_Util::log( '[' . __METHOD__ . '] object ID: ' . $object_id );
+	  
+	  	return $object_id;
+  	}  
+  
+    /**
+     * Inhibit clone
+     *
+	 * @since 0.6.0
+	 */	  
+  	final public function __clone() {
+	  	throw new Exception('Clone is not allowed against' . get_class( $this ) ); 
+  	}    
+
+  	/**
+	 * Initialization
+	 *
+	 * @since 0.6.0
+	 */
+  	abstract public function initialize( $options = array() );
   
   	/**
 	 * Abstract method for data crawling
