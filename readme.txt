@@ -8,7 +8,7 @@ Stable tag: 0.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-This plugin gets and caches SNS share count in the background, and help you to shorten page loading time.
+This plugin gets and caches SNS share count in the background, and help you to shorten page loading time by application of the cache.
 
 == Description ==
 
