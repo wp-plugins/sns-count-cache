@@ -11,6 +11,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
         $.ajax({
             url: scc.endpoint + '?action=' + scc.action + '&nonce=' + scc.nonce,
             dataType: 'jsonp',
+		  	cache: false,
             success: function(res){
                         if(res){
                             
@@ -25,13 +26,53 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
                             $("span[data-scc='sncc']").text(res.secondary.no_cache_count);
                             $("span[data-scc='scs']").text(res.secondary.cache_status);
                             
-                            $("span[data-scc='twitter']").text(res.share_count.twitter);
-                            $("span[data-scc='facebook']").text(res.share_count.facebook);
-                            $("span[data-scc='gplus']").text(res.share_count.gplus);
-                            $("span[data-scc='pocket']").text(res.share_count.pocket);
-                            $("span[data-scc='hatebu']").text(res.share_count.hatebu);
-                            $("span[data-scc='total']").text(res.share_count.total);
-
+		  					if(res.share_delta.twitter > 0){
+		  						$("span[data-scc='twitter']").html(res.share_count.twitter + ' (<span class="delta-rise">+' + res.share_delta.twitter + '</span>)');
+							} else if(res.share_delta.twitter < 0){
+		  						$("span[data-scc='twitter']").html(res.share_count.twitter + ' (<span class="delta-fall">' + res.share_delta.twitter + '</span>)');
+							} else {
+		  						$("span[data-scc='twitter']").html(res.share_count.twitter);
+							}
+	  						if(res.share_delta.facebook > 0){
+							  	$("span[data-scc='facebook']").html(res.share_count.facebook + ' (<span class="delta-rise">+' + res.share_delta.facebook + '</span>)');							  
+							} else if(res.share_delta.facebook < 0){
+							  	$("span[data-scc='facebook']").html(res.share_count.facebook + ' (<span class="delta-fall">' + res.share_delta.facebook + '</span>)');							  
+							} else {
+							  	$("span[data-scc='facebook']").html(res.share_count.facebook);							  
+							}
+			   				
+	  						if(res.share_delta.gplus > 0){
+							  	$("span[data-scc='gplus']").html(res.share_count.gplus + ' (<span class="delta-rise">+' + res.share_delta.gplus + '</span>)');
+							} else if(res.share_delta.gplus < 0){
+							  	$("span[data-scc='gplus']").html(res.share_count.gplus + ' (<span class="delta-fall">' + res.share_delta.gplus + '</span>)');
+							} else {
+							  	$("span[data-scc='gplus']").html(res.share_count.gplus);
+							}
+	  
+	  						if(res.share_delta.pocket > 0){
+							  	 $("span[data-scc='pocket']").html(res.share_count.pocket + ' (<span class="delta-rise">+' + res.share_delta.pocket + '</span>)');
+							} else if(res.share_delta.pocket < 0){
+							  	 $("span[data-scc='pocket']").html(res.share_count.pocket + ' (<span class="delta-fall">' + res.share_delta.pocket + '</span>)');
+							} else {
+							  	 $("span[data-scc='pocket']").html(res.share_count.pocket);
+							}                            
+	  
+      	  					if(res.share_delta.hatebu > 0){
+							  	$("span[data-scc='hatebu']").html(res.share_count.hatebu + ' (<span class="delta-rise">+' + res.share_delta.hatebu + '</span>)');
+							} else if(res.share_delta.hatebu < 0){
+							  	$("span[data-scc='hatebu']").html(res.share_count.hatebu + ' (<span class="delta-fall">' + res.share_delta.hatebu + '</span>)');
+							} else {
+							  	$("span[data-scc='hatebu']").html(res.share_count.hatebu);
+							}                      
+	  
+      	  					if(res.share_delta.total > 0){
+							  	$("span[data-scc='total']").html(res.share_count.total + ' (<span class="delta-rise">+' + res.share_delta.total + '</span>)');
+							} else if(res.share_delta.total < 0){
+							  	$("span[data-scc='total']").html(res.share_count.total + ' (<span class="delta-fall">' + res.share_delta.total + '</span>)');
+							} else {
+							  	$("span[data-scc='total']").html(res.share_count.total);
+							}                      
+	  	  
                             $(".loading").css('display', 'none');
                             $("span[data-scc]").fadeIn();                            
                         } else {

@@ -1,8 +1,8 @@
 <?php
 /*
-class-cache-engine.php
+class-analytical-engline.php
 
-Description: This class is a data cache engine whitch get and cache data using wp-cron at regular intervals  
+Description: This class is a data analytical engine.  
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -30,45 +30,48 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 
-abstract class Cache_Engine extends Engine {
+abstract class Analytical_Engine extends Engine {
 
 	/**
 	 * Prefix of cache ID
 	 */	    
   	protected $cache_prefix = NULL;
+
+    /**
+	 * Prefix of base ID
+	 */	    
+  	protected $base_prefix = NULL;
+
+    /**
+	 * Prefix of base ID
+	 */	    
+  	protected $delta_prefix = NULL;
   
   	/**
 	 * instance for delegation
 	 */	   
   	protected $delegate = NULL;  
-      	
-  	/**
-	 * Get cache expiration based on current number of total post and page
-	 *
-	 * @since 0.1.1
-	 */	      
-  	abstract protected function get_cache_expiration();
-   
+      	   
    	/**
 	 * Get and cache data for a given post
 	 *
 	 * @since 0.1.1
 	 */  	
-  	abstract public function cache( $options = array() );
+  	abstract public function analyze( $options = array() );
 
     /**
 	 * Initialize cache 
 	 *
 	 * @since 0.3.0
 	 */	     
-  	abstract public function initialize_cache();
+  	abstract public function initialize_base();
 
     /**
 	 * Clear cache 
 	 *
 	 * @since 0.3.0
 	 */	     
-  	abstract public function clear_cache();
+  	abstract public function clear_base();
   
   	/**
 	 * Get cache key
@@ -78,28 +81,24 @@ abstract class Cache_Engine extends Engine {
   	public function get_cache_key( $suffix ) {
 	  	return $this->cache_prefix . strtolower( $suffix );
   	}    
-  
-  	/**
-	 * Order cache
-	 *
-	 * @since 0.5.1
-	 */  	    
-  	protected function delegate_cache( $options = array() ) {
-  		if ( ! is_null( $this->delegate ) && method_exists( $this->delegate, 'order_cache' ) ) {
-			$this->delegate->order_cache( $this, $options );
-	  	}
-	}
 
   	/**
-	 * Order analysis
+	 * Get base key
 	 *
 	 * @since 0.6.1
-	 */  	    
-  	protected function delegate_analysis( $options = array() ) {
-  		if ( ! is_null( $this->delegate ) && method_exists( $this->delegate, 'order_analysis' ) ) {
-			$this->delegate->order_analysis( $this, $options );
-	  	}
-	}
+	 */  	  
+  	public function get_base_key( $suffix ) {
+	  	return $this->base_prefix . strtolower( $suffix );
+  	}    
+
+  	/**
+	 * Get delta key
+	 *
+	 * @since 0.6.1
+	 */  	  
+  	public function get_delta_key( $suffix ) {
+	  	return $this->delta_prefix . strtolower( $suffix );
+  	}   
   
 }
 

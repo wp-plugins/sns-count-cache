@@ -98,6 +98,7 @@ class Share_Base_Cache_Engine extends Share_Cache_Engine {
 	  	if ( isset( $options['event_description'] ) ) $this->event_description = $options['event_description'];
 	  	if ( isset( $options['post_types'] ) ) $this->post_types = $options['post_types'];
 	  	if ( isset( $options['scheme_migration_mode'] ) ) $this->scheme_migration_mode = $options['scheme_migration_mode'];
+	  	if ( isset( $options['scheme_migration_date'] ) ) $this->scheme_migration_date = $options['scheme_migration_date'];
 	  	if ( isset( $options['scheme_migration_exclude_keys'] ) ) $this->scheme_migration_exclude_keys = $options['scheme_migration_exclude_keys'];
 	  
 		add_filter( 'cron_schedules', array( $this, 'schedule_check_interval' ) ); 
@@ -186,6 +187,7 @@ class Share_Base_Cache_Engine extends Share_Cache_Engine {
 				'post_id' => $post_ID,
 				'target_url' => $url,
 				'target_sns' => $this->target_sns,
+				'publish_date' => NULL,			  
 				'cache_expiration' => $cache_expiration
 			);
 		  
@@ -226,6 +228,7 @@ class Share_Base_Cache_Engine extends Share_Cache_Engine {
 				  	'post_id' => $post_ID,
 				  	'target_url' => $url,
 				  	'target_sns' => $this->target_sns,
+				  	'publish_date' => get_the_date( 'Y/m/d' ),
 				  	'cache_expiration' => $cache_expiration
 				);
 			  
@@ -256,8 +259,10 @@ class Share_Base_Cache_Engine extends Share_Cache_Engine {
 	  
 	  	if ( $post_ID != 'home' ) {
 	  		$url = get_permalink( $post_ID );
+		  	$publish_date = get_the_date( 'Y/m/d', $post_ID );
 		} else {
 		  	$url = home_url( '/' );
+		  	$publish_date = NULL;
 		}
 	  
 		$options = array(
@@ -265,6 +270,7 @@ class Share_Base_Cache_Engine extends Share_Cache_Engine {
 		  	'post_id' => $post_ID,
 			'target_url' => $url,
 		  	'target_sns' => $this->target_sns,
+			'publish_date' => $publish_date,
 			'cache_expiration' => $cache_expiration
 		);
 	  
@@ -346,6 +352,21 @@ class Share_Base_Cache_Engine extends Share_Cache_Engine {
 	  	$option_key = $this->get_cache_key( $this->offset_suffix );
 	  
 	  	delete_option( $option_key );
+	  
+  	}   
+
+
+    /**
+	 * Clear meta key for ranking 
+	 *
+	 * @since 0.7.0
+	 */	     
+  	public function clear_cache_by_post_id( $post_id ) {
+	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
+  
+		$transient_id = $this->get_cache_key( $post_id );
+			  
+		delete_transient( $transient_id );
 	  
   	}   
   

@@ -302,6 +302,20 @@ class Common_Util {
 		}
 	}
   
+	public static function serialize_base64_encode( $array ) {
+		$data = serialize( $array );
+		$data = base64_encode( $data );
+	  
+		return $data;
+	}
+ 
+	public static function unserialize_base64_decode( $data ) {
+		$data = base64_decode( $data );
+		$array = unserialize( $data );
+	  
+		return $array;
+	}  
+  
 }
 
 ?>

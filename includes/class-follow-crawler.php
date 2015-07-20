@@ -111,12 +111,12 @@ class Follow_Crawler extends Data_Crawler {
 				  	$json = json_decode( $content['data'], true );
 				  
 			  		if ( isset( $json['subscribers'] ) && is_numeric( $json['subscribers'] ) ) {
-				  		$count = ( int )$json['subscribers'];
+				  		$count = (int) $json['subscribers'];
 					} else {
-				  		$count = -1;
+				  		$count = (int) -1;
 					}
 				} else {
-				  	$count = -1;
+				  	$count = (int) -1;
 				}
 			  
 			  	$sns_counts[SNS_Count_Cache::REF_FOLLOW_FEEDLY] = $count;
@@ -126,6 +126,8 @@ class Follow_Crawler extends Data_Crawler {
 
 	  	if ( isset( $target_sns[SNS_Count_Cache::REF_CRAWL_DATE] ) && $target_sns[SNS_Count_Cache::REF_CRAWL_DATE] ) {
 	  		$sns_counts[SNS_Count_Cache::REF_CRAWL_DATE] = $extract_date;
+		} else {
+	  		$sns_counts[SNS_Count_Cache::REF_CRAWL_DATE] = '';
 		}
 	  
 	  	return $sns_counts;

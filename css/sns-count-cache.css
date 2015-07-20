@@ -78,7 +78,6 @@
     color: #ccc;  
 }
 		
-		
 .sns-cnt-cache .not-cached {
     color: #ccc;
 }
@@ -150,4 +149,23 @@
     padding: 1px 5px;
     height: 20px;
     line-height: 15px;
+}
+
+.sns-cnt-cache .delta-rise {
+    color: #FF6866;
+    text-decoration: underline;
+    background: #FFEFEF;
+    font-weight: bold;
+    font-size: 11px;
+    border-radius: 5%;
+}
+
+.sns-cnt-cache .delta-fall {
+    color: #f0ad4e;
+    text-decoration: underline;
+    /* background-color: #dff0d8 */;
+}
+
+.sns-cnt-cache .wpcron td {
+    border-top: 1px solid #dedede;
 }

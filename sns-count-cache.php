@@ -2,7 +2,7 @@
 /*
 Plugin Name: SNS Count Cache
 Description: SNS Count Cache gets share count for Twitter and Facebook, Google Plus, Pocket, Hatena Bookmark and caches these count in the background. This plugin may help you to shorten page loading time because the share count can be retrieved not through network but through the cache using given functions.
-Version: 0.6.0
+Version: 0.7.0
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 require_once ( dirname( __FILE__ ) . '/includes/class-common-util.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-wp-cron-util.php' );
 
-require_once ( dirname( __FILE__ ) . '/includes/interface-cache-order.php' );
+require_once ( dirname( __FILE__ ) . '/includes/interface-order.php' );
 
 require_once ( dirname( __FILE__ ) . '/includes/class-engine.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-cache-engine.php' );
@@ -58,9 +58,12 @@ require_once ( dirname( __FILE__ ) . '/includes/class-data-crawler.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-share-crawler.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-follow-crawler.php' );
 
+require_once ( dirname( __FILE__ ) . '/includes/class-analytical-engline.php' );
+require_once ( dirname( __FILE__ ) . '/includes/class-share-analytical-engine.php' );
+
 if ( ! class_exists( 'SNS_Count_Cache' ) ) {
 
-final class SNS_Count_Cache implements Cache_Order {
+final class SNS_Count_Cache implements Order {
 
 	/**
 	 * Prefix of share cache ID
@@ -125,17 +128,32 @@ final class SNS_Count_Cache implements Cache_Order {
 	/**
 	 * Type of data export
 	 */	 
-  	const OPT_COMMON_DATA_EXPORT_AUTO = 2;
+  	const OPT_COMMON_DATA_EXPORT_SCHEDULER = 2;
+
+	/**
+	 * Type of share analysis
+	 */	 
+  	const OPT_SHARE_VARIATION_ANALYSIS_NONE = 1; 
+    
+	/**
+	 * Type of share analysis
+	 */	 
+  	const OPT_SHARE_VARIATION_ANALYSIS_MANUAL = 2; 
+  
+	/**
+	 * Type of share analysis
+	 */	 
+  	const OPT_SHARE_VARIATION_ANALYSIS_SCHEDULER = 3;
+
+	/**
+	 * Type of share analysis
+	 */	  
+	const OPT_SHARE_VARIATION_ANALYSIS_SCHEDULE = '0 0 * * *';
   
 	/**
 	 * File name of data export
 	 */	   	
 	const OPT_COMMON_DATA_EXPORT_FILE_NAME = 'sns-count-cache-data.csv';  
-
-	/**
-	 * Data export interval
-	 */	  
-	const OPT_COMMON_DATA_EXPORT_INTERVAL = 43200;
 
 	/**
 	 * Data export schedule
@@ -177,7 +195,7 @@ final class SNS_Count_Cache implements Cache_Order {
 	 */	    
   	const OPT_COMMON_ERROR_MESSAGE = 'scc_error_message';
 
-      /**
+    /**
 	 * Update message
 	 */	    
   	const OPT_COMMON_UPDATE_MESSAGE = 'scc_update_message';
@@ -215,7 +233,7 @@ final class SNS_Count_Cache implements Cache_Order {
 	/**
 	 * Option key for check interval of share base cache
 	 */  
-	const DB_SHARE_CHECK_INTERVAL = 'share_check_interval';
+	const DB_SHARE_BASE_CHECK_INTERVAL = 'share_base_check_interval';
   
 	/**
 	 * Option key for number of posts to check at a time for share base cache
@@ -230,8 +248,13 @@ final class SNS_Count_Cache implements Cache_Order {
 	/**
 	 * Option key for new content term for share rush cache
 	 */	    
-  	const DB_SHARE_NEW_CONTENT_TERM = 'share_new_content_term';
+  	const DB_SHARE_RUSH_NEW_CONTENT_TERM = 'share_new_content_term';
 
+	/**
+	 * Option key for check interval of share rush cache
+	 */  
+	const DB_SHARE_RUSH_CHECK_INTERVAL = 'share_rush_check_interval';
+    
 	/**
 	 * Option key of cache target for share base cache
 	 */	    
@@ -263,10 +286,25 @@ final class SNS_Count_Cache implements Cache_Order {
 	const DB_COMMON_SCHEME_MIGRATION_MODE = 'common_scheme_migration_mode';
 
 	/**
+	 * Option key of http migration
+	 */  
+	const DB_COMMON_SCHEME_MIGRATION_DATE = 'common_scheme_migration_date';
+    
+	/**
 	 * Option key of crawl ssl verification
 	 */  
 	const DB_COMMON_CRAWLER_SSL_VERIFICATION = 'common_crawler_ssl_verification';  
-  
+
+	/**
+	 * Option key of share variation analysis
+	 */  
+	const DB_SHARE_VARIATION_ANALYSIS_MODE = 'share_variation_analysis_mode';  
+
+	/**
+	 * Option key of share variation analysis
+	 */  
+	const DB_SHARE_VARIATION_ANALYSIS_SCHEDULE = 'share_variation_analysis_schedule';
+    
 	/**
 	 * Option key of setting
 	 */  
@@ -297,6 +335,11 @@ final class SNS_Count_Cache implements Cache_Order {
 	 */
 	const REF_SHARE_2ND = 'share-second'; 
 
+ 	/**
+	 * ID of share second cache
+	 */
+	const REF_SHARE_ANALYSIS = 'share-analysis'; 
+    
  	/**
 	 * ID of share second cache
 	 */
@@ -361,6 +404,16 @@ final class SNS_Count_Cache implements Cache_Order {
 	 * ID of share count (Pocket)
 	 */	    
 	const REF_SHARE_POCKET = 'Pocket';
+
+  	/**
+	 * ID of share count (Pinterest)
+	 */	    
+  	const REF_SHARE_PINTEREST = 'Pinterest';	
+
+  	/**
+	 * ID of share count (LinkedIn)
+	 */	    
+	const REF_SHARE_LINKEDIN = 'Linkedin';
   
   	/**
 	 * ID of share count (Total)
@@ -380,7 +433,7 @@ final class SNS_Count_Cache implements Cache_Order {
 	/**
 	 * Plugin version, used for cache-busting of style and script file references.
 	 */	
-	private $version = '0.6.0';
+	private $version = '0.7.0';
 
 	/**
 	 * Instances of crawler
@@ -401,6 +454,11 @@ final class SNS_Count_Cache implements Cache_Order {
 	 * Instance of control engine 
 	 */	
 	private $control_engines = array();  
+
+	/**
+	 * Instance of analytical engine 
+	 */	
+	private $analytical_engines = array();  
   
 	/**
 	 * Slug of the plugin screen
@@ -436,6 +494,11 @@ final class SNS_Count_Cache implements Cache_Order {
 	 * Term considering content as new one
 	 */  
   	private $share_rush_new_content_term = 3;
+
+	/**
+	 *Check interval for share rush cahce
+	 */  
+  	private $share_rush_check_interval = 300;
   
 	/**
 	 * Cache target for follow base cache
@@ -460,13 +523,28 @@ final class SNS_Count_Cache implements Cache_Order {
 	/**
 	 * Data export schedule
 	 */		      
-  	private $data_export_schedule  = '0 0 * * *';
+  	private $data_export_schedule  = '0 0 * * *';  
+  
+	/**
+	 * Share variation analysis mode
+	 */		  
+  	private $share_variation_analysis_mode = 1;  
+  
+	/**
+	 * Share variation analysis schedule
+	 */		      
+  	private $share_variation_analysis_schedule  = '0 0 * * *';
 
 	/**
 	 * Migration mode from http to https
 	 */		      
   	private $scheme_migration_mode = false;
 
+	/**
+	 * Migration date from http to https
+	 */		      
+  	private $scheme_migration_date = NULL;
+  
 	/**
 	 * Excluded key in migration from http to https
 	 */		      
@@ -480,7 +558,7 @@ final class SNS_Count_Cache implements Cache_Order {
   	/**
 	 * Extended max execution time
 	 */
-	private $extended_max_execution_time = 300;
+	private $extended_max_execution_time = 600;
 
   	/**
 	 * URL of loding image
@@ -531,6 +609,9 @@ final class SNS_Count_Cache implements Cache_Order {
 	  	add_action( 'wp_dashboard_setup', array( $this, 'add_wp_dashboard_widget' ) );
 	  
 		add_action( 'plugins_loaded', array( $this, 'initialize' ) );
+	  	
+		add_action( 'deleted_post' , array( $this, 'clear_cache_deleted_post' ) );
+
 	}
 
     /**
@@ -570,7 +651,7 @@ final class SNS_Count_Cache implements Cache_Order {
   	final public function __clone() {
 	  	throw new Exception('Clone is not allowed against' . get_class( $this ) ); 
   	}
-  
+    
     /**
      * Initialization 
      *
@@ -581,38 +662,44 @@ final class SNS_Count_Cache implements Cache_Order {
 	    	  
 	  	$settings = get_option( self::DB_SETTINGS );
 
-	  	if ( isset( $settings[self::DB_SHARE_CHECK_INTERVAL] ) && $settings[self::DB_SHARE_CHECK_INTERVAL] ) {
-		  	$this->share_base_check_interval = intval( $settings[self::DB_SHARE_CHECK_INTERVAL] );
+	  	if ( isset( $settings[self::DB_SHARE_BASE_CHECK_INTERVAL] ) && $settings[self::DB_SHARE_BASE_CHECK_INTERVAL] ) {
+		  	$this->share_base_check_interval = (int) $settings[self::DB_SHARE_BASE_CHECK_INTERVAL];
 		} else {
 		  	$this->share_base_check_interval = self::OPT_SHARE_BASE_CHECK_INTERVAL;
 		}
 	  
 	  	if ( isset( $settings[self::DB_SHARE_POSTS_PER_CHECK] ) && $settings[self::DB_SHARE_POSTS_PER_CHECK] ) {
-		  	$this->share_base_posts_per_check = intval( $settings[self::DB_SHARE_POSTS_PER_CHECK] );
+		  	$this->share_base_posts_per_check = (int) $settings[self::DB_SHARE_POSTS_PER_CHECK];
 		} else {
 		  	$this->share_base_posts_per_check = self::OPT_SHARE_BASE_POSTS_PER_CHECK;
 		}
 	  
 	  	if ( isset( $settings[self::DB_FOLLOW_CHECK_INTERVAL] ) && $settings[self::DB_FOLLOW_CHECK_INTERVAL] ) {
-		  	$this->follow_base_check_interval = intval( $settings[self::DB_FOLLOW_CHECK_INTERVAL] );
+		  	$this->follow_base_check_interval = (int) $settings[self::DB_FOLLOW_CHECK_INTERVAL];
 		} else {
 		   	$this->follow_base_check_interval = self::OPT_FOLLOW_BASE_CHECK_INTERVAL;
 		}
 
 	  	if ( isset( $settings[self::DB_COMMON_DYNAMIC_CACHE_MODE] ) && $settings[self::DB_COMMON_DYNAMIC_CACHE_MODE] ) {
-		  	$this->dynamic_cache_mode = $settings[self::DB_COMMON_DYNAMIC_CACHE_MODE];
+		  	$this->dynamic_cache_mode = (int) $settings[self::DB_COMMON_DYNAMIC_CACHE_MODE];
 		} else {
 		  	$this->dynamic_cache_mode = self::OPT_COMMON_ACCESS_BASED_2ND_CACHE;
 		}
 
-	 	if ( isset( $settings[self::DB_SHARE_NEW_CONTENT_TERM] ) && $settings[self::DB_SHARE_NEW_CONTENT_TERM] ) {
-		  	$this->share_rush_new_content_term = intval( $settings[self::DB_SHARE_NEW_CONTENT_TERM] );
+	  	if ( isset( $settings[self::DB_SHARE_RUSH_CHECK_INTERVAL] ) && $settings[self::DB_SHARE_RUSH_CHECK_INTERVAL] ) {
+		  	$this->share_rush_check_interval = (int) $settings[self::DB_SHARE_RUSH_CHECK_INTERVAL];
+		} else {
+		  	$this->share_rush_check_interval = self::OPT_SHARE_RUSH_CHECK_INTERVAL;
+		}	  
+	  
+	 	if ( isset( $settings[self::DB_SHARE_RUSH_NEW_CONTENT_TERM] ) && $settings[self::DB_SHARE_RUSH_NEW_CONTENT_TERM] ) {
+		  	$this->share_rush_new_content_term = (int) $settings[self::DB_SHARE_RUSH_NEW_CONTENT_TERM];
 		} else {
 		  	$this->share_rush_new_content_term = self::OPT_SHARE_RUSH_NEW_CONTENT_TERM;
 		}
 
 	  	if ( isset( $settings[self::DB_COMMON_DATA_EXPORT_MODE] ) && $settings[self::DB_COMMON_DATA_EXPORT_MODE] ) {
-		  	$this->data_export_mode = intval( $settings[self::DB_COMMON_DATA_EXPORT_MODE] );
+		  	$this->data_export_mode = (int) $settings[self::DB_COMMON_DATA_EXPORT_MODE];
 		} else {
 		  	$this->data_export_mode = self::OPT_COMMON_DATA_EXPORT_MANUAL;
 		}
@@ -623,11 +710,27 @@ final class SNS_Count_Cache implements Cache_Order {
 		  	$this->data_export_schedule = self::OPT_COMMON_DATA_EXPORT_SCHEDULE;
 		}	 
 
+	  	if ( isset( $settings[self::DB_SHARE_VARIATION_ANALYSIS_MODE] ) && $settings[self::DB_SHARE_VARIATION_ANALYSIS_MODE] ) {
+		  	$this->share_variation_analysis_mode = (int) $settings[self::DB_SHARE_VARIATION_ANALYSIS_MODE];
+		} else {
+		  	$this->share_variation_analysis_mode = self::OPT_SHARE_VARIATION_ANALYSIS_NONE;
+		}
+
+	  	if ( isset( $settings[self::DB_SHARE_VARIATION_ANALYSIS_SCHEDULE] ) && $settings[self::DB_SHARE_VARIATION_ANALYSIS_SCHEDULE] ) {
+		  	$this->share_variation_analysis_schedule = $settings[self::DB_SHARE_VARIATION_ANALYSIS_SCHEDULE];
+		} else {
+		  	$this->share_variation_analysis_schedule = self::OPT_SHARE_VARIATION_ANALYSIS_SCHEDULE;
+		}	 
+	  	  
 	  	if ( isset( $settings[self::DB_COMMON_SCHEME_MIGRATION_MODE] ) ) {
 		  	$this->scheme_migration_mode = $settings[self::DB_COMMON_SCHEME_MIGRATION_MODE];
 		} else {
 		  	$this->scheme_migration_mode = self::OPT_COMMON_SCHEME_MIGRATION_MODE_OFF;
 		}
+
+	  	if ( isset( $settings[self::DB_COMMON_SCHEME_MIGRATION_DATE] ) ) {
+		  	$this->scheme_migration_date = $settings[self::DB_COMMON_SCHEME_MIGRATION_DATE];
+		} 
 	  
 	  	// Pocket and Google+ are excluded from migration target because they are migrated automatically.
 	  	$this->scheme_migration_exclude_keys = array( self::REF_SHARE_POCKET, self::REF_SHARE_GPLUS );
@@ -658,7 +761,6 @@ final class SNS_Count_Cache implements Cache_Order {
 		}
 	  	  	    	
 	  	$this->share_base_cache_post_types = array_merge( $this->share_base_cache_post_types, $this->share_base_custom_post_types );
-	  
 	  
 		if ( extension_loaded( 'curl' ) ) {
 		  	$this->crawler_method = self::OPT_COMMON_CRAWLER_METHOD_CURL;
@@ -694,6 +796,7 @@ final class SNS_Count_Cache implements Cache_Order {
 			'posts_per_check' => $this->share_base_posts_per_check,
 		  	'post_types' => $this->share_base_cache_post_types,		  
 		  	'scheme_migration_mode' => $this->scheme_migration_mode,
+		  	'scheme_migration_date' => $this->scheme_migration_date,
 		  	'scheme_migration_exclude_keys' => $this->scheme_migration_exclude_keys
 		  	);
 	  
@@ -705,11 +808,12 @@ final class SNS_Count_Cache implements Cache_Order {
 		  	'delegate' => $this,
 		  	'crawler' => $this->crawlers[self::REF_SHARE],
 		  	'target_sns' => $this->share_base_cache_target,
-		  	'check_interval' => self::OPT_SHARE_RUSH_CHECK_INTERVAL,
-			'posts_per_check' => $this->share_base_posts_per_check,
+		  	'check_interval' => $this->share_rush_check_interval,
+			'posts_per_check' => 30,
 		  	'new_content_term' => $this->share_rush_new_content_term,
 		  	'post_types' => $this->share_base_cache_post_types,
 		  	'scheme_migration_mode' => $this->scheme_migration_mode,
+		  	'scheme_migration_date' => $this->scheme_migration_date,
 		  	'scheme_migration_exclude_keys' => $this->scheme_migration_exclude_keys
 			);
 
@@ -725,6 +829,7 @@ final class SNS_Count_Cache implements Cache_Order {
 			'posts_per_check' => $this->share_base_posts_per_check,
 		  	'post_types' => $this->share_base_cache_post_types,
 		  	'scheme_migration_mode' => $this->scheme_migration_mode,
+		  	'scheme_migration_date' => $this->scheme_migration_date,
 		  	'scheme_migration_exclude_keys' => $this->scheme_migration_exclude_keys
 			);	  
 			  
@@ -733,12 +838,14 @@ final class SNS_Count_Cache implements Cache_Order {
 	  
 	  	// Share second cache engine
 	  	$options = array(
+		  	'delegate' => $this,
 		  	'target_sns' => $this->share_base_cache_target,
 			'check_interval' => self::OPT_SHARE_2ND_CHECK_INTERVAL,
 		  	'post_types' => $this->share_base_cache_post_types,
 		  	'cache_prefix' => self::OPT_SHARE_2ND_META_KEY_PREFIX,
 		  	'scheme_migration_mode' => $this->scheme_migration_mode,
-		  	'scheme_migration_exclude_keys' => $this->scheme_migration_exclude_keys
+		  	'scheme_migration_exclude_keys' => $this->scheme_migration_exclude_keys,
+		  	'crawl_date_key' => self::REF_CRAWL_DATE
 			);	 
 	  
 	  	$this->cache_engines[self::REF_SHARE_2ND] = Share_Second_Cache_Engine::get_instance();
@@ -810,6 +917,19 @@ final class SNS_Count_Cache implements Cache_Order {
 	  	$this->export_engines[self::REF_COMMON_EXPORT] = Common_Data_Export_Engine::get_instance();
 		$this->export_engines[self::REF_COMMON_EXPORT]->initialize( $options );
 
+	  	// Share analytical engine
+	  	$options = array(
+		  	'delegate' => $this,
+		  	'target_sns' => $this->share_base_cache_target,
+			'check_interval' => $this->share_base_check_interval,
+		  	'post_types' => $this->share_base_cache_post_types,
+		  	'base_schedule' => $this->share_variation_analysis_schedule,
+		  	'crawl_date_key' => self::REF_CRAWL_DATE
+		  	);
+	  
+	  	$this->analytical_engines[self::REF_SHARE_ANALYSIS] = Share_Analytical_Engine::get_instance();
+	  	$this->analytical_engines[self::REF_SHARE_ANALYSIS]->initialize( $options );	  
+	  
 	  	// Job reset engine
 	  	$target_crons = array();
 	  
@@ -821,9 +941,13 @@ final class SNS_Count_Cache implements Cache_Order {
 		  	$target_crons[] = $control_engine->get_excute_cron();
 	  	}
 	  	  	  
-	  	if ( $this->data_export_mode ) {
+	  	if ( $this->data_export_mode === self::OPT_COMMON_DATA_EXPORT_SCHEDULER ) {
 	  		$target_crons[] = $this->export_engines[self::REF_COMMON_EXPORT]->get_excute_cron();
 	  	}
+	  
+	  	if ( $this->share_variation_analysis_mode === self::OPT_SHARE_VARIATION_ANALYSIS_SCHEDULER ) {
+		  	$target_crons[] = $this->analytical_engines[self::REF_SHARE_ANALYSIS]->get_excute_cron();
+		}
 	  
 	  	$options = array(
 		  	'delegate' => $this,
@@ -834,7 +958,7 @@ final class SNS_Count_Cache implements Cache_Order {
 	  
 	  	$this->control_engines[self::REF_COMMON_CONTROL] = Common_Job_Reset_Engine::get_instance();
 		$this->control_engines[self::REF_COMMON_CONTROL]->initialize( $options );
-	    
+	    	  
 	  	$tmp_max_execution_time = ini_get( 'max_execution_time' );
 	  
 	  	if ( isset( $tmp_max_execution_time ) && $tmp_max_execution_time > 0 ) {
@@ -870,6 +994,7 @@ final class SNS_Count_Cache implements Cache_Order {
 		if ( in_array( $screen->id, $this->plugin_screen_hook_suffix ) ) {
 		  	wp_enqueue_style( self::DOMAIN .'-admin-style-1', plugins_url( ltrim( '/css/sns-count-cache.css', '/' ), __FILE__) );
 		  	wp_enqueue_style( self::DOMAIN .'-admin-style-2', plugins_url( ltrim( '/css/prettify.css', '/' ), __FILE__ ) );
+		  	wp_enqueue_style( 'jquery-ui-datepicker-style' , '//ajax.googleapis.com/ajax/libs/jqueryui/1/themes/smoothness/jquery-ui.css');
 		} 
 	} 
 
@@ -892,6 +1017,8 @@ final class SNS_Count_Cache implements Cache_Order {
 		  
 		  	wp_enqueue_script( self::DOMAIN . '-admin-script-2', plugins_url( ltrim( '/js/jquery.scc-cache-info.min.js', '/' ), __FILE__ ), array( 'jquery' ) );
 		  	wp_localize_script( self::DOMAIN . '-admin-script-2', 'scc', array( 'endpoint' => admin_url( 'admin-ajax.php' ), 'action' => $this->ajax_action, 'nonce' => wp_create_nonce( $this->ajax_action ) ) );
+
+			wp_enqueue_script( 'jquery-ui-datepicker' );
 		}
 	} 
 
@@ -924,8 +1051,12 @@ final class SNS_Count_Cache implements Cache_Order {
 	  	foreach ( $this->control_engines as $key => $control_engine ) {
 		  	$control_engine->register_schedule();
 	  	}
-	  	  	  
-	  	if ( $this->data_export_mode ) {
+
+	  	if ( $this->share_variation_analysis_mode === self::OPT_SHARE_VARIATION_ANALYSIS_SCHEDULER ) {
+		  	$this->analytical_engines[self::REF_SHARE_ANALYSIS]->register_schedule();
+	  	}
+	  
+	  	if ( $this->data_export_mode === self::OPT_COMMON_DATA_EXPORT_SCHEDULER ) {
 	  		$this->export_engines[self::REF_COMMON_EXPORT]->register_schedule();
 	  	}
 	  
@@ -980,7 +1111,10 @@ final class SNS_Count_Cache implements Cache_Order {
 	  	foreach ( $this->control_engines as $key => $control_engine ) {
 		  	$control_engine->unregister_schedule();
 	  	}
-	    
+
+		$this->analytical_engines[self::REF_SHARE_ANALYSIS]->unregister_schedule();
+	  	$this->analytical_engines[self::REF_SHARE_ANALYSIS]->clear_base();
+	  
 	  	$this->export_engines[self::REF_COMMON_EXPORT]->unregister_schedule();
 	  
 	  	set_time_limit( $this->original_max_execution_time ); 
@@ -999,6 +1133,20 @@ final class SNS_Count_Cache implements Cache_Order {
 	  	$this->activate_plugin();
 	  			  	  
 	}  
+
+    /**
+     * Delete related cache when the post was deleted.
+     *
+	 * @since 0.7.0
+	 */	   
+	public function clear_cache_deleted_post( $post_id ) {
+	  
+	  	if ( isset( $post_id ) ) {
+		  	$this->cache_engines[self::REF_SHARE_BASE]->clear_cache_by_post_id( $post_id );
+	  		$this->cache_engines[self::REF_SHARE_2ND]->clear_cache_by_post_id( $post_id );
+	  		$this->analytical_engines[self::REF_SHARE_ANALYSIS]->clear_base_by_post_id( $post_id );
+		}
+	}  
   
     /**
      * Adds options & management pages to the admin menu.
@@ -1015,7 +1163,12 @@ final class SNS_Count_Cache implements Cache_Order {
 	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', __( 'Dashboard | SNS Count Cache', self::DOMAIN ), __( 'Dashboard', self::DOMAIN ), self::OPT_COMMON_CAPABILITY, 'scc-dashboard', array( $this, 'dashboard_page' ) );
 	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', __( 'Cache Status | SNS Count Cache', self::DOMAIN ), __( 'Cache Status', self::DOMAIN ), self::OPT_COMMON_CAPABILITY, 'scc-cache-status', array( $this, 'cache_status_page' ) );
 	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', __( 'Share Count | SNS Count Cache', self::DOMAIN ), __( 'Share Count', self::DOMAIN ), self::OPT_COMMON_CAPABILITY, 'scc-share-count', array( $this, 'share_count_page' ) );
-	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', __( 'Setting | SNS Count Cache', self::DOMAIN ), __( 'Setting', self::DOMAIN ), self::OPT_COMMON_CAPABILITY, 'scc-setting', array( $this, 'setting_page' ) );
+
+	  	if ( $this->share_variation_analysis_mode !== self::OPT_SHARE_VARIATION_ANALYSIS_NONE ) {
+	  		$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', __( 'Hot Content | SNS Count Cache', self::DOMAIN ), __( 'Hot Content', self::DOMAIN ), self::OPT_COMMON_CAPABILITY, 'scc-hot-content', array( $this, 'hot_content_page' ) );
+		}
+	  
+		$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', __( 'Setting | SNS Count Cache', self::DOMAIN ), __( 'Setting', self::DOMAIN ), self::OPT_COMMON_CAPABILITY, 'scc-setting', array( $this, 'setting_page' ) );
 	  	$this->plugin_screen_hook_suffix[] = add_submenu_page( 'scc-dashboard', __( 'Help | SNS Count Cache', self::DOMAIN ), __( 'Help', self::DOMAIN ), self::OPT_COMMON_CAPABILITY, 'scc-help', array( $this, 'help_page' ) );
     }
 
@@ -1039,6 +1192,11 @@ final class SNS_Count_Cache implements Cache_Order {
 	 * @since 0.5.1
 	 */	  	
  	public function wp_dashboard_page() {
+
+	  	if ( ! current_user_can( self::OPT_COMMON_CAPABILITY ) ) {
+		  	wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+		}
+	  
 	  	include_once( dirname( __FILE__ ) . '/includes/admin-dashboard-widget.php' );
 	}
   
@@ -1049,6 +1207,11 @@ final class SNS_Count_Cache implements Cache_Order {
 	 * @since 0.1.0
 	 */	  
     public function dashboard_page() {
+	  
+	  	if ( ! current_user_can( self::OPT_COMMON_CAPABILITY ) ) {
+			wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+	  	}
+	  
 	  	include_once( dirname( __FILE__ ) . '/includes/admin-dashboard.php' );
  	}
   
@@ -1059,6 +1222,11 @@ final class SNS_Count_Cache implements Cache_Order {
 	 * @since 0.1.0
 	 */	  
     public function cache_status_page() {
+
+	  	if ( ! current_user_can( self::OPT_COMMON_CAPABILITY ) ) {
+			wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+	  	}
+	  
 	  	include_once( dirname( __FILE__ ) . '/includes/admin-cache-status.php' );
  	}
   
@@ -1068,7 +1236,12 @@ final class SNS_Count_Cache implements Cache_Order {
 	 * @since 0.1.0
 	 */	
     public function share_count_page() {
-		include_once( dirname( __FILE__ ) . '/includes/admin-share-count.php' );
+
+	  	if ( ! current_user_can( self::OPT_COMMON_CAPABILITY ) ) {
+			wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+	  	}
+	  
+	  	include_once( dirname( __FILE__ ) . '/includes/admin-share-count.php' );
   	}
 
    /**
@@ -1077,7 +1250,12 @@ final class SNS_Count_Cache implements Cache_Order {
 	 * @since 0.1.0
 	 */	    
     public function setting_page() {
-		include_once( dirname( __FILE__ ) . '/includes/admin-setting.php' );
+
+	  	if ( ! current_user_can( self::OPT_COMMON_CAPABILITY ) ) {
+			wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+	  	}
+	  
+	  	include( dirname( __FILE__ ) . '/includes/admin-setting.php' );
   	}
 
    /**
@@ -1086,7 +1264,12 @@ final class SNS_Count_Cache implements Cache_Order {
 	 * @since 0.1.0
 	 */	    
     public function help_page() {
-		include_once( dirname( __FILE__ ) . '/includes/admin-help.php' );
+
+	  	if ( ! current_user_can( self::OPT_COMMON_CAPABILITY ) ) {
+			wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+	  	}
+	  
+	  	include_once( dirname( __FILE__ ) . '/includes/admin-help.php' );
   	}
 
    /**
@@ -1095,9 +1278,29 @@ final class SNS_Count_Cache implements Cache_Order {
 	 * @since 0.5.1
 	 */	     
   	public function notice_page() {
-		include_once( dirname( __FILE__ ) . '/includes/admin-notice.php' );
+
+	  	if ( ! current_user_can( self::OPT_COMMON_CAPABILITY ) )  {
+			wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+	  	}
+	  
+	  	include_once( dirname( __FILE__ ) . '/includes/admin-notice.php' );
   	}	
-        
+
+   /**
+    * Option page implementation
+    *
+	* @since 0.6.1
+ 	*/	       
+  	public function hot_content_page() {
+	  
+	  	if ( ! current_user_can( self::OPT_COMMON_CAPABILITY ) )  {
+			wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+	  	}
+	  
+	  	include_once( dirname( __FILE__ ) . '/includes/admin-hot-content.php' );  		
+	}
+  
+  
   	/**
 	 * Cache share count for a given post ID
 	 *
@@ -1173,6 +1376,24 @@ final class SNS_Count_Cache implements Cache_Order {
 	  
   	}
 
+  	/**
+	 * Method call between one cache engine and another
+	 *
+	 * @since 0.6.1
+	 */  	  
+  	public function order_analysis( Cache_Engine $engine, $options = array() ) {
+	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
+	  	  
+	  	if ( $this->share_variation_analysis_mode !== self::OPT_SHARE_VARIATION_ANALYSIS_NONE ) {
+	  		switch ( get_class( $engine ) ) {
+				case 'Share_Second_Cache_Engine':
+		  			$this->analytical_engines[self::REF_SHARE_ANALYSIS]->analyze( $options );
+		 			break;
+			}
+		}
+	  
+  	}  
+  
   	/**
 	 * Return pagination
 	 *
@@ -1275,11 +1496,13 @@ final class SNS_Count_Cache implements Cache_Order {
 				$secondary_no_cache_count = 0;
 
 				$sum = array();
+			  	$delta = array();
 				$return = array();
 	  
 				foreach ( $share_base_cache_target as $sns => $active ) {
 					if( $active ){
 						$sum[$sns] = 0;
+			  			$delta[$sns] = 0;
 					}
 				}
 
@@ -1300,7 +1523,7 @@ final class SNS_Count_Cache implements Cache_Order {
 				$partial_cache_flag = false;		
 			  
 				$transient_id = $this->cache_engines[self::REF_SHARE_BASE]->get_cache_key( 'home' );
-																	  
+			  
 				if ( false !== ( $sns_counts = get_transient( $transient_id ) ) ) {
 
 					foreach ( $share_base_cache_target as $sns => $active ) {
@@ -1316,7 +1539,7 @@ final class SNS_Count_Cache implements Cache_Order {
 				  
 					if ( $partial_cache_flag && $full_cache_flag ) {
 						++$primary_full_cache_count;
-					} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+					} elseif ( $partial_cache_flag && ! $full_cache_flag ) {
 						++$primary_partial_cache_count;
 					} else {
 						++$primary_no_cache_count;
@@ -1349,7 +1572,7 @@ final class SNS_Count_Cache implements Cache_Order {
 				  
 					if ( $partial_cache_flag && $full_cache_flag ) {
 						++$secondary_full_cache_count;
-					} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+					} elseif ( $partial_cache_flag && ! $full_cache_flag ) {
 						++$secondary_partial_cache_count;								  
 					} else {
 						++$secondary_no_cache_count;
@@ -1382,7 +1605,7 @@ final class SNS_Count_Cache implements Cache_Order {
 				  						  
 					if ( $partial_cache_flag && $full_cache_flag ) {
 						++$secondary_full_cache_count;
-					} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+					} elseif ( $partial_cache_flag && ! $full_cache_flag ) {
 						++$secondary_partial_cache_count;								  
 					} else {
 						++$secondary_no_cache_count;
@@ -1391,6 +1614,20 @@ final class SNS_Count_Cache implements Cache_Order {
 					++$primary_no_cache_count;	
 						  
 				}
+			  
+			  	$option_key = $this->analytical_engines[self::REF_SHARE_ANALYSIS]->get_delta_key( 'home' );
+			  
+				if ( false !== ( $sns_deltas = get_option( $option_key ) ) ) {	
+				  
+					foreach ( $share_base_cache_target as $sns => $active ) {
+						if( $active ){
+										  
+							if ( isset( $sns_deltas[$sns] ) ) {
+								$delta[$sns] = $delta[$sns] + $sns_deltas[$sns];
+							} 
+						}										  							  								 										  
+					}
+				} 				 			  	
 			  
 			  	//page, post
 				$site_query = new WP_Query( $query_args );
@@ -1405,11 +1642,12 @@ final class SNS_Count_Cache implements Cache_Order {
 						$partial_cache_flag = false;		
 			  
 					  	$transient_id = $this->cache_engines[self::REF_SHARE_BASE]->get_cache_key( get_the_ID() );
-																	  
+											  
 						if ( false !== ( $sns_counts = get_transient( $transient_id ) ) ) {
 
 							foreach ( $share_base_cache_target as $sns => $active ) {
-								if ( $active ) {										  
+								if ( $active ) {
+								  								  
 									if ( isset( $sns_counts[$sns] ) && $sns_counts[$sns] >= 0 ) {
 										$sum[$sns] = $sum[$sns] + $sns_counts[$sns];
 							  			$partial_cache_flag = true;
@@ -1418,21 +1656,24 @@ final class SNS_Count_Cache implements Cache_Order {
 									}
 								}
 							}				  
-				  
+		  						  
 							if ( $partial_cache_flag && $full_cache_flag ) {
 								++$primary_full_cache_count;
-							} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+							} elseif ( $partial_cache_flag && ! $full_cache_flag ) {
 								++$primary_partial_cache_count;
 							} else {
 								++$primary_no_cache_count;
 							}
 				  
 			  				$full_cache_flag = true;
-							$partial_cache_flag = false;					  	
+							$partial_cache_flag = false;
+						  
+						  	$sns_counts = array();
+						  	$sns_deltas = array();
 				  
 							foreach ( $share_base_cache_target as $sns => $active ) {
 						  
-								if( $active ){
+								if ( $active ) {
 							
 								  	$meta_key = $this->cache_engines[self::REF_SHARE_2ND]->get_cache_key( $sns );
 									$sns_counts[$sns] = get_post_meta( get_the_ID(), $meta_key, true );
@@ -1442,12 +1683,23 @@ final class SNS_Count_Cache implements Cache_Order {
 									} else {
 							  			$full_cache_flag = false;
 									}
+								  
+								  	if ( $this->share_variation_analysis_mode !== self::OPT_SHARE_VARIATION_ANALYSIS_NONE ) {
+								  		//delta
+								  		$meta_key = $this->analytical_engines[self::REF_SHARE_ANALYSIS]->get_delta_key( $sns );
+
+								  		$sns_deltas[$sns] = get_post_meta( get_the_ID(), $meta_key, true );
+								  
+										if ( isset( $sns_deltas[$sns] ) && $sns_deltas[$sns] !== '' ) {
+									  		$delta[$sns] = $delta[$sns] + $sns_deltas[$sns];
+										}
+									}
 								}
 							}
 
 							if ( $partial_cache_flag && $full_cache_flag ) {
 								++$secondary_full_cache_count;
-							} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+							} elseif ( $partial_cache_flag && ! $full_cache_flag ) {
 								++$secondary_partial_cache_count;								  
 							} else {
 								++$secondary_no_cache_count;
@@ -1455,6 +1707,9 @@ final class SNS_Count_Cache implements Cache_Order {
 			
 						} else {
 			  
+						  	$sns_deltas = array();
+						  	$sns_counts = array();
+						  
 							foreach ( $share_base_cache_target as $sns => $active ) {
 						  
 								if( $active ){
@@ -1468,12 +1723,23 @@ final class SNS_Count_Cache implements Cache_Order {
 									} else {
 							  			$full_cache_flag = false;
 									}
+								  	
+								  	if ( $this->share_variation_analysis_mode !== self::OPT_SHARE_VARIATION_ANALYSIS_NONE ) {
+								  		//delta
+								  		$meta_key = $this->analytical_engines[self::REF_SHARE_ANALYSIS]->get_delta_key( $sns );
+
+								  		$sns_deltas[$sns] = get_post_meta( get_the_ID(), $meta_key, true );
+								  
+										if ( isset( $sns_deltas[$sns] ) && $sns_deltas[$sns] !== '' ) {
+									  		$delta[$sns] = $delta[$sns] + $sns_deltas[$sns];
+										}
+									}
 								}
 							}
 
 							if ( $partial_cache_flag && $full_cache_flag ) {
 								++$secondary_full_cache_count;
-							} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+							} elseif ( $partial_cache_flag && ! $full_cache_flag ) {
 								++$secondary_partial_cache_count;								  
 							} else {
 								++$secondary_no_cache_count;
@@ -1493,8 +1759,10 @@ final class SNS_Count_Cache implements Cache_Order {
 				  	if ( $active && isset( $sum[$sns] ) ) {
 				  		if ( $sns === self::REF_SHARE_GPLUS ){
 							$return['share_count']['gplus'] = number_format( (int) $sum[$sns] );
+						  	$return['share_delta']['gplus'] = number_format( (int) $delta[$sns] );
 						} else {
 							$return['share_count'][strtolower( $sns )] = number_format( (int) $sum[$sns] );
+							$return['share_delta'][strtolower( $sns )] = number_format( (int) $delta[$sns] );
 						}
 					}
 				}	  	
@@ -1509,7 +1777,7 @@ final class SNS_Count_Cache implements Cache_Order {
 	  
 				if ( $primary_full_cache_count === $posts_count ) {
 					$return['primary']['cache_status'] = __( 'Completed', self::DOMAIN );
-				} else if ( ( $primary_full_cache_count + $primary_partial_cache_count ) === $posts_count ) {
+				} elseif ( ( $primary_full_cache_count + $primary_partial_cache_count ) === $posts_count ) {
 					$return['primary']['cache_status'] = __( 'Partially Completed', self::DOMAIN );  	
 				} else {
 					$return['primary']['cache_status'] = __( 'Ongoing', self::DOMAIN );
@@ -1517,12 +1785,12 @@ final class SNS_Count_Cache implements Cache_Order {
 	  
 				if ( $secondary_full_cache_count === $posts_count ) {
 					$return['secondary']['cache_status'] = __( 'Completed', self::DOMAIN );
-				} else if ( ( $secondary_full_cache_count + $secondary_partial_cache_count ) === $posts_count ) {
+				} elseif ( ( $secondary_full_cache_count + $secondary_partial_cache_count ) === $posts_count ) {
 					$return['secondary']['cache_status'] = __( 'Partially Completed', self::DOMAIN );  	
 				} else {
 					$return['secondary']['cache_status'] = __( 'Ongoing', self::DOMAIN );
-				}	  	
-
+				}
+			  
 	  			$callback = $_REQUEST["callback"];
 	  
 	  			header( 'Content-type: application/javascript; charset=utf-8' );
@@ -1572,7 +1840,6 @@ final class SNS_Count_Cache implements Cache_Order {
 		} else {	  	
 	  		switch ( $this->dynamic_cache_mode ) {
 		  		case self::OPT_COMMON_ACCESS_BASED_2ND_CACHE:
-			  		//$this->reserve_share_cache( $post_ID );
 			  		$this->cache_engines[self::REF_SHARE_LAZY]->prime_cache( $post_ID );
 			  
 		  			if ( $sns_key ) {
@@ -1643,7 +1910,6 @@ final class SNS_Count_Cache implements Cache_Order {
 					}
 		  			break;
 		  	case self::OPT_COMMON_ACCESS_BASED_ASYNC_CACHE:
-			  		//$this->reserve_share_cache( $post_ID );
 			  		$this->cache_engines[self::REF_SHARE_LAZY]->prime_cache( $post_ID );
 			  
 					if ( $sns_key ) {
@@ -1661,7 +1927,6 @@ final class SNS_Count_Cache implements Cache_Order {
 					}  
 		  			break;
 		  	case self::OPT_COMMON_ACCESS_BASED_SYNC_CACHE:
-			  		//$sns_counts = $this->retrieve_share_cache( $post_ID, true );
 			  		$sns_counts = $this->cache_engines[self::REF_SHARE_BASE]->direct_cache( $post_ID, true );
 			  
 					if ( $sns_key ) {
@@ -1733,7 +1998,6 @@ final class SNS_Count_Cache implements Cache_Order {
 		} else {	  	
 	  		switch ( $this->dynamic_cache_mode ) {
 		  		case self::OPT_COMMON_ACCESS_BASED_2ND_CACHE:
-			  		//$this->reserve_follow_cache();
 					$this->cache_engines[self::REF_FOLLOW_LAZY]->prime_cache();
 			  
 					$option_key = $this->cache_engines[self::REF_FOLLOW_2ND]->get_cache_key( 'follow' );
@@ -1744,7 +2008,7 @@ final class SNS_Count_Cache implements Cache_Order {
 							if ( ! isset( $sns_followers[$sns_key] ) || $sns_followers[$sns_key] < 0 ) { 				
 								$sns_followers[$sns_key] = 0;
 							}
-						}else {
+						} else {
 							$sns_followers[$sns_key] = 0;
 						}
 						
@@ -1772,7 +2036,6 @@ final class SNS_Count_Cache implements Cache_Order {
 					}
 		  			break;
 		  	case self::OPT_COMMON_ACCESS_BASED_ASYNC_CACHE:
-			  		//$this->reserve_follow_cache();
 			  		$this->cache_engines[self::REF_FOLLOW_LAZY]->prime_cache();
 			  
 					if ( $sns_key ) {
@@ -1790,7 +2053,6 @@ final class SNS_Count_Cache implements Cache_Order {
 					}  
 		  			break;
 		  	case self::OPT_COMMON_ACCESS_BASED_SYNC_CACHE:
-			  		//$sns_followers = $this->retrieve_follow_cache();
 			  		$sns_followers = $this->cache_engines[self::REF_FOLLOW_BASE]->direct_cache();
 			  		
 					if ( $sns_key ) {
@@ -1828,7 +2090,21 @@ final class SNS_Count_Cache implements Cache_Order {
 		  			break;
 			} 
 		}
-	}  
+	}
+
+	/**
+ 	 * Return if variation alaysis is enabled or not.
+ 	 *
+ 	 * @since 0.7.0
+ 	 */      
+  	public function is_variation_analysis_enabled() {
+	  
+	  	if ( $this->share_variation_analysis_mode !== self::OPT_SHARE_VARIATION_ANALYSIS_NONE ) {
+		  	return true;
+		} else {
+		  	return false;
+		}
+  	}
   
 	  
 }
@@ -1847,7 +2123,7 @@ function scc_get_share( $options = array( 'post_id' => '', 'url' => '', 'sns' =>
 
   	if ( isset( $options['url'] ) && $options['url'] ) {
 	  	$post_ID = url_to_postid( $options['url'] );	  	
-	} else if ( isset( $options['post_id'] ) && $options['post_id'] ) {
+	} elseif ( isset( $options['post_id'] ) && $options['post_id'] ) {
 	  	$post_ID = $options['post_id'];
 	} else {
 	  	$post_ID = get_the_ID();
@@ -2014,6 +2290,16 @@ function scc_get_follow_feedly() {
   	return scc_get_follow( $options );
 }
 
+/**
+ * Return if variation alaysis is enabled or not.
+ *
+ * @since 0.7.0
+ */     
+function scc_is_variation_analysis_enabled() {
+	return SNS_Count_Cache::get_instance()->is_variation_analysis_enabled();
+}
+  
+  
   
 }
 

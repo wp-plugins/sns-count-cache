@@ -223,7 +223,7 @@ class Share_Rescue_Cache_Engine extends Share_Cache_Engine {
 							$no_cache_post_IDs[$post_ID] = 1;
 						}
 					}
-				} else if ( $partial_cache_flag && ! $full_cache_flag ) {
+				} elseif ( $partial_cache_flag && ! $full_cache_flag ) {
 				  	//partial cache
 					$transient_id = $this->get_cache_key( $post_ID );
 			  

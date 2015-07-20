@@ -104,6 +104,7 @@ class Share_Rush_Cache_Engine extends Share_Cache_Engine {
 	  	if ( isset( $options['post_types'] ) ) $this->post_types = $options['post_types'];
 		if ( isset( $options['new_content_term'] ) ) $this->new_content_term = $options['new_content_term'];
 	  	if ( isset( $options['scheme_migration_mode'] ) ) $this->scheme_migration_mode = $options['scheme_migration_mode'];
+	  	if ( isset( $options['scheme_migration_date'] ) ) $this->scheme_migration_date = $options['scheme_migration_date'];	  
 	  	if ( isset( $options['scheme_migration_exclude_keys'] ) ) $this->scheme_migration_exclude_keys = $options['scheme_migration_exclude_keys'];
 	  
 		add_filter( 'cron_schedules', array( $this, 'schedule_check_interval' ) ); 
@@ -217,6 +218,7 @@ class Share_Rush_Cache_Engine extends Share_Cache_Engine {
 				  	'post_id' => $post_ID,
 					'target_url' => $url,
 				  	'target_sns' => $this->target_sns,
+				  	'publish_date' => get_the_date( 'Y/m/d' ),
 					'cache_expiration' => $cache_expiration
 				);
 			  
@@ -242,7 +244,7 @@ class Share_Rush_Cache_Engine extends Share_Cache_Engine {
 	  
 	  	if ( $this->new_content_term > 1 ) {
 		  	$term_threshold = $this->new_content_term . ' days ago'; 
-		} else if ( $this->new_content_term == 1 ) {
+		} elseif ( $this->new_content_term == 1 ) {
 		  	$term_threshold = $this->new_content_term . ' day ago'; 
 		}	
 		

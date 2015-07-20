@@ -97,6 +97,17 @@ class Share_Crawler extends Data_Crawler {
 		  if ( isset( $target_sns[SNS_Count_Cache::REF_SHARE_POCKET] ) && $target_sns[SNS_Count_Cache::REF_SHARE_POCKET] ) {
 		  		$query_urls[SNS_Count_Cache::REF_SHARE_POCKET] = 'http://widgets.getpocket.com/v1/button?v=1&count=horizontal&url=' . $url;
 		  }
+		
+		  /*
+		  if ( isset( $target_sns[SNS_Count_Cache::REF_SHARE_PINTEREST] ) && $target_sns[SNS_Count_Cache::REF_SHARE_PINTEREST] ) {
+		  		$query_urls[SNS_Count_Cache::REF_SHARE_PINTEREST] = 'http://api.pinterest.com/v1/urls/count.json?url=' . $url;
+		  }		  
+
+		  if ( isset( $target_sns[SNS_Count_Cache::REF_SHARE_LINKEDIN] ) && $target_sns[SNS_Count_Cache::REF_SHARE_LINKEDIN] ) {
+		  		$query_urls[SNS_Count_Cache::REF_SHARE_LINKEDIN] = 'http://www.linkedin.com/countserv/count/share?url=' . $url;
+		  }
+		  */
+		  
 	  	}
 	  
 	  	return $query_urls;
@@ -122,11 +133,11 @@ class Share_Crawler extends Data_Crawler {
 			switch ( $sns ) {
 			  	case SNS_Count_Cache::REF_SHARE_HATEBU:
 			  		if ( isset( $content['data'] ) && empty( $content['error'] ) && is_numeric( $content['data'] ) ) {
-				  		$count = ( int )$content['data'];
-					} else if ( empty( $content['data'] ) && empty( $content['error'] ) ) {
-			  			$count = 0;
+				  		$count = (int) $content['data'];
+					} elseif ( empty( $content['data'] ) && empty( $content['error'] ) ) {
+			  			$count = (int) 0;
 					} else {
-				  		$count = -1;
+				  		$count = (int) -1;
 					}
 			  
 			  		$sns_counts[SNS_Count_Cache::REF_SHARE_HATEBU] = $count;
@@ -137,12 +148,12 @@ class Share_Crawler extends Data_Crawler {
 				  		$json = json_decode( $content['data'], true );
 			  
 			  			if ( isset( $json[0]['total_count'] ) && is_numeric( $json[0]['total_count'] ) ) {
-				  			$count = ( int )$json[0]['total_count'];
+				  			$count = (int) $json[0]['total_count'];
 						} else {
-				  			$count = -1;
+				  			$count = (int) -1;
 						}
 					} else {
-						$count = -1;
+						$count = (int) -1;
 					}
 			  
 			  		$sns_counts[SNS_Count_Cache::REF_SHARE_FACEBOOK] = $count;			  
@@ -152,12 +163,12 @@ class Share_Crawler extends Data_Crawler {
 						$json = json_decode( $content['data'], true );
 	  
 			  			if ( isset( $json['count'] ) && is_numeric( $json['count'] ) ) {
-				  			$count = ( int )$json['count'];
+				  			$count = (int) $json['count'];
 						} else {
-				  			$count = -1;
+				  			$count = (int) -1;
 						}
 					} else {
-				  		$count = -1;
+				  		$count = (int) -1;
 					}
 			  
 			  		$sns_counts[SNS_Count_Cache::REF_SHARE_TWITTER] = $count;			  
@@ -168,12 +179,12 @@ class Share_Crawler extends Data_Crawler {
 			  			$return_code = preg_match( '/\[2,([0-9.]+),\[/', $content['data'], $matches );
 			  	
 			  			if ( $return_code && isset( $matches[1] ) && is_numeric( $matches[1] ) ) {
-							$count = ( int )$matches[1];   
+							$count = (int) $matches[1];   
 						} else {
-				  			$count = -1;		
+				  			$count = (int) -1;		
 						}
 					} else {
-						$count = -1;
+						$count = (int) -1;
 					}
 			  
 			  		$sns_counts[SNS_Count_Cache::REF_SHARE_GPLUS] = $count;
@@ -184,16 +195,56 @@ class Share_Crawler extends Data_Crawler {
 			  			$return_code = preg_match( '/<em\sid=\"cnt\">([0-9]+)<\/em>/i', $content['data'], $matches );
 			  	
 			  			if ( $return_code && isset( $matches[1] ) && is_numeric( $matches[1] ) ) {
-							$count = ( int )$matches[1];
+							$count = (int) $matches[1];
 						} else {
-				  			$count = -1;
+				  			$count = (int) -1;
 						}
 					} else {
-						$count = -1;
+						$count = (int) -1;
 					}
 			  
 			  		$sns_counts[SNS_Count_Cache::REF_SHARE_POCKET] = $count;
 			  		break;
+			  /*
+			  	case SNS_Count_Cache::REF_SHARE_PINTEREST:
+			  		if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
+					  
+					  	$json = rtrim( $content['data'], ')' );
+						$json = ltrim( $json, 'receiveCount(' );
+					  
+						$json = json_decode( $json, true );
+	  
+			  			if ( isset( $json['count'] ) && is_numeric( $json['count'] ) ) {
+				  			$count = (int) $json['count'];
+						} else {
+				  			$count = (int) -1;
+						}
+					} else {
+				  		$count = (int) -1;
+					}
+			  
+			  		$sns_counts[SNS_Count_Cache::REF_SHARE_PINTEREST] = $count;			  
+			  		break;			  	
+			  	case SNS_Count_Cache::REF_SHARE_LINKEDIN:
+			  		if ( isset( $content['data'] ) && empty( $content['error'] ) ) {
+					  
+						$json = rtrim( $content['data'], ');' );
+						$json = ltrim( $json, 'IN.Tags.Share.handleCount(' );
+					  
+						$json = json_decode( $json, true );
+	  
+			  			if ( isset( $json['count'] ) && is_numeric( $json['count'] ) ) {
+				  			$count = (int) $json['count'];
+						} else {
+				  			$count = (int) -1;
+						}
+					} else {
+				  		$count = (int) -1;
+					}
+			  
+			  		$sns_counts[SNS_Count_Cache::REF_SHARE_LINKEDIN] = $count;			  
+			  		break;					  
+					*/
 			  
 		  	}
 		  
@@ -209,11 +260,13 @@ class Share_Crawler extends Data_Crawler {
 				}
 		  	}
 		  
-		  	$sns_counts[SNS_Count_Cache::REF_SHARE_TOTAL] = ( int )$total;
+		  	$sns_counts[SNS_Count_Cache::REF_SHARE_TOTAL] = (int) $total;
 		}
 
 	  	if ( isset( $target_sns[SNS_Count_Cache::REF_CRAWL_DATE] ) && $target_sns[SNS_Count_Cache::REF_CRAWL_DATE] ) {
 	  		$sns_counts[SNS_Count_Cache::REF_CRAWL_DATE] = $extract_date;
+		} else {
+	  		$sns_counts[SNS_Count_Cache::REF_CRAWL_DATE] = '';
 		}
 	  
 	  	return $sns_counts;

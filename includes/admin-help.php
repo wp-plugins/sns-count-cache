@@ -36,11 +36,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 		<div class="sns-cnt-cache">
 
 			  		<h3 class="nav-tab-wrapper">
-					  	<a class="nav-tab" href="admin.php?page=scc-dashboard">Dashboard</a>
-					  	<a class="nav-tab" href="admin.php?page=scc-cache-status">Cache Status</a>
-					  	<a class="nav-tab" href="admin.php?page=scc-share-count">Share Count</a>
-					  	<a class="nav-tab" href="admin.php?page=scc-setting">Setting</a>
-					  	<a class="nav-tab nav-tab-active" href="admin.php?page=scc-help">Help</a>
+						<a class="nav-tab" href="admin.php?page=scc-dashboard"><?php _e( 'Dashboard', self::DOMAIN ) ?></a>
+						<a class="nav-tab" href="admin.php?page=scc-cache-status"><?php _e( 'Cache Status', self::DOMAIN ) ?></a>
+						<a class="nav-tab" href="admin.php?page=scc-share-count"><?php _e( 'Share Count', self::DOMAIN ) ?></a>
+					  	<?php if ( $this->share_variation_analysis_mode !== self::OPT_SHARE_VARIATION_ANALYSIS_NONE ) { ?>
+						<a class="nav-tab" href="admin.php?page=scc-hot-content"><?php _e( 'Hot Content', self::DOMAIN ) ?></a>
+					  	<?php } ?>
+						<a class="nav-tab" href="admin.php?page=scc-setting"><?php _e( 'Setting', self::DOMAIN ) ?></a>
+						<a class="nav-tab nav-tab-active" href="admin.php?page=scc-help"><?php _e( 'Help', self::DOMAIN ) ?></a>
 			  		</h3>
 		  
 					<div class="metabox-holder">
@@ -131,7 +134,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
     wp_reset_postdata();
 ?&gt;</pre>
 					<h4><?php _e( 'How can I access specific custom field containing each share count?', self::DOMAIN) ?></h4>
-					<p><?php _e( 'The custom field including share count is accessed using the following meta keys.', self::DOMAIN ) ?></p>
+					<p><?php _e( 'Custom fields including share count are accessed using the following meta keys.', self::DOMAIN ) ?></p>
 		  			<table class="view-table">
 						<thead>
 			  				<tr>
@@ -146,6 +149,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  				<tr><td>scc_share_count_hatebu</td><td><?php _e( 'A meta key for Hatena Bookmark share count', self::DOMAIN ) ?></td></tr>
 						  	<tr><td>scc_share_count_pocket</td><td><?php _e( 'A meta key for Pocket share count', self::DOMAIN ) ?></td></tr>
 						  	<tr><td>scc_share_count_total</td><td><?php _e( 'A meta key for total share count', self::DOMAIN ) ?></td></tr>
+						</tbody>
+		  			</table>
+					<h4><?php _e( 'How can I access specific custom field containing each variation of share count?', self::DOMAIN) ?></h4>
+					<p><?php _e( 'Custom fields including variation of share count are accessed using the following meta keys.', self::DOMAIN ) ?></p>
+		  			<table class="view-table">
+						<thead>
+			  				<tr>
+								<th><?php _e( 'Meta Key', self::DOMAIN ) ?></th>
+								<th><?php _e( 'Description', self::DOMAIN ) ?></th>
+			  				</tr>
+						</thead>
+						<tbody>
+			  				<tr><td>scc_share_delta_twitter</td><td><?php _e( 'A meta key for variation of Twitter share count', self::DOMAIN ) ?></td></tr>
+			  				<tr><td>scc_share_delta_facebook</td><td><?php _e( 'A meta key for variation of Facebook share count', self::DOMAIN ) ?></td></tr>
+			  				<tr><td>scc_share_delta_google+</td><td><?php _e( 'A meta key for variation of Google Plus share count', self::DOMAIN ) ?></td></tr>
+			  				<tr><td>scc_share_delta_hatebu</td><td><?php _e( 'A meta key for variation of Hatena Bookmark share count', self::DOMAIN ) ?></td></tr>
+						  	<tr><td>scc_share_delta_pocket</td><td><?php _e( 'A meta key for variation of Pocket share count', self::DOMAIN ) ?></td></tr>
+						  	<tr><td>scc_share_delta_total</td><td><?php _e( 'A meta key for variation of total share count', self::DOMAIN ) ?></td></tr>
 						</tbody>
 		  			</table>
 						  	</div>								  								  

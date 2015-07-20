@@ -8,7 +8,7 @@ Stable tag: 0.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-This plugin gets and caches SNS share count in the background, and help you to shorten page loading time by application of the cache.
+This plugin gets and caches SNS share count in the background, and help you to shorten page loading time.
 
 == Description ==
 
@@ -39,6 +39,16 @@ The following describes meta keys to get share count from custom field.
 * scc_share_count_hatebu
 * scc_share_count_total
 
+The following describes meta keys to get delta of share count from custom field.
+
+* scc_share_delta_twitter
+* scc_share_delta_facebook
+* scc_share_delta_google+
+* scc_share_delta_pocket
+* scc_share_delta_hatebu
+* scc_share_delta_total
+
+
 == Installation ==
 
 1. Download zip archive file from this repository.
@@ -56,9 +66,10 @@ There are no questions.
 == Screenshots ==
 1. Dashboard to overview cache status and share count
 2. Cache status is described in setting page
-3. Share count for each post can be verviewed
+3. Share count for each post can be viewed
 4. Described parameters can be modified in this page
-5. Help page shows available functions to access the cache  
+5. Help page shows available functions to access the cache
+6. Hot content can be viewd.   
 
 == Changelog ==
 
@@ -96,6 +107,11 @@ There are no questions.
 * Fixed: SNS count of facebook can be 0.
 * Fixed: "PHP Notice: has_cap..." is output. 
 
+= 0.7.0 =
+* Added: function to display variation of SNS count
+* Added: function to access variation of SNS count through custom filed
+* Fixed: custom filed used in this plugin is not deleted in a certain case.
+
 == Upgrade Notice ==
 The following functions are deprecated.
 
@@ -104,8 +120,6 @@ The following functions are deprecated.
 * get_scc_gplus()
 * get_scc_pocket()
 * get_scc_hatebu()
-
-Please reconfigure your parameter again because current setting is reset by this upgrade.   
 
 == Arbitrary section ==
 

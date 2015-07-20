@@ -48,6 +48,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 					  	<a class="nav-tab nav-tab-active" href="admin.php?page=scc-dashboard"><?php _e( 'Dashboard', self::DOMAIN ) ?></a>
 					  	<a class="nav-tab" href="admin.php?page=scc-cache-status"><?php _e( 'Cache Status', self::DOMAIN ) ?></a>
 					  	<a class="nav-tab" href="admin.php?page=scc-share-count"><?php _e( 'Share Count', self::DOMAIN ) ?></a>
+					  	<?php if ( $this->share_variation_analysis_mode !== self::OPT_SHARE_VARIATION_ANALYSIS_NONE ) { ?>
+					  	<a class="nav-tab" href="admin.php?page=scc-hot-content"><?php _e( 'Hot Content', self::DOMAIN ) ?></a>
+					  	<?php } ?>
 					  	<a class="nav-tab" href="admin.php?page=scc-setting"><?php _e( 'Setting', self::DOMAIN ) ?></a>
 					  	<a class="nav-tab" href="admin.php?page=scc-help"><?php _e( 'Help', self::DOMAIN ) ?></a>
 			  		</h3>
@@ -127,7 +130,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 												echo '</td>';													  	
 											} else {
 												echo '<td class="share-count">';
-											  	echo '<img class="loading" src="' . $this->loading_img_url . '" /><span data-scc="' . strtolower( $sns ) . '"></span>';
+											  echo '<img class="loading" src="' . $this->loading_img_url . '" /><span data-scc="' . strtolower( $sns ) . '"></span>';
 												echo '</td>';													  
 											}
 					  	

@@ -69,11 +69,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 		<h2><a href="admin.php?page=scc-share-count"><?php _e( 'SNS Count Cache', self::DOMAIN ) ?></a></h2>
 		<div class="sns-cnt-cache">
 			<h3 class="nav-tab-wrapper">
-				<a class="nav-tab" href="admin.php?page=scc-dashboard">Dashboard</a>
-				<a class="nav-tab" href="admin.php?page=scc-cache-status">Cache Status</a>
-				<a class="nav-tab nav-tab-active" href="admin.php?page=scc-share-count">Share Count</a>
-				<a class="nav-tab" href="admin.php?page=scc-setting">Setting</a>
-				<a class="nav-tab" href="admin.php?page=scc-help">Help</a>
+				<a class="nav-tab" href="admin.php?page=scc-dashboard"><?php _e( 'Dashboard', self::DOMAIN ) ?></a>
+				<a class="nav-tab" href="admin.php?page=scc-cache-status"><?php _e( 'Cache Status', self::DOMAIN ) ?></a>
+				<a class="nav-tab nav-tab-active" href="admin.php?page=scc-share-count"><?php _e( 'Share Count', self::DOMAIN ) ?></a>
+			  	<?php if ( $this->share_variation_analysis_mode !== self::OPT_SHARE_VARIATION_ANALYSIS_NONE ) { ?>
+				<a class="nav-tab" href="admin.php?page=scc-hot-content"><?php _e( 'Hot Content', self::DOMAIN ) ?></a>
+			  	<?php } ?>
+				<a class="nav-tab" href="admin.php?page=scc-setting"><?php _e( 'Setting', self::DOMAIN ) ?></a>
+				<a class="nav-tab" href="admin.php?page=scc-help"><?php _e( 'Help', self::DOMAIN ) ?></a>
 			</h3>
 			<div class="metabox-holder">
 				<div id="share-each-content" class="postbox">
@@ -119,8 +122,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 										'post_status' => 'publish',
 		  								'posts_per_page' => $posts_per_page,
       									'paged' => $paged,
-										'meta_key' =>  $meta_key,
- 										'orderby'  =>  'meta_value_num',
+										'meta_key' => $meta_key,
+ 										'orderby'  => 'meta_value_num',
 										'update_post_term_cache' => false,
 										'order' => 'DESC'
 										);
@@ -146,56 +149,219 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  					<tr class="home">
 									<td><?php echo '-'; ?></td>
 								  	<td><a href="<?php echo esc_url( home_url( '/' ) ); ?>" target="_blank"><?php echo esc_html(  bloginfo('name') ); ?></a></td>
-									<?php  
-										$transient_id = $this->cache_engines[self::REF_SHARE_BASE]->get_cache_key( 'home' );
-								  				  
-										if (  false !== ( $sns_counts = get_transient( $transient_id ) ) ) {
+									<?php 
+								  
+								  		if ( $this->share_variation_analysis_mode !== self::OPT_SHARE_VARIATION_ANALYSIS_NONE ) {
+											$transient_id = $this->cache_engines[self::REF_SHARE_BASE]->get_cache_key( 'home' );
+								  										  				  
+											if (  false !== ( $sns_counts = get_transient( $transient_id ) ) ) {
+										  
+										  		$option_key = $this->analytical_engines[self::REF_SHARE_ANALYSIS]->get_delta_key( 'home' );
+										  
+										  		if ( false !== ( $sns_deltas = get_option( $option_key ) ) ) {	
 
-						  					foreach ( $share_base_cache_target as $sns => $active ) {
-									  			if ( $active ) {										  
-								  					if ( isset( $sns_counts[$sns] ) && $sns_counts[$sns] >= 0 ) {
-					  									echo '<td class="share-count">';
-								  						echo esc_html( number_format( (int) $sns_counts[$sns] ) );
-					  									echo '</td>';
-													} else {
-					  									echo '<td class="not-cached share-count">';
-														_e( 'N/A', self::DOMAIN );
-					  									echo '</td>';
+						  							foreach ( $share_base_cache_target as $sns => $active ) {
+									  					if ( $active ) {										  
+								  							if ( isset( $sns_counts[$sns] ) && $sns_counts[$sns] >= 0 ) {
+					  											echo '<td class="share-count">';
+								  								echo esc_html( number_format( (int) $sns_counts[$sns] ) );
+												
+											  					if ( isset( $sns_deltas[$sns] ) && $sns_deltas[$sns] !== '' && $sns_deltas[$sns] > 0 ) {
+																	echo ' (<span class="delta-rise">+' . esc_html( number_format( (int) $sns_deltas[$sns] ) ) . '</span>)';
+																} elseif ( isset( $sns_deltas[$sns] ) && $sns_deltas[$sns] !== '' && $sns_deltas[$sns] < 0 ) {
+																	echo ' (<span class="delta-fall">' . esc_html( number_format( (int) $sns_deltas[$sns] ) ) . '</span>)';
+																}
+																									  
+					  											echo '</td>';
+															} else {
+				  												echo '<td class="not-cached share-count">';
+																_e( 'N/A', self::DOMAIN );
+					  											echo '</td>';
+															}										  
+									  					}
+													}
+										
+												} else {										  
+
+						  							foreach ( $share_base_cache_target as $sns => $active ) {
+								  						if ( $active ) {										  
+							  								if ( isset( $sns_counts[$sns] ) && $sns_counts[$sns] >= 0 ) {
+					  											echo '<td class="share-count">';
+							  									echo esc_html( number_format( (int) $sns_counts[$sns] ) );												  													  
+				  												echo '</td>';
+															} else {
+					  											echo '<td class="not-cached share-count">';
+																_e( 'N/A', self::DOMAIN );
+					  											echo '</td>';
+															}										  
+									  					}
 													}										  
-									  			}
-											}										  
-										  								  
-										} else {
+												}
+										 		  
+											} else {
 								  	  
-										  	$option_key = $this->cache_engines[self::REF_SHARE_2ND]->get_cache_key( 'home' );
+										  		$option_key = $this->cache_engines[self::REF_SHARE_2ND]->get_cache_key( 'home' );
 										  	
-										  	if ( false !== ( $sns_counts = get_option( $option_key ) ) ) {	
-										  
-						  						foreach ( $share_base_cache_target as $sns => $active ) {
-									  				if( $active ){
-										  
-											  			if ( $sns_counts[$sns] >= 0 ) {
-					  										echo '<td class="share-count">';
-								  							echo esc_html( number_format( (int) $sns_counts[$sns] ) );
-					  										echo '</td>';
-														} else {
+										  		if ( false !== ( $sns_counts = get_option( $option_key ) ) ) {
+											  
+													$option_key = $this->analytical_engines[self::REF_SHARE_ANALYSIS]->get_delta_key( 'home' );
+
+										  			if ( false !== ( $sns_deltas = get_option( $option_key ) ) ) {	
+						  								foreach ( $share_base_cache_target as $sns => $active ) {
+								  							if( $active ){
+									  
+										  						if ( $sns_counts[$sns] >= 0 ) {
+				  													echo '<td class="share-count">';
+							  										echo esc_html( number_format( (int) $sns_counts[$sns] ) );
+														  
+												  					if ( isset( $sns_deltas[$sns] ) && $sns_deltas[$sns] !== '' && $sns_deltas[$sns] > 0 ) {
+																		echo ' (<span class="delta-rise">+' . esc_html( number_format( (int) $sns_deltas[$sns] ) ) . '</span>)';
+																	} elseif ( isset( $sns_deltas[$sns] ) && $sns_deltas[$sns] !== '' && $sns_deltas[$sns] < 0 ) {
+																		echo ' (<span class="delta-fall">' . esc_html( number_format( (int) $sns_deltas[$sns] ) ) . '</span>)';
+																	}
+															  
+					  												echo '</td>';
+																} else {
+					  												echo '<td class="not-cached share-count">';
+																	_e( 'N/A', self::DOMAIN );
+					  												echo '</td>';
+																}
+															}										  							  								 										  
+								  						}
+													} else {
+					  									foreach ( $share_base_cache_target as $sns => $active ) {
+									  						if ( $active ) {
+										 
+										  						if ( $sns_counts[$sns] >= 0 ) {
+					  												echo '<td class="share-count">';
+							  										echo esc_html( number_format( (int) $sns_counts[$sns] ) );
+					  												echo '</td>';
+																} else {
+				  													echo '<td class="not-cached share-count">';
+																	_e( 'N/A', self::DOMAIN );
+					  												echo '</td>';
+																}
+															}										  							  								 										  
+									  					}												  
+													}
+												} else {
+													foreach ( $share_base_cache_target as $sns => $active ) {
+											  			if ( $active ) {
 					  										echo '<td class="not-cached share-count">';
 															_e( 'N/A', self::DOMAIN );
 					  										echo '</td>';
 														}
-													}										  							  								 										  
-									  			}
-											} else {
-												foreach ( $share_base_cache_target as $sns => $active ) {
-												  	if( $active ){
-					  									echo '<td class="not-cached share-count">';
-														_e( 'N/A', self::DOMAIN );
-					  									echo '</td>';
 													}
 												}
-											}
 								  								  
+											}									  
+										} else {
+											$transient_id = $this->cache_engines[self::REF_SHARE_BASE]->get_cache_key( 'home' );
+								  										  				  
+											if (  false !== ( $sns_counts = get_transient( $transient_id ) ) ) {
+										  
+										  		$option_key = $this->analytical_engines[self::REF_SHARE_ANALYSIS]->get_delta_key( 'home' );
+										  
+										  		if ( false !== ( $sns_deltas = get_option( $option_key ) ) ) {	
+
+						  							foreach ( $share_base_cache_target as $sns => $active ) {
+									  					if ( $active ) {										  
+								  							if ( isset( $sns_counts[$sns] ) && $sns_counts[$sns] >= 0 ) {
+					  											echo '<td class="share-count">';
+								  								echo esc_html( number_format( (int) $sns_counts[$sns] ) );
+												
+												  				if ( isset( $sns_deltas[$sns] ) && $sns_deltas[$sns] !== '' && $sns_deltas[$sns] > 0 ) {
+																	echo ' (<span class="delta-rise">+' . esc_html( number_format( (int) $sns_deltas[$sns] ) ) . '</span>)';
+																} elseif ( isset( $sns_deltas[$sns] ) && $sns_deltas[$sns] !== '' && $sns_deltas[$sns] < 0 ) {
+																	echo ' (<span class="delta-fall">' . esc_html( number_format( (int) $sns_deltas[$sns] ) ) . '</span>)';
+																}
+																									  
+					  											echo '</td>';
+															} else {
+					  											echo '<td class="not-cached share-count">';
+																_e( 'N/A', self::DOMAIN );
+					  											echo '</td>';
+															}										  
+									  					}
+													}
+											
+												} else {										  
+
+						  							foreach ( $share_base_cache_target as $sns => $active ) {
+									  					if ( $active ) {										  
+								  							if ( isset( $sns_counts[$sns] ) && $sns_counts[$sns] >= 0 ) {
+					  											echo '<td class="share-count">';
+								  								echo esc_html( number_format( (int) $sns_counts[$sns] ) );												  													  
+					  											echo '</td>';
+															} else {
+					  											echo '<td class="not-cached share-count">';
+																_e( 'N/A', self::DOMAIN );
+					  											echo '</td>';
+															}										  
+									  					}
+													}										  
+												}
+										  
+										  
+											} else {
+								  	  
+										  		$option_key = $this->cache_engines[self::REF_SHARE_2ND]->get_cache_key( 'home' );
+										  	
+										  		if ( false !== ( $sns_counts = get_option( $option_key ) ) ) {
+											  
+													$option_key = $this->analytical_engines[self::REF_SHARE_ANALYSIS]->get_delta_key( 'home' );
+
+											  		if ( false !== ( $sns_deltas = get_option( $option_key ) ) ) {	
+						  								foreach ( $share_base_cache_target as $sns => $active ) {
+									  						if( $active ){
+										  
+											  					if ( $sns_counts[$sns] >= 0 ) {
+					  												echo '<td class="share-count">';
+								  									echo esc_html( number_format( (int) $sns_counts[$sns] ) );
+															  
+												  					if ( isset( $sns_deltas[$sns] ) && $sns_deltas[$sns] !== '' && $sns_deltas[$sns] > 0 ) {
+																		echo ' (<span class="delta-rise">+' . esc_html( number_format( (int) $sns_deltas[$sns] ) ) . '</span>)';
+																	} elseif ( isset( $sns_deltas[$sns] ) && $sns_deltas[$sns] !== '' && $sns_deltas[$sns] < 0 ) {
+																		echo ' (<span class="delta-fall">' . esc_html( number_format( (int) $sns_deltas[$sns] ) ) . '</span>)';
+																	}
+															  
+					  												echo '</td>';
+																} else {
+					  												echo '<td class="not-cached share-count">';
+																	_e( 'N/A', self::DOMAIN );
+					  												echo '</td>';
+																}
+															}										  							  								 										  
+								  						}
+													} else {
+						  								foreach ( $share_base_cache_target as $sns => $active ) {
+								  							if ( $active ){
+									  
+										  						if ( $sns_counts[$sns] >= 0 ) {
+				  													echo '<td class="share-count">';
+							  										echo esc_html( number_format( (int) $sns_counts[$sns] ) );
+				  													echo '</td>';
+																} else {
+					  												echo '<td class="not-cached share-count">';
+																	_e( 'N/A', self::DOMAIN );
+					  												echo '</td>';
+																}
+															}										  							  								 										  
+									  					}												  
+													}
+												} else {
+													foreach ( $share_base_cache_target as $sns => $active ) {
+											  			if ( $active ) {
+					  										echo '<td class="not-cached share-count">';
+															_e( 'N/A', self::DOMAIN );
+					  										echo '</td>';
+														}
+													}
+												}										
+											}
 										}
+											
+										
 									?>
 			  					</tr>
 								<?php
@@ -214,10 +380,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 									  	if( ! $sort_mode && false !== ( $sns_counts = get_transient( $transient_id ) ) ) {
 
 						  					foreach ( $share_base_cache_target as $sns => $active ) {
-									  			if ( $active ) {										  
+									  			if ( $active ) {
+												  												  												  
 								  					if ( isset( $sns_counts[$sns] ) && $sns_counts[$sns] >= 0 ) {
 					  									echo '<td class="share-count">';
 								  						echo esc_html( number_format( (int) $sns_counts[$sns] ) );
+													
+													  	if ( $this->share_variation_analysis_mode !== self::OPT_SHARE_VARIATION_ANALYSIS_NONE ) {
+												  			//delta
+								  							$meta_key = $this->analytical_engines[self::REF_SHARE_ANALYSIS]->get_delta_key( $sns );
+															$sns_deltas[$sns] = get_post_meta( get_the_ID(), $meta_key, true );
+													  
+												  			if ( isset( $sns_deltas[$sns] ) && $sns_deltas[$sns] !== '' && $sns_deltas[$sns] > 0 ) {
+																echo ' (<span class="delta-rise">+' . esc_html( number_format( (int) $sns_deltas[$sns] ) ) . '</span>)';
+															} elseif ( isset( $sns_deltas[$sns] ) && $sns_deltas[$sns] !== '' && $sns_deltas[$sns] < 0 ) {
+																echo ' (<span class="delta-fall">' . esc_html( number_format( (int) $sns_deltas[$sns] ) ) . '</span>)';
+															}
+														}
+													  
 					  									echo '</td>';
 													} else {
 					  									echo '<td class="not-cached share-count">';
@@ -235,10 +415,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 												  	$meta_key = $this->cache_engines[self::REF_SHARE_2ND]->get_cache_key( $sns );
 												  	
 							  						$sns_counts[$sns] = get_post_meta( get_the_ID(), $meta_key, true );
-								  				
+												  
 													if ( isset( $sns_counts[$sns] ) && $sns_counts[$sns] !== '' &&  $sns_counts[$sns] >= 0 ) {
 					  									echo '<td class="share-count">';
 								  						echo esc_html( number_format( (int) $sns_counts[$sns] ) );
+													  
+													  	if ( $this->share_variation_analysis_mode !== self::OPT_SHARE_VARIATION_ANALYSIS_NONE ) {
+													  
+												  			//delta
+								  							$meta_key = $this->analytical_engines[self::REF_SHARE_ANALYSIS]->get_delta_key( $sns );
+															$sns_deltas[$sns] = get_post_meta( get_the_ID(), $meta_key, true );												  
+														  
+												  			if ( isset( $sns_deltas[$sns] ) && $sns_deltas[$sns] !== '' && $sns_deltas[$sns] > 0 ) {
+																echo ' (<span class="delta-rise">+' . esc_html( number_format( (int) $sns_deltas[$sns] ) ) . '</span>)';
+															} elseif ( isset( $sns_deltas[$sns] ) && $sns_deltas[$sns] !== '' && $sns_deltas[$sns] < 0 ) {
+																echo ' (<span class="delta-fall">' . esc_html( number_format( (int) $sns_deltas[$sns] ) ) . '</span>)';
+															}
+														}
+													  
 					  									echo '</td>';
 													} else {
 					  									echo '<td class="not-cached share-count">';

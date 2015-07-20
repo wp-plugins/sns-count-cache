@@ -47,10 +47,15 @@ abstract class Share_Cache_Engine extends Cache_Engine {
 	protected $post_types = array( 'post', 'page' );
   
   	/**
-	 * migration between http and https
+	 * migration mode from http to https
 	 */	     
   	protected $scheme_migration_mode = false;
 
+  	/**
+	 * migration date from http to https
+	 */	     
+  	protected $scheme_migration_date = NULL;
+    
   	/**
 	 * excluded keys in scheme migration
 	 */	     
@@ -68,6 +73,7 @@ abstract class Share_Cache_Engine extends Cache_Engine {
 		$target_url = $options['target_url'];
 		$target_sns = $options['target_sns'];
 		$cache_expiration = $options['cache_expiration'];
+	  	$publish_date = $options['publish_date'];
 
 		Common_Util::log( '[' . __METHOD__ . '] current memory usage: ' . round( memory_get_usage( true )/1024/1024, 2 ) . ' MB' );	  
 	  
@@ -76,8 +82,87 @@ abstract class Share_Cache_Engine extends Cache_Engine {
 	  	$data = $this->crawler->get_data( $target_sns, $target_url );
   
 		Common_Util::log( $data );
+	  
+	  	Common_Util::log( '[' . __METHOD__ . '] scheme migration date: ' . $this->scheme_migration_date );
+	  	Common_Util::log( '[' . __METHOD__ . '] publish date: ' . $publish_date );
 
 	  	if ( $this->scheme_migration_mode && Common_Util::is_secure_url( $target_url ) ) {
+	  	
+		  	if ( ! isset( $this->scheme_migration_date ) ) {
+		  		$target_url = Common_Util::get_normal_url( $target_url );
+
+		  		$target_sns_migrated = $target_sns;
+		  	
+		  		foreach ( $this->scheme_migration_exclude_keys as $sns ) {
+			  		unset( $target_sns_migrated[$sns] );
+		  		}
+		  
+	  			Common_Util::log( '[' . __METHOD__ . '] target url: ' . $target_url );
+		  
+		  		$migrated_data = $this->crawler->get_data( $target_sns_migrated, $target_url );
+
+				Common_Util::log( $migrated_data );
+
+		  		foreach ( $target_sns_migrated as $sns => $active ) {
+					if ( $active && isset( $migrated_data[$sns] ) && is_numeric( $migrated_data[$sns] ) && $migrated_data[$sns] > 0 ){
+				  		$data[$sns] = $data[$sns] + $migrated_data[$sns];
+					}
+				}
+			  
+			} else {
+			  	if ( isset( $publish_date ) ) {
+			  		if ( strtotime( $publish_date ) <= strtotime( $this->scheme_migration_date ) ) {
+					  	Common_Util::log( '[' . __METHOD__ . '] oooooo: ' . $this->scheme_migration_date );
+					  	
+		  				$target_url = Common_Util::get_normal_url( $target_url );
+				  
+		  				$target_sns_migrated = $target_sns;
+		  	
+		  				foreach ( $this->scheme_migration_exclude_keys as $sns ) {
+			  				unset( $target_sns_migrated[$sns] );
+		  				}
+		  
+	  					Common_Util::log( '[' . __METHOD__ . '] target url: ' . $target_url );
+		  
+		  				$migrated_data = $this->crawler->get_data( $target_sns_migrated, $target_url );
+
+						Common_Util::log( $migrated_data );
+
+		  				foreach ( $target_sns_migrated as $sns => $active ) {
+							if ( $active && isset( $migrated_data[$sns] ) && is_numeric( $migrated_data[$sns] ) && $migrated_data[$sns] > 0 ){
+				  				$data[$sns] = $data[$sns] + $migrated_data[$sns];
+							}
+						}		
+			  		}
+				} else {
+		  			$target_url = Common_Util::get_normal_url( $target_url );
+				  
+		  			$target_sns_migrated = $target_sns;
+		  	
+		  			foreach ( $this->scheme_migration_exclude_keys as $sns ) {
+			  			unset( $target_sns_migrated[$sns] );
+		  			}
+		  
+	  				Common_Util::log( '[' . __METHOD__ . '] target url: ' . $target_url );
+		  
+		  			$migrated_data = $this->crawler->get_data( $target_sns_migrated, $target_url );
+
+					Common_Util::log( $migrated_data );
+
+		  			foreach ( $target_sns_migrated as $sns => $active ) {
+						if ( $active && isset( $migrated_data[$sns] ) && is_numeric( $migrated_data[$sns] ) && $migrated_data[$sns] > 0 ){
+				  			$data[$sns] = $data[$sns] + $migrated_data[$sns];
+						}
+					}		
+				}
+			  	
+			}
+		
+		}
+	  
+	  /*
+	  	if ( $this->scheme_migration_mode && Common_Util::is_secure_url( $target_url ) ) {
+		  		  		  
 		  	$target_url = Common_Util::get_normal_url( $target_url );
 
 		  	$target_sns_migrated = $target_sns;
@@ -98,7 +183,8 @@ abstract class Share_Cache_Engine extends Cache_Engine {
 				}
 			}
 		  		  
-		}	  
+		}
+		*/
 	  
 	  	if ( $data ) {	  
 			$result = set_transient( $cache_key, $data, $cache_expiration ); 
