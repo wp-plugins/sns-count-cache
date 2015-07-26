@@ -129,7 +129,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 				}
 	  
 	  			if ( isset( $_POST["follow_base_check_interval"] ) && $_POST["follow_base_check_interval"] && is_numeric( $_POST["follow_base_check_interval"] ) ) {
-				  	$settings[self::DB_FOLLOW_CHECK_INTERVAL] = $_POST["follow_base_check_interval"];
+				  	if ( $_POST["follow_base_check_interval"] >= self::OPT_FOLLOW_BASE_CHECK_INTERVAL_MIN ) {
+				  		$settings[self::DB_FOLLOW_CHECK_INTERVAL] = $_POST["follow_base_check_interval"];
+					} else {
+					  	$settings[self::DB_FOLLOW_CHECK_INTERVAL] = self::OPT_FOLLOW_BASE_CHECK_INTERVAL_MIN;
+					}
 				}
 	  			  
 				if ( isset( $_POST["follow_base_cache_target_feedly"] ) && $_POST["follow_base_cache_target_feedly"] ) {
@@ -837,7 +841,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				<th><label><?php _e( 'Interval cheking and caching follower count (sec)', self::DOMAIN ) ?></label></th>
 						  				<td>
 							  				<input type="text" class="text" name="follow_base_check_interval" size="20" value="<?php echo esc_html( $this->follow_base_check_interval); ?>" />
-							  				<label><?php _e( 'Default: 1800', self::DOMAIN ) ?></label>
+										  	<label><?php _e( 'Default: 86400 Minimum: 3600', self::DOMAIN ) ?></label>
 						  				</td>
 			  						</tr>
 								</table>

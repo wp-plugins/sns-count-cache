@@ -3,8 +3,8 @@ Contributors: marubon
 Donate link: 
 Tags: performance, SNS, social, cache, share
 Requires at least: 3.7
-Tested up to: 4.2.2
-Stable tag: 0.7.0
+Tested up to: 4.2.3
+Stable tag: 0.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,6 +111,9 @@ There are no questions.
 * Added: function to display variation of SNS count
 * Added: function to access variation of SNS count through custom filed
 * Fixed: custom filed used in this plugin is not deleted in a certain case.
+
+= 0.7.1 =
+* Modified: Check interval of follower count is tuned.
 
 == Upgrade Notice ==
 The following functions are deprecated.

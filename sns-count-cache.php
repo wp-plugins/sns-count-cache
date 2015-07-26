@@ -2,7 +2,7 @@
 /*
 Plugin Name: SNS Count Cache
 Description: SNS Count Cache gets share count for Twitter and Facebook, Google Plus, Pocket, Hatena Bookmark and caches these count in the background. This plugin may help you to shorten page loading time because the share count can be retrieved not through network but through the cache using given functions.
-Version: 0.7.0
+Version: 0.7.1
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -113,7 +113,8 @@ final class SNS_Count_Cache implements Order {
 	/**
 	 * Interval cheking and caching share count for follow base cache
 	 */	  
-	const OPT_FOLLOW_BASE_CHECK_INTERVAL = 1800;
+	const OPT_FOLLOW_BASE_CHECK_INTERVAL = 86400;  
+  	const OPT_FOLLOW_BASE_CHECK_INTERVAL_MIN = 3600;
   
 	/**
 	 * Interval for follow second cache
@@ -433,7 +434,7 @@ final class SNS_Count_Cache implements Order {
 	/**
 	 * Plugin version, used for cache-busting of style and script file references.
 	 */	
-	private $version = '0.7.0';
+	private $version = '0.7.1';
 
 	/**
 	 * Instances of crawler
@@ -676,6 +677,9 @@ final class SNS_Count_Cache implements Order {
 	  
 	  	if ( isset( $settings[self::DB_FOLLOW_CHECK_INTERVAL] ) && $settings[self::DB_FOLLOW_CHECK_INTERVAL] ) {
 		  	$this->follow_base_check_interval = (int) $settings[self::DB_FOLLOW_CHECK_INTERVAL];
+		  	if ( $this->follow_base_check_interval < self::OPT_FOLLOW_BASE_CHECK_INTERVAL_MIN ) {
+			  	$this->follow_base_check_interval = self::OPT_FOLLOW_BASE_CHECK_INTERVAL_MIN;
+		  	}		  
 		} else {
 		   	$this->follow_base_check_interval = self::OPT_FOLLOW_BASE_CHECK_INTERVAL;
 		}
