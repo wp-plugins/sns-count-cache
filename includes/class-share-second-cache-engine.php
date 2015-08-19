@@ -312,7 +312,7 @@ class Share_Second_Cache_Engine extends Cache_Engine {
 					$meta_key = $this->get_cache_key( $sns );
 					  
 					if ( $active ) {
-						update_post_meta( $post_id, $meta_key, -1 );
+						update_post_meta( $post_id, $meta_key, (int) -1 );
 					}
 				}		  	 
 			}

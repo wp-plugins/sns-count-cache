@@ -90,6 +90,8 @@ class Share_Rush_Cache_Engine extends Share_Cache_Engine {
 	  	$this->execute_cron = self::DEF_EXECUTE_CRON;
 	  	$this->event_schedule = self::DEF_EVENT_SCHEDULE;
 	  	$this->event_description = self::DEF_EVENT_DESCRIPTION;
+	  
+	  	$this->load_ratio = 0.5;
 
 	    if ( isset( $options['delegate'] ) ) $this->delegate = $options['delegate'];	  
 	  	if ( isset( $options['crawler'] ) ) $this->crawler = $options['crawler'];
@@ -106,6 +108,8 @@ class Share_Rush_Cache_Engine extends Share_Cache_Engine {
 	  	if ( isset( $options['scheme_migration_mode'] ) ) $this->scheme_migration_mode = $options['scheme_migration_mode'];
 	  	if ( isset( $options['scheme_migration_date'] ) ) $this->scheme_migration_date = $options['scheme_migration_date'];	  
 	  	if ( isset( $options['scheme_migration_exclude_keys'] ) ) $this->scheme_migration_exclude_keys = $options['scheme_migration_exclude_keys'];
+	  	if ( isset( $options['cache_retry'] ) ) $this->cache_retry = $options['cache_retry'];
+	  	if ( isset( $options['retry_limit'] ) ) $this->retry_limit = $options['retry_limit'];
 	  
 		add_filter( 'cron_schedules', array( $this, 'schedule_check_interval' ) ); 
 		add_action( $this->prime_cron, array( $this, 'prime_cache' ) );
@@ -153,7 +157,7 @@ class Share_Rush_Cache_Engine extends Share_Cache_Engine {
 	  
 		Common_Util::log( '[' . __METHOD__ . '] posts_offset: ' . $posts_offset );
 		
-	  	wp_schedule_single_event( $next_exec_time, $this->execute_cron, array( $posts_offset, Common_Util::short_hash( $next_exec_time ) ) ); 
+	  	wp_schedule_single_event( $next_exec_time, $this->execute_cron, array( (int) $posts_offset, Common_Util::short_hash( $next_exec_time ) ) ); 
 	  			  
 		$posts_offset = $posts_offset + $this->posts_per_check;
 	  

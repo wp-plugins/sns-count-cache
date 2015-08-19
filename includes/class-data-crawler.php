@@ -50,6 +50,16 @@ abstract class Data_Crawler {
 	 * ssl verification
 	 */	      
   	protected $ssl_verification = true;  
+    
+  	/**
+	 * retry flag
+	 */
+  	protected $crawl_retry = false;
+
+  	/**
+	 * limit of crawl retry
+	 */	     
+  	protected $retry_limit = 2;
   
   	/**
 	 * Instance

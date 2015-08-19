@@ -1,6 +1,6 @@
 <?php
 /*
-class-sns-follow-crawler.php
+class-follow-crawler.php
 
 Description: This class is a data crawler whitch get share count using given API and cURL
 Author: Daisuke Maruyama
@@ -39,9 +39,13 @@ class Follow_Crawler extends Data_Crawler {
   	public function initialize( $options = array() ) {
 	  	Common_Util::log( '[' . __METHOD__ . '] (line='. __LINE__ . ')' );
 	  
+	  	//$this->throttle = new Sleep_Throttle( 0.9 );
+	  
 	  	if ( isset( $options['crawl_method'] ) ) $this->crawl_method = $options['crawl_method'];
 	  	if ( isset( $options['timeout'] ) ) $this->timeout = $options['timeout'];
 	  	if ( isset( $options['ssl_verification'] ) ) $this->ssl_verification = $options['ssl_verification'];
+	  	if ( isset( $options['crawl_retry'] ) ) $this->crawl_retry = $options['crawl_retry'];
+	  	if ( isset( $options['retry_limit'] ) ) $this->retry_limit = $options['retry_limit'];
 	}  
     
   	/**
@@ -60,10 +64,74 @@ class Follow_Crawler extends Data_Crawler {
 	  	  
 	  	$data = array();
 	  
-	  	if ( $this->crawl_method == SNS_Count_Cache::OPT_COMMON_CRAWLER_METHOD_CURL ) {
+	  	$throttle = new Sleep_Throttle( 0.9 );
+	  	  		  
+		$throttle->reset();
+		$throttle->start();
+	  
+	  	if ( $this->crawl_method === SNS_Count_Cache::OPT_COMMON_CRAWLER_METHOD_CURL ) {
 		  	$data = Common_Util::multi_remote_get( $query_urls, $this->timeout, $this->ssl_verification, true );
 		} else {
 			$data = Common_Util::multi_remote_get( $query_urls, $this->timeout, $this->ssl_verification, false );  
+		}
+	  
+	  	$throttle->stop();
+	  
+	  	$retry_count = 0;
+	  	
+	  	while( true ) {
+	  
+	  		$target_sns_retry = array();
+	  
+	  		$tmp_count = $this->extract_count( $target_sns, $data );
+	  
+	  		foreach ( $target_sns as $sns => $active ){
+		  		if ( $active ) {
+			  		if( $tmp_count[$sns] === -1 ) {
+				  		$target_sns_retry[$sns] = true;
+			  		}
+		  		}
+			}
+	  		  		  		  
+		  	if ( empty( $target_sns_retry ) ) {
+		  		break;
+			  
+			} else {
+
+	  			Common_Util::log( '[' . __METHOD__ . '] crawl failure' );
+	  			Common_Util::log( $target_sns_retry );
+			  
+			  	if ( $retry_count < $this->retry_limit ) {
+				  
+				  	Common_Util::log( '[' . __METHOD__ . '] sleep before crawl retry: ' . $throttle->get_sleep_time() . ' sec.' );
+				  
+		  			$throttle->sleep();
+			  
+			  		++$retry_count;
+
+			  		Common_Util::log( '[' . __METHOD__ . '] count of crawl retry: ' . $retry_count );
+		  			  
+		  			$query_urls_retry = $this->build_query_urls( $target_sns_retry, $url );
+		  
+		  			$data_retry = array();
+			  
+			  		$throttle->reset();
+					$throttle->start();
+		  
+	  				if ( $this->crawl_method === SNS_Count_Cache::OPT_COMMON_CRAWLER_METHOD_CURL ) {
+		  				$data_retry = Common_Util::multi_remote_get( $query_urls_retry, $this->timeout, $this->ssl_verification, true );
+					} else {
+						$data_retry = Common_Util::multi_remote_get( $query_urls_retry, $this->timeout, $this->ssl_verification, false );  
+					}
+		  
+			  		$throttle->stop();
+			  
+		  			$data = array_merge( $data, $data_retry );
+				} else {
+				  	Common_Util::log( '[' . __METHOD__ . '] crawling: retry failed' );
+				  	break;
+				}
+			}		  
 		}
 	  
 	  	return $this->extract_count( $target_sns, $data );

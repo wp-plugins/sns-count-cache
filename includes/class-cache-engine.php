@@ -40,7 +40,17 @@ abstract class Cache_Engine extends Engine {
   	/**
 	 * instance for delegation
 	 */	   
-  	protected $delegate = NULL;  
+  	protected $delegate = NULL;
+
+  	/**
+	 * retry of cache processing
+	 */	     
+  	protected $cache_retry = false;
+  	
+  	/**
+	 * limit of cache retry
+	 */	     
+  	protected $retry_limit = 3;
       	
   	/**
 	 * Get cache expiration based on current number of total post and page

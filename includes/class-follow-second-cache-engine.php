@@ -201,7 +201,7 @@ class Follow_Second_Cache_Engine extends Cache_Engine {
 	  	
 		foreach ( $this->target_sns as $sns => $active ) {					  					  
 			if ( $active ) {
-			  	$sns_followers[$sns] = -1;
+			  	$sns_followers[$sns] = (int) -1;
 			}
 		}
 	  

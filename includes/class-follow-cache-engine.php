@@ -51,7 +51,12 @@ abstract class Follow_Cache_Engine extends Cache_Engine {
 	 * excluded keys in scheme migration
 	 */	     
   	protected $scheme_migration_exclude_keys = array();  
-    
+
+  	/**
+	 * load ratio for throttle
+	 */	   
+  	protected $load_ratio = 0.5;  
+  
     /**
 	 * Get and cache data for a given post
 	 *
@@ -93,12 +98,54 @@ abstract class Follow_Cache_Engine extends Cache_Engine {
 			}
 		  		  
 		}	  
-	  
-	  	if ( $data ) {	  
-			$result = set_transient( $cache_key, $data, $cache_expiration ); 
+	  	  
+	  	if ( $data ) {
+		  		  
+		  	$throttle = new Sleep_Throttle( $this->load_ratio );
+
+			$throttle->reset();
+			$throttle->start();
 			  
-			Common_Util::log( '[' . __METHOD__ . '] set_transient result: ' . $result );
-	  	}
+			$result = set_transient( $cache_key, $data, $cache_expiration ); 		  
+		  
+		  	$throttle->stop();
+		  
+	  		$retry_count = 0;
+			  
+		  	while ( true ) {
+			  
+			  	Common_Util::log( '[' . __METHOD__ . '] set_transient result (' . $cache_key . '): ' . $result );
+				 				  			  
+			  	if ( $result ) {					
+				  	break;
+				  
+				} else {
+				 
+					if ( $retry_count < $this->retry_limit ) {
+					  
+					  	Common_Util::log( '[' . __METHOD__ . '] sleep before set_transient retry (' . $cache_key . '): ' . $throttle->get_sleep_time() . ' sec.' );
+					  
+					  	$throttle->sleep();
+					  
+					  	++$retry_count;
+					  
+					  	Common_Util::log( '[' . __METHOD__ . '] count of set_transient retry (' . $cache_key . '): ' . $retry_count );
+					  
+						$throttle->reset();
+			  			$throttle->start();
+			  
+			  			$result = set_transient( $cache_key, $data, $cache_expiration ); 
+					  
+				  		$throttle->stop();
+					  	
+					} else {
+						Common_Util::log( '[' . __METHOD__ . '] set_transient result (' . $cache_key . '): retry failed' );
+						break;
+					}
+				}
+			}
+			
+		}
 	  
 	  	return $data;
   	}

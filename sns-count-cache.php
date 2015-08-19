@@ -2,7 +2,8 @@
 /*
 Plugin Name: SNS Count Cache
 Description: SNS Count Cache gets share count for Twitter and Facebook, Google Plus, Pocket, Hatena Bookmark and caches these count in the background. This plugin may help you to shorten page loading time because the share count can be retrieved not through network but through the cache using given functions.
-Version: 0.7.1
+Version: 0.8.0
+Plugin URI: https://wordpress.org/plugins/sns-count-cache/
 Author: Daisuke Maruyama
 Author URI: http://marubon.info/
 License: GPL2 or later
@@ -31,6 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 require_once ( dirname( __FILE__ ) . '/includes/class-common-util.php' );
 require_once ( dirname( __FILE__ ) . '/includes/class-wp-cron-util.php' );
+require_once ( dirname( __FILE__ ) . '/includes/class-sleep-throttle.php' );
 
 require_once ( dirname( __FILE__ ) . '/includes/interface-order.php' );
 
@@ -220,7 +222,42 @@ final class SNS_Count_Cache implements Order {
 	 * Type of crawl ssl verification
 	 */	   
   	const OPT_COMMON_CRAWLER_SSL_VERIFY_OFF = false; 
-    
+
+	/**
+	 * crawler timeout
+	 */	   
+  	const OPT_COMMON_CRAWLER_TIMEOUT = 10;
+
+	/**
+	 * crawler retry limit
+	 */	   
+  	const OPT_COMMON_CRAWLER_RETRY_LIMIT = 2;   
+  
+	/**
+	 * Type of feed
+	 */	   
+  	const OPT_FEED_TYPE_DEFAULT = ''; 
+  
+	/**
+	 * Type of feed
+	 */	   
+  	const OPT_FEED_TYPE_RSS = 'rss'; 
+  
+	/**
+	 * Type of feed
+	 */	   
+  	const OPT_FEED_TYPE_RSS2 = 'rss2'; 
+  
+	/**
+	 * Type of feed
+	 */	   
+  	const OPT_FEED_TYPE_RDF = 'rdf'; 
+  
+	/**
+	 * Type of feed
+	 */	   
+  	const OPT_FEED_TYPE_ATOM = 'atom'; 
+  
 	/**
 	 * Capability for admin
 	 */	   
@@ -266,6 +303,11 @@ final class SNS_Count_Cache implements Order {
 	 */	    
   	const DB_FOLLOW_CACHE_TARGET = 'follow_cache_target';
 
+	/**
+	 * Option key of cache target for follow base cache
+	 */	    
+  	const DB_FOLLOW_FEED_TYPE = '';
+    
 	/**
 	 * Option key of checking interval for follow base cache
 	 */  
@@ -434,7 +476,7 @@ final class SNS_Count_Cache implements Order {
 	/**
 	 * Plugin version, used for cache-busting of style and script file references.
 	 */	
-	private $version = '0.7.1';
+	private $version = '0.8.0';
 
 	/**
 	 * Instances of crawler
@@ -510,6 +552,11 @@ final class SNS_Count_Cache implements Order {
 	 * Check interval for follow base cache
 	 */  
   	private $follow_base_check_interval = 1800;
+
+	/**
+	 * Feed type to be followed
+	 */  
+  	private $follow_feed_type = '';
   
 	/**
 	 * Dynamic cache mode
@@ -683,7 +730,7 @@ final class SNS_Count_Cache implements Order {
 		} else {
 		   	$this->follow_base_check_interval = self::OPT_FOLLOW_BASE_CHECK_INTERVAL;
 		}
-
+  
 	  	if ( isset( $settings[self::DB_COMMON_DYNAMIC_CACHE_MODE] ) && $settings[self::DB_COMMON_DYNAMIC_CACHE_MODE] ) {
 		  	$this->dynamic_cache_mode = (int) $settings[self::DB_COMMON_DYNAMIC_CACHE_MODE];
 		} else {
@@ -757,6 +804,12 @@ final class SNS_Count_Cache implements Order {
 		} else {
 		  	$this->follow_base_cache_target[self::REF_FOLLOW_FEEDLY] = true;
 		} 
+	  
+	  	if ( isset( $settings[self::DB_FOLLOW_FEED_TYPE] ) && $settings[self::DB_FOLLOW_FEED_TYPE] ) {
+		  	$this->follow_feed_type = $settings[self::DB_FOLLOW_FEED_TYPE];
+		} else {
+		  	$this->follow_feed_type = self::OPT_FEED_TYPE_DEFAULT;
+		}	 	  
 		  		 	  
 	  	if ( isset( $settings[self::DB_SHARE_CUSTOM_POST_TYPES] ) && $settings[self::DB_SHARE_CUSTOM_POST_TYPES] ) {
 		  	$this->share_base_custom_post_types = $settings[self::DB_SHARE_CUSTOM_POST_TYPES];
@@ -781,9 +834,10 @@ final class SNS_Count_Cache implements Order {
 	  	// Crawler
 	  	$options = array(
 		  	'crawl_method' => $this->crawler_method,
-		  	'timeout' => 10,
-		  	'ssl_verification' => $this->crawler_ssl_verification
-		  );
+		  	'timeout' => self::OPT_COMMON_CRAWLER_TIMEOUT,
+		  	'retry_limit' => self::OPT_COMMON_CRAWLER_RETRY_LIMIT, 
+		  	'ssl_verification' => $this->crawler_ssl_verification  	
+		  	);
 	  	
 	  	$this->crawlers[self::REF_SHARE] = Share_Crawler::get_instance();
 	  	$this->crawlers[self::REF_SHARE]->initialize( $options );
@@ -878,7 +932,8 @@ final class SNS_Count_Cache implements Order {
 		  	'crawler' => $this->crawlers[self::REF_FOLLOW],
 		  	'target_sns' => $this->follow_base_cache_target,
 		  	'check_interval' => $this->follow_base_check_interval,
-			'scheme_migration_mode' => $this->scheme_migration_mode 
+			'scheme_migration_mode' => $this->scheme_migration_mode,
+		  	'feed_type' => $this->follow_feed_type
 		  	);
 	  
 	  	$this->cache_engines[self::REF_FOLLOW_BASE] = Follow_Base_Cache_Engine::get_instance();
@@ -890,7 +945,8 @@ final class SNS_Count_Cache implements Order {
 		  	'crawler' => $this->crawlers[self::REF_FOLLOW],
 		  	'target_sns' => $this->follow_base_cache_target,
 		  	'check_interval' => $this->follow_base_check_interval, 
-		  	'scheme_migration_mode' => $this->scheme_migration_mode
+		  	'scheme_migration_mode' => $this->scheme_migration_mode,
+		  	'feed_type' => $this->follow_feed_type
 		  	);	  
 	  
 	  	$this->cache_engines[self::REF_FOLLOW_LAZY] = Follow_Lazy_Cache_Engine::get_instance();

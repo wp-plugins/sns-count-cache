@@ -146,6 +146,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 				  	$settings[self::DB_FOLLOW_CACHE_TARGET] = $follow_base_cache_target;
 				}
 			  			  
+				if ( isset( $_POST["follow_feed_type"] ) && $_POST["follow_feed_type"] ) {
+				  	switch ( $_POST["follow_feed_type"] ) {
+					  	case 'default':
+					  		$settings[self::DB_FOLLOW_FEED_TYPE] = self::OPT_FEED_TYPE_DEFAULT;
+					  		break;
+					  	case 'rss2':
+					  		$settings[self::DB_FOLLOW_FEED_TYPE] = self::OPT_FEED_TYPE_RSS2;
+					  		break;
+					  	case 'rss':
+					  		$settings[self::DB_FOLLOW_FEED_TYPE] = self::OPT_FEED_TYPE_RSS;
+					  		break;
+					  	case 'rdf':
+					  		$settings[self::DB_FOLLOW_FEED_TYPE] = self::OPT_FEED_TYPE_RDF;
+					  		break;
+					  	case 'atom':
+					  		$settings[self::DB_FOLLOW_FEED_TYPE] = self::OPT_FEED_TYPE_ATOM;
+					  		break;
+					  	default:
+					  		$settings[self::DB_FOLLOW_FEED_TYPE] = self::OPT_FEED_TYPE_DEFAULT;					  
+				  	}
+					  
+				} else {
+					$settings[self::DB_FOLLOW_FEED_TYPE] = self::OPT_FEED_TYPE_DEFAULT;					  
+				}
+			   
 				if ( isset( $_POST["scheme_migration_mode"] ) && $_POST["scheme_migration_mode"] ) {
 				  	$settings[self::DB_COMMON_SCHEME_MIGRATION_MODE] = self::OPT_COMMON_SCHEME_MIGRATION_MODE_ON;
 				} else {
@@ -194,8 +219,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 			  	set_transient( self::OPT_COMMON_ERROR_MESSAGE, $wp_error->get_error_messages(), 10 );
 			  
-			   	//wp_safe_redirect( menu_page_url( 'scc-setting', false ) );
-			  
+			   	//wp_safe_redirect( menu_page_url( 'scc-setting', false ) );			  
 			}
 
 		  	if( isset( $_POST["reset_data"] ) && $_POST["reset_data"] === __( 'Reset', self::DOMAIN ) ) {
@@ -204,13 +228,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 	  			$this->export_engines[self::REF_COMMON_EXPORT]->reset_export();
 			  
 			  	//wp_safe_redirect( menu_page_url( 'scc-setting', false ) );
-
 			}
 		  
 		  	if( isset( $_POST["export_data"] ) && $_POST["export_data"] === __( 'Export', self::DOMAIN ) ) {
 			  	Common_Util::log( '[' . __METHOD__ . '] export' );
 			  
+			  	set_time_limit( $this->extended_max_execution_time );
+			  
 	  			$this->export_engines[self::REF_COMMON_EXPORT]->execute_export( NULL );
+			  
+			  	set_time_limit( $this->original_max_execution_time );
 			  
 			  	//wp_safe_redirect( menu_page_url('scc-setting', false ) );
 			}
@@ -218,15 +245,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 		  	if( isset( $_POST["update_share_comparison_base"] ) && $_POST["update_share_comparison_base"] === __( 'Update Basis of Comparison', self::DOMAIN ) ) {
 			  	Common_Util::log( '[' . __METHOD__ . '] base' );
 			  
+			  	set_time_limit( $this->extended_max_execution_time );
+			  
 			  	$this->analytical_engines[self::REF_SHARE_ANALYSIS]->execute_base( NULL );
+			  
+			  	set_time_limit( $this->original_max_execution_time );
+			  
 			  	//wp_safe_redirect( menu_page_url( 'scc-setting', false ) );
-
 			}
 		  
 		  	if( isset( $_POST["clear_share_base_cache"] ) && $_POST["clear_share_base_cache"] === __( 'Clear Cache', self::DOMAIN ) ) {
 			  	Common_Util::log( '[' . __METHOD__ . '] clear cache' );
-			  
-			  
+			  			  
 			  	set_time_limit( $this->extended_max_execution_time );
 
 	  			$this->cache_engines[self::REF_SHARE_BASE]->clear_cache();			  
@@ -241,8 +271,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 		  	if( isset( $_POST["clear_follow_base_cache"] ) && $_POST["clear_follow_base_cache"] === __( 'Clear Cache', self::DOMAIN ) ) {
 			  	Common_Util::log( '[' . __METHOD__ . '] clear cache' );
-			  
-			  
+			  			  
 			  	set_time_limit( $this->extended_max_execution_time ); 
 
 	  			$this->cache_engines[self::REF_FOLLOW_BASE]->clear_cache();
@@ -455,7 +484,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						 				<td><?php _e( 'Follow Base Cache', self::DOMAIN ) ?></td>
 						  				<td><?php _e( 'Interval cheking and caching follower count', self::DOMAIN ) ?></td>
 						  				<td><?php echo esc_html( $this->follow_base_check_interval ) . ' seconds'; ?></td>
-			  						</tr>						  
+			  						</tr>								  
+								  	<?php if ( $this->follow_base_cache_target[self::REF_FOLLOW_FEEDLY] ) { ?>
+								  	<tr>
+						 				<td><?php _e( 'Follow Base Cache - Feedly', self::DOMAIN ) ?></td>
+						  				<td><?php _e( 'Target feed type', self::DOMAIN ) ?></td>
+						  				<td>
+										<?php	  
+				  							switch ( $this->follow_feed_type ) {
+					  							case self::OPT_FEED_TYPE_DEFAULT:
+					  								_e( 'Default', self::DOMAIN );
+					  								break;
+					  							case self::OPT_FEED_TYPE_RSS:
+					  								_e( 'RSS', self::DOMAIN );
+					  								break;
+					  							case self::OPT_FEED_TYPE_RSS2:
+					  								_e( 'RSS2', self::DOMAIN );
+					  								break;
+					  							case self::OPT_FEED_TYPE_RDF:
+					  								_e( 'RDF', self::DOMAIN );
+					  								break;
+					  							case self::OPT_FEED_TYPE_ATOM:
+					  								_e( 'ATOM', self::DOMAIN );
+					  								break;
+					  							default:
+					  								_e( 'Default', self::DOMAIN );		  
+				  							}
+										?>
+								  		</td>
+									<tr>
+								  	<tr>
+						 				<td><?php _e( 'Follow Base Cache - Feedly', self::DOMAIN ) ?></td>
+						  				<td><?php _e( 'Target feed', self::DOMAIN ) ?></td>
+						  				<td><?php echo get_feed_link( $this->follow_feed_type ); ?></td>
+									<tr>									  
+								  	<?php } ?>								  
 			  						<tr>
 										<td><?php _e( 'Dynamic Cache', self::DOMAIN) ?></td><td><?php _e( 'Dynamic caching based on user access', self::DOMAIN ) ?></td><td>
 						  				<?php
@@ -850,7 +913,37 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 									<input type="submit" class="button" name="clear_follow_base_cache" value="<?php _e( 'Clear Cache', self::DOMAIN ) ?>">									  
 			  					</div>								  								  
 						  	</div>
-						</div>									 		  
+						</div>
+					  	<?php if ( $this->follow_base_cache_target[self::REF_FOLLOW_FEEDLY] ) { ?>
+						<div id="follow-base-cache-feedly" class="postbox">
+							<div class="handlediv" title="Click to toggle"><br></div>
+							<h3 class="hndle"><span><?php _e('Follow Base Cache - Feedly', self::DOMAIN) ?></span></h3>  
+							<div class="inside">
+								<table class="form-table">								  	
+									<tr>
+									  	<th><label><?php _e( 'Target feed type:', self::DOMAIN ) ?></label></th>
+						  				<td>
+							  				<select name="follow_feed_type">
+												<option value="default"<?php if ( $this->follow_feed_type === self::OPT_FEED_TYPE_DEFAULT ) echo ' selected="selected"'; ?>><?php _e( 'Default', self::DOMAIN ) ?></option>
+												<option value="rss"<?php if ( $this->follow_feed_type === self::OPT_FEED_TYPE_RSS ) echo ' selected="selected"'; ?>><?php _e( 'RSS', self::DOMAIN ) ?></option>
+												<option value="rss2"<?php if ( $this->follow_feed_type === self::OPT_FEED_TYPE_RSS2 ) echo ' selected="selected"'; ?>><?php _e( 'RSS2', self::DOMAIN ) ?></option>
+												<option value="rdf"<?php if ( $this->follow_feed_type === self::OPT_FEED_TYPE_RDF ) echo ' selected="selected"'; ?>><?php _e( 'RDF', self::DOMAIN ) ?></option>
+												<option value="atom"<?php if ( $this->follow_feed_type === self::OPT_FEED_TYPE_ATOM ) echo ' selected="selected"'; ?>><?php _e( 'ATOM', self::DOMAIN ) ?></option>
+							  				</select>
+							  				<label><?php _e( 'Default: Default', self::DOMAIN) ?></label>
+						  				</td>
+									</tr>
+								  	<tr>
+									  	<th><label><?php _e( 'Target feed:', self::DOMAIN ) ?></label></th>
+									  	<td><?php echo get_feed_link( $this->follow_feed_type ); ?></td>
+									</tr>
+								</table>
+			  					<div class="submit-button">
+									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ) ?>" />								  
+			  					</div>								  								  
+						  	</div>
+						</div>			
+					  	<?php } ?>		
 						<div id="common-dynamic-cache" class="postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
 							<h3 class="hndle"><span><?php _e( 'Dynamic Cache', self::DOMAIN ) ?></span></h3>  

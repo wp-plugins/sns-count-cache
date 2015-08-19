@@ -86,8 +86,7 @@ class Share_Analytical_Engine extends Analytical_Engine {
 	 * Crawl date key
 	 */	  
   	private $crawl_date_key = NULL;
-  
-   
+     
   	/**
 	 * Initialization
 	 *
@@ -116,7 +115,7 @@ class Share_Analytical_Engine extends Analytical_Engine {
 		if ( isset( $options['execute_cron'] ) ) $this->execute_cron = $options['execute_cron'];
 	  	if ( isset( $options['post_types'] ) ) $this->post_types = $options['post_types'];
 	  	if ( isset( $options['crawl_date_key'] ) ) $this->crawl_date_key = $options['crawl_date_key'];
-
+	  
 		add_action( $this->prime_cron, array( $this, 'prime_base' ) );
 		add_action( $this->execute_cron, array( $this, 'execute_base' ), 10, 1 );
 		add_filter( 'cron_schedules', array( $this, 'schedule_check_interval' ) ); 
@@ -167,8 +166,6 @@ class Share_Analytical_Engine extends Analytical_Engine {
 	  		  
 	  	$current_date = date_i18n( 'Y/m/d H:i:s' );
 	  	  
-	  	set_time_limit( $this->extended_max_execution_time ); 
-	  
 	  	if( file_exists( $this->base_dir ) ) {
 		   
 	  		$base_file = $this->base_dir . $this->get_base_key( 'home' );
@@ -313,7 +310,6 @@ class Share_Analytical_Engine extends Analytical_Engine {
 		  	wp_reset_postdata();
   		}
 	  
-	  	set_time_limit( $this->original_max_execution_time );
 	}
 
     /**

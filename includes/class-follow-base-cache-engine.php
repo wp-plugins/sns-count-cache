@@ -61,6 +61,11 @@ class Follow_Base_Cache_Engine extends Follow_Cache_Engine {
 	 * Interval cheking and caching target data
 	 */	  
 	private $check_interval = 600;
+
+	/**
+	 * Feed type
+	 */	  
+	private $feed_type = '';
   
     /**
 	 * Offset suffix
@@ -79,7 +84,9 @@ class Follow_Base_Cache_Engine extends Follow_Cache_Engine {
 	  	$this->prime_cron = self::DEF_PRIME_CRON;
 	  	$this->execute_cron = self::DEF_EXECUTE_CRON;
 	  	$this->event_schedule = self::DEF_EVENT_SCHEDULE;
-	  	$this->event_description = self::DEF_EVENT_DESCRIPTION;	  	  
+	  	$this->event_description = self::DEF_EVENT_DESCRIPTION;
+	  
+	  	$this->load_ratio = 0.5;
 	  	  
 	  	if ( isset( $options['delegate'] ) ) $this->delegate = $options['delegate'];
 	  	if ( isset( $options['crawler'] ) ) $this->crawler = $options['crawler'];	  
@@ -92,7 +99,10 @@ class Follow_Base_Cache_Engine extends Follow_Cache_Engine {
 	  	if ( isset( $options['event_description'] ) ) $this->event_description = $options['event_description'];
 	  	if ( isset( $options['scheme_migration_mode'] ) ) $this->scheme_migration_mode = $options['scheme_migration_mode'];
 	  	if ( isset( $options['scheme_migration_exclude_keys'] ) ) $this->scheme_migration_exclude_keys = $options['scheme_migration_exclude_keys'];
-	  	  
+	  	if ( isset( $options['feed_type'] ) ) $this->feed_type = $options['feed_type'];
+	  	if ( isset( $options['cache_retry'] ) ) $this->cache_retry = $options['cache_retry'];
+	  	if ( isset( $options['retry_limit'] ) ) $this->retry_limit = $options['retry_limit'];
+	  
 		add_filter( 'cron_schedules', array( $this, 'schedule_check_interval' ) ); 
 		add_action( $this->prime_cron, array( $this, 'prime_cache' ) );
 		add_action( $this->execute_cron, array( $this, 'execute_cache' ), 10, 1 );
@@ -145,7 +155,7 @@ class Follow_Base_Cache_Engine extends Follow_Cache_Engine {
 		  
 		Common_Util::log( '[' . __METHOD__ . '] cache_expiration: ' . $cache_expiration );
 	  
-	  	$url = get_feed_link();
+	  	$url = get_feed_link( $this->feed_type );
 	  
 	  	$transient_id = $this->get_cache_key( 'follow' );
 	  
