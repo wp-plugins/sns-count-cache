@@ -921,7 +921,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 							<div class="inside">
 								<table class="form-table">								  	
 									<tr>
-									  	<th><label><?php _e( 'Target feed type:', self::DOMAIN ); ?></label></th>
+									  	<th><label><?php _e( 'Target feed type', self::DOMAIN ); ?></label></th>
 						  				<td>
 							  				<select name="follow_feed_type">
 												<option value="default"<?php if ( $this->follow_feed_type === self::OPT_FEED_TYPE_DEFAULT ) echo ' selected="selected"'; ?>><?php _e( 'Default', self::DOMAIN ) ?></option>
@@ -934,7 +934,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				</td>
 									</tr>
 								  	<tr>
-									  	<th><label><?php _e( 'Target feed:', self::DOMAIN ); ?></label></th>
+									  	<th><label><?php _e( 'Target feed', self::DOMAIN ); ?></label></th>
 									  	<td><?php echo get_feed_link( $this->follow_feed_type ); ?></td>
 									</tr>
 								</table>
