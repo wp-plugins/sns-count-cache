@@ -49,7 +49,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						<thead>
 							<tr>
 								<th><?php _e( 'Cache Type', self::DOMAIN ) ?></th>
-								<th><?php _e( 'Status Overview', self::DOMAIN ) ?></th>
+								<th><?php _e( 'Cache Progress', self::DOMAIN ) ?></th>
 								<th><?php _e( 'Total Content', self::DOMAIN ) ?></th>
 								<th><?php _e( 'State - Full Cache', self::DOMAIN ) ?></th>
 								<th><?php _e( 'State - Partial Cache', self::DOMAIN ) ?></th>
