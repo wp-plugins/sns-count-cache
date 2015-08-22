@@ -1,6 +1,6 @@
 <?php
 /*
-admin-share-count.php
+admin-hot-content.php
 
 Description: Option page implementation
 Author: Daisuke Maruyama
@@ -100,11 +100,34 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 										  		}
 										  	
 										  		$sort_url = esc_url( 'admin.php?page=scc-hot-content&action=sort&key=' . $sort_key );
+											  
+										  		$sns_name = '';
+											  
+										  		switch ( $sns ) {
+										  			case self::REF_SHARE_TWITTER:
+											  			$sns_name = __( 'Twitter', self::DOMAIN );
+										  				break;
+										  			case self::REF_SHARE_FACEBOOK:
+											  			$sns_name = __( 'Facebook', self::DOMAIN );
+										  				break;
+										  			case self::REF_SHARE_GPLUS:
+											  			$sns_name = __( 'Google+', self::DOMAIN );
+										  				break;
+										  			case self::REF_SHARE_POCKET:
+											  			$sns_name = __( 'Pocket', self::DOMAIN );
+										  				break;
+										  			case self::REF_SHARE_HATEBU:
+											  			$sns_name = __( 'Hatebu', self::DOMAIN );
+										  				break;
+										  			case self::REF_SHARE_TOTAL:
+											  			$sns_name = __( 'Total', self::DOMAIN );
+										  				break;
+												}											  
 										  
 										  		if ( $sns === $sort_exec_key ){
-													echo '<th><a class="sort-exec-key" href="' . $sort_url . '">' . esc_html( $sns ) . '</th>';		
+													echo '<th><a class="sort-exec-key" href="' . $sort_url . '">' . esc_html( $sns_name ) . '</th>';		
 												} else {
-											  		echo '<th><a href="' . $sort_url . '">' . esc_html( $sns ) . '</th>';	
+											  		echo '<th><a href="' . $sort_url . '">' . esc_html( $sns_name ) . '</th>';	
 												}
 									  		}
 										}

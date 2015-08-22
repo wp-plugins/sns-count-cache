@@ -112,7 +112,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 																		
 												foreach ( $share_base_cache_target as $sns => $active ){	
 													if ( $active ) {
-														echo '<th>' . $sns . '</th>';	
+													  
+										  				$sns_name = '';
+													  
+										  				switch ( $sns ) {
+										  					case self::REF_SHARE_TWITTER:
+											  					$sns_name = __( 'Twitter', self::DOMAIN );
+										  						break;
+										  					case self::REF_SHARE_FACEBOOK:
+											  					$sns_name = __( 'Facebook', self::DOMAIN );
+										  						break;
+										  					case self::REF_SHARE_GPLUS:
+											  					$sns_name = __( 'Google+', self::DOMAIN );
+										  						break;
+										  					case self::REF_SHARE_POCKET:
+											  					$sns_name = __( 'Pocket', self::DOMAIN );
+										  						break;
+										  					case self::REF_SHARE_HATEBU:
+											  					$sns_name = __( 'Hatebu', self::DOMAIN );
+										  						break;
+										  					case self::REF_SHARE_TOTAL:
+											  					$sns_name = __( 'Total', self::DOMAIN );
+										  						break;
+														}
+										  	
+										  				echo '<th>' . esc_html( $sns_name ) . '</th>';
 													}
 												}
 											?>

@@ -328,7 +328,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 							<table class="view-table">				  
 								<thead>
 			  						<tr>
-						  				<th><?php _e( 'Function', self::DOMAIN ) ?></th>
+						  				<th><?php _e( 'Capability', self::DOMAIN ) ?></th>
 										<th><?php _e( 'Parameter', self::DOMAIN ) ?></th>
 										<th><?php _e( 'Value', self::DOMAIN ) ?></th>
 			  						</tr>
@@ -346,7 +346,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 									  				$target_sns[] = 'Google+';
 												}
 					  							if ( isset( $this->share_base_cache_target[self::REF_SHARE_HATEBU] ) && $this->share_base_cache_target[self::REF_SHARE_HATEBU] ) {
-									  				$target_sns[] = 'Hatena Bookmark';
+									  				$target_sns[] = __( 'Hatena Bookmark', self::DOMAIN );
 												}
 												/*
 					  							if ( isset( $this->share_base_cache_target[self::REF_SHARE_LINKEDIN] ) && $this->share_base_cache_target[self::REF_SHARE_LINKEDIN] ) {
@@ -367,8 +367,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				</td>
 			  						</tr>
 			  						<tr>
-						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Additional custom post types', self::DOMAIN ) ?></td>
+						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ); ?></td>
+						  				<td><?php _e( 'Additional custom post types', self::DOMAIN ); ?></td>
 						  				<td><?php								  
 											  	if ( ! empty( $this->share_base_custom_post_types ) && $this->share_base_custom_post_types ) {
 												  	echo esc_html( implode( ',', $this->share_base_custom_post_types ) );
@@ -380,17 +380,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  						</tr>									  
 			  						<tr>
 						 				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Interval cheking and caching share count', self::DOMAIN ) ?></td>
-						  				<td><?php echo esc_html( $this->share_base_check_interval ) . ' seconds'; ?></td>
+						  				<td><?php _e( 'Interval cheking share count (sec)', self::DOMAIN ) ?></td>
+						  				<td><?php echo esc_html( $this->share_base_check_interval ) . ' ' . __( 'seconds', self::DOMAIN ); ?></td>
 			  						</tr>
 			  						<tr>
 						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Number of posts to check at a time', self::DOMAIN ) ?></td>
-						  				<td><?php echo esc_html( $this->share_base_posts_per_check ) . ' posts'; ?></td>
+						  				<td><?php _e( 'Number of contents to check at a time', self::DOMAIN ) ?></td>
+						  				<td><?php echo esc_html( $this->share_base_posts_per_check ) . ' ' . __( 'posts', self::DOMAIN ); ?></td>
 			  						</tr>
 			  						<tr>
 						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Scheme migration mode from http to https', self::DOMAIN ) ?></td>
+						  				<td><?php _e( 'Scheme migration mode from http to https', self::DOMAIN ); ?></td>
 						  				<td>
 										  	<?php 
 											  if ( $this->scheme_migration_mode ) {
@@ -403,8 +403,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  						</tr>
 								  	<?php if ( $this->scheme_migration_mode ) { ?>
 			  						<tr>
-						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Scheme migration date from http to https', self::DOMAIN ) ?></td>
+						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ); ?></td>
+						  				<td><?php _e( 'Scheme migration date from http to https', self::DOMAIN ); ?></td>
 						  				<td>
 										  	<?php 
 											  if ( isset( $this->scheme_migration_date ) ) {
@@ -417,31 +417,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  						</tr>
 								  <?php } ?>
 			  						<tr>
-						  				<td><?php _e( 'Share Rush Cache', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Term considering posted content as new content', self::DOMAIN ) ?></td>
+						  				<td><?php _e( 'Share Rush Cache', self::DOMAIN ); ?></td>
+						  				<td><?php _e( 'Term considering posted content as new content', self::DOMAIN ); ?></td>
 						  				<td>
 							  				<?php 
 								  			if ( $this->share_rush_new_content_term == 1 ) {
-								  				echo esc_html( $this->share_rush_new_content_term ) . ' day';
+								  				echo esc_html( $this->share_rush_new_content_term ) . ' ' . __( 'day', self::DOMAIN );
 								  			} elseif ( $this->share_rush_new_content_term > 1 ) {
-												echo esc_html( $this->share_rush_new_content_term ) . ' days';
+												echo esc_html( $this->share_rush_new_content_term ) . ' ' . __( 'days', self::DOMAIN );
 								  			}
 							  				?>
 						  				</td>
 			  						</tr>
 			  						<tr>
 						  				<td><?php _e( 'Share Rush Cache', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Interval cheking and caching share count(sec)', self::DOMAIN ) ?></td>
+						  				<td><?php _e( 'Interval cheking share count (sec)', self::DOMAIN ) ?></td>
 						  				<td>
 							  				<?php
-											  	echo esc_html( $this->share_rush_check_interval ) . ' seconds'  
+											  	echo esc_html( $this->share_rush_check_interval ) . ' ' . __( 'seconds', self::DOMAIN );  
 							  				?>
 						  				</td>
 			  						</tr>								  
 								  
 								  	<tr>
-										<td><?php _e( 'Share Variation Analysis', self::DOMAIN ) ?></td>
-									  	<td><?php _e( 'Method to update basis of comparison', self::DOMAIN ) ?></td><td>
+										<td><?php _e( 'Share Variation Analysis', self::DOMAIN ); ?></td>
+									  	<td><?php _e( 'Method to update basis of comparison', self::DOMAIN ); ?></td><td>
 						  				<?php
 					  						switch ( $this->share_variation_analysis_mode ) {
 		  										case self::OPT_SHARE_VARIATION_ANALYSIS_NONE:
@@ -481,9 +481,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				</td>
 			  						</tr>	
 			  						<tr>
-						 				<td><?php _e( 'Follow Base Cache', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Interval cheking and caching follower count', self::DOMAIN ) ?></td>
-						  				<td><?php echo esc_html( $this->follow_base_check_interval ) . ' seconds'; ?></td>
+						 				<td><?php _e( 'Follow Base Cache', self::DOMAIN ); ?></td>
+						  				<td><?php _e( 'Interval cheking follower count (sec)', self::DOMAIN ); ?></td>
+						  				<td><?php echo esc_html( $this->follow_base_check_interval ) . ' ' . __( 'seconds', self::DOMAIN ); ?></td>
 			  						</tr>								  
 								  	<?php if ( $this->follow_base_cache_target[self::REF_FOLLOW_FEEDLY] ) { ?>
 								  	<tr>
@@ -512,15 +512,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 				  							}
 										?>
 								  		</td>
-									<tr>
+								  	</tr>
 								  	<tr>
-						 				<td><?php _e( 'Follow Base Cache - Feedly', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Target feed', self::DOMAIN ) ?></td>
+						 				<td><?php _e( 'Follow Base Cache - Feedly', self::DOMAIN ); ?></td>
+						  				<td><?php _e( 'Target feed', self::DOMAIN ); ?></td>
 						  				<td><?php echo get_feed_link( $this->follow_feed_type ); ?></td>
-									<tr>									  
+								  	</tr>									  
 								  	<?php } ?>								  
 			  						<tr>
-										<td><?php _e( 'Dynamic Cache', self::DOMAIN) ?></td><td><?php _e( 'Dynamic caching based on user access', self::DOMAIN ) ?></td><td>
+										<td><?php _e( 'Dynamic Cache', self::DOMAIN) ?></td><td><?php _e( 'Dynamic caching based on user access', self::DOMAIN ); ?></td><td>
 						  				<?php
 					  						switch ( $this->dynamic_cache_mode ) {
 		  										case self::OPT_COMMON_ACCESS_BASED_CACHE_NONE:
@@ -540,7 +540,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				</td>
 			  						</tr>
 			  						<tr>
-										<td><?php _e( 'Data Crawler', self::DOMAIN) ?></td><td><?php _e( 'Crawl method', self::DOMAIN ) ?></td>
+										<td><?php _e( 'Data Crawler', self::DOMAIN) ?></td><td><?php _e( 'Crawl method', self::DOMAIN ); ?></td>
 									  	<td>
 						  				<?php
 					  						switch ( $this->crawler_method ) {
@@ -555,7 +555,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				</td>
 			  						</tr>								  
 			  						<tr>
-										<td><?php _e( 'Data Crawler', self::DOMAIN ) ?></td><td><?php _e( 'SSL verification', self::DOMAIN ) ?></td>
+										<td><?php _e( 'Data Crawler', self::DOMAIN ) ?></td><td><?php _e( 'SSL verification', self::DOMAIN ); ?></td>
 									  	<td>
 						  				<?php
 					  						if ( $this->crawler_ssl_verification ) {
@@ -567,7 +567,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				</td>
 			  						</tr>				  						
 								  	<tr>
-										<td><?php _e( 'Data Export', self::DOMAIN ) ?></td><td><?php _e( 'Method of data export', self::DOMAIN ) ?></td><td>
+										<td><?php _e( 'Data Export', self::DOMAIN ) ?></td><td><?php _e( 'Method of data export', self::DOMAIN ); ?></td><td>
 						  				<?php
 					  						switch ( $this->data_export_mode ) {
 		  										case self::OPT_COMMON_DATA_EXPORT_MANUAL:
@@ -584,9 +584,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 										if ( $this->data_export_mode === self::OPT_COMMON_DATA_EXPORT_SCHEDULER ) {
 									?>
 			  						<tr>
-						 				<td><?php _e( 'Data Export', self::DOMAIN ) ?></td>
-						  				<td><?php _e( 'Interval exporting share count to a csv file', self::DOMAIN ) ?></td>
-									  	<td><?php echo esc_html( $this->data_export_interval / 3600 ) . ' hours'; ?></td>
+						 				<td><?php _e( 'Data Export', self::DOMAIN ); ?></td>
+						  				<td><?php _e( 'Interval exporting share count to a csv file', self::DOMAIN ); ?></td>
+									  	<td><?php echo esc_html( $this->data_export_interval / 3600 ) . ' ' . __( 'hours', self::DOMAIN ); ?></td>
 			  						</tr>
 									<?php
 										}
@@ -601,72 +601,72 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 					  	<?php wp_nonce_field( __FILE__, '_wpnonce' ); ?>
 					  	<div id="share-base-cache" class="postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
-							<h3 class="hndle"><span><?php _e('Share Base Cache', self::DOMAIN) ?></span></h3>  
+							<h3 class="hndle"><span><?php _e('Share Base Cache', self::DOMAIN); ?></span></h3>  
 							<div class="inside">
 								<table class="form-table">
 									<tr>
-						  				<th><label><?php _e( 'Target SNS', self::DOMAIN ) ?></label></th>
+						  				<th><label><?php _e( 'Target SNS', self::DOMAIN ); ?></label></th>
 						  				<td>
 							  				<div class="sns-check">
 								 				<input type="checkbox" value="1" name="share_base_cache_target_facebook"<?php if ( $this->share_base_cache_target[self::REF_SHARE_FACEBOOK] ) echo ' checked="checked"'; ?> />
-							  					<label><?php _e( 'Facebook', self::DOMAIN ) ?></label>						 
+							  					<label><?php _e( 'Facebook', self::DOMAIN ); ?></label>						 
 							  				</div>
 							  				<div class="sns-check">
 												<input type="checkbox" value="1" name="share_base_cache_target_gplus"<?php if ( $this->share_base_cache_target[self::REF_SHARE_GPLUS] ) echo ' checked="checked"'; ?> />
-						  						<label><?php _e( 'Google+', self::DOMAIN ) ?></label>
+						  						<label><?php _e( 'Google+', self::DOMAIN ); ?></label>
 							  				</div>
 							  				<div class="sns-check">
 								  				<input type="checkbox" value="1" name="share_base_cache_target_hatebu"<?php if ( $this->share_base_cache_target[self::REF_SHARE_HATEBU] ) echo ' checked="checked"'; ?> />
-							  					<label><?php _e( 'Hatena Bookmark', self::DOMAIN ) ?></label>
+							  					<label><?php _e( 'Hatena Bookmark', self::DOMAIN ); ?></label>
 							  				</div>
 							  				<div class="sns-check">
 								  				<input type="checkbox" value="1" name="share_base_cache_target_pocket"<?php if ( $this->share_base_cache_target[self::REF_SHARE_POCKET] ) echo ' checked="checked"'; ?> />
-							  					<label><?php _e( 'Pocket', self::DOMAIN ) ?></label>
+							  					<label><?php _e( 'Pocket', self::DOMAIN ); ?></label>
 							  				</div>
 							  				<div class="sns-check">
 												<input type="checkbox" value="1" name="share_base_cache_target_twitter"<?php if ( $this->share_base_cache_target[self::REF_SHARE_TWITTER] ) echo ' checked="checked"'; ?> />
-						 						<label><?php _e( 'Twitter', self::DOMAIN ) ?></label>						  
+						 						<label><?php _e( 'Twitter', self::DOMAIN ); ?></label>						  
 							  				</div>
 						  				</td>
 									</tr>
 			  						<tr>
-						  				<th><label><?php _e( 'Additional custom post types', self::DOMAIN ) ?></label></th>
+						  				<th><label><?php _e( 'Additional custom post types', self::DOMAIN ); ?></label></th>
 						  				<td>
 							  				<input type="text" class="text" name="share_base_custom_post_types" size="60" value="<?php echo esc_html( implode( ',', $this->share_base_custom_post_types ) );  ?>" />
 											<br>
-							  				<label><?php _e( 'e.g. aaa, bbb, ccc (comma-delimited)', self::DOMAIN ) ?></label>
+							  				<label><?php _e( 'e.g. aaa, bbb, ccc (comma-delimited)', self::DOMAIN ); ?></label>
 						  				</td>
 			  						</tr>									  
 			  						<tr>
-						  				<th><label><?php _e( 'Interval cheking and caching share count (sec)', self::DOMAIN ) ?></label></th>
+						  				<th><label><?php _e( 'Interval cheking share count (sec)', self::DOMAIN ); ?></label></th>
 						  				<td>
 							  			<input type="text" class="text" name="share_base_check_interval" size="20" value="<?php echo esc_html( $this->share_base_check_interval ); ?>" />
-							  				<label><?php _e( 'Default: 600', self::DOMAIN ) ?></label>
+							  				<label><?php _e( 'Default: 600', self::DOMAIN ); ?></label>
 						  				</td>
 			  						</tr>
 			  						<tr>
-						  				<th><label><?php _e( 'Number of posts to check at a time (posts)', self::DOMAIN ) ?></label></th>
+						  				<th><label><?php _e( 'Number of contents to check at a time (posts)', self::DOMAIN ) ?></label></th>
 						 				<td>
 							  				<input type="text" class="text" name="share_base_posts_per_check" size="20" value="<?php echo esc_html( $this->share_base_posts_per_check ); ?>" />
-							  				<label><?php _e( 'Default: 20', self::DOMAIN ) ?></label>
+							  				<label><?php _e( 'Default: 20', self::DOMAIN ); ?></label>
 						  				</td>
 			  						</tr>
 			  						<tr>
 						  				<th><label><?php _e( 'Scheme migration mode from http to https', self::DOMAIN ) ?></label></th>
 						 				<td>
 							  				<select name="scheme_migration_mode">
-												<option value="0"<?php if ( $this->scheme_migration_mode === self::OPT_COMMON_SCHEME_MIGRATION_MODE_OFF ) echo ' selected="selected"'; ?>><?php _e( 'Off', self::DOMAIN ) ?></option>
-												<option value="1"<?php if ( $this->scheme_migration_mode === self::OPT_COMMON_SCHEME_MIGRATION_MODE_ON ) echo ' selected="selected"'; ?>><?php _e( 'On', self::DOMAIN ) ?></option>
+												<option value="0"<?php if ( $this->scheme_migration_mode === self::OPT_COMMON_SCHEME_MIGRATION_MODE_OFF ) echo ' selected="selected"'; ?>><?php _e( 'Off', self::DOMAIN ); ?></option>
+												<option value="1"<?php if ( $this->scheme_migration_mode === self::OPT_COMMON_SCHEME_MIGRATION_MODE_ON ) echo ' selected="selected"'; ?>><?php _e( 'On', self::DOMAIN ); ?></option>
 							  				</select>
 							  				<label><?php _e('Default: Off', self::DOMAIN) ?></label>											  
 						  				</td>
 			  						</tr>
 								  	<?php if ( $this->scheme_migration_mode ) { ?>
 			  						<tr>
-						  				<th><label><?php _e( 'Scheme migration date from http to https', self::DOMAIN ) ?></label></th>
+						  				<th><label><?php _e( 'Scheme migration date from http to https', self::DOMAIN ); ?></label></th>
 						 				<td>
 							  				<input id="scheme-migration-date" type="text" class="text" name="scheme_migration_date" size="20" value="<?php echo esc_html( $this->scheme_migration_date ); ?>" />
-										  	<label><?php _e( 'Default: N/A', self::DOMAIN ) ?></label>
+										  	<label><?php _e( 'Default: N/A', self::DOMAIN ); ?></label>
 										  	<script>
 												jQuery(document).ready(function() {
  													jQuery('#scheme-migration-date').datepicker({
@@ -679,68 +679,68 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 								  	<?php } ?>
 						  		</table>
 			  					<div class="submit-button">
-									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ) ?>" />
-									<input type="submit" class="button" name="clear_share_base_cache" value="<?php _e( 'Clear Cache', self::DOMAIN ) ?>">
+									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ); ?>" />
+									<input type="submit" class="button" name="clear_share_base_cache" value="<?php _e( 'Clear Cache', self::DOMAIN ); ?>">
 			  					</div>								  								  
 						  	</div>
 						</div>
 						<div id="share-rush-cache" class="postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
-							<h3 class="hndle"><span><?php _e('Share Rush Cache', self::DOMAIN) ?></span></h3>  
+							<h3 class="hndle"><span><?php _e( 'Share Rush Cache', self::DOMAIN); ?></span></h3>  
 							<div class="inside">
 								<table class="form-table">
 			  						<tr>
-						  				<th><label><?php _e( 'Term considering posted content as new content', self::DOMAIN ) ?></label></th>
+						  				<th><label><?php _e( 'Term considering posted content as new content', self::DOMAIN ); ?></label></th>
 						  				<td>
 							  				<select name="share_rush_new_content_term">
-												<option value="1"<?php if ( $this->share_rush_new_content_term === 1 ) echo ' selected="selected"'; ?>>1 day</option>
-												<option value="2"<?php if ( $this->share_rush_new_content_term === 2 ) echo ' selected="selected"'; ?>>2 days</option>
-												<option value="3"<?php if ( $this->share_rush_new_content_term === 3 ) echo ' selected="selected"'; ?>>3 days</option>
-												<option value="4"<?php if ( $this->share_rush_new_content_term === 4 ) echo ' selected="selected"'; ?>>4 days</option>
-												<option value="5"<?php if ( $this->share_rush_new_content_term === 5 ) echo ' selected="selected"'; ?>>5 days</option>
-												<option value="6"<?php if ( $this->share_rush_new_content_term === 6 ) echo ' selected="selected"'; ?>>6 days</option>
-												<option value="7"<?php if ( $this->share_rush_new_content_term === 7 ) echo ' selected="selected"'; ?>>7 days</option>
-												<option value="8"<?php if ( $this->share_rush_new_content_term === 8 ) echo ' selected="selected"'; ?>>8 days</option>
-												<option value="9"<?php if ( $this->share_rush_new_content_term === 9 ) echo ' selected="selected"'; ?>>9 days</option>
-												<option value="10"<?php if ( $this->share_rush_new_content_term === 10 ) echo ' selected="selected"'; ?>>10 days</option>
-												<option value="11"<?php if ( $this->share_rush_new_content_term === 11 ) echo ' selected="selected"'; ?>>11 days</option>
-												<option value="12"<?php if ( $this->share_rush_new_content_term === 12 ) echo ' selected="selected"'; ?>>12 days</option>
-												<option value="13"<?php if ( $this->share_rush_new_content_term === 13 ) echo ' selected="selected"'; ?>>13 days</option>
-												<option value="14"<?php if ( $this->share_rush_new_content_term === 14 ) echo ' selected="selected"'; ?>>14 days</option>
+												<option value="1"<?php if ( $this->share_rush_new_content_term === 1 ) echo ' selected="selected"'; ?>><?php _e( '1 day', self::DOMAIN ); ?></option>
+												<option value="2"<?php if ( $this->share_rush_new_content_term === 2 ) echo ' selected="selected"'; ?>><?php _e( '2 days', self::DOMAIN ); ?></option>
+												<option value="3"<?php if ( $this->share_rush_new_content_term === 3 ) echo ' selected="selected"'; ?>><?php _e( '3 days', self::DOMAIN ); ?></option>
+												<option value="4"<?php if ( $this->share_rush_new_content_term === 4 ) echo ' selected="selected"'; ?>><?php _e( '4 days', self::DOMAIN ); ?></option>
+												<option value="5"<?php if ( $this->share_rush_new_content_term === 5 ) echo ' selected="selected"'; ?>><?php _e( '5 days', self::DOMAIN ); ?></option>
+												<option value="6"<?php if ( $this->share_rush_new_content_term === 6 ) echo ' selected="selected"'; ?>><?php _e( '6 days', self::DOMAIN ); ?></option>
+												<option value="7"<?php if ( $this->share_rush_new_content_term === 7 ) echo ' selected="selected"'; ?>><?php _e( '7 days', self::DOMAIN ); ?></option>
+												<option value="8"<?php if ( $this->share_rush_new_content_term === 8 ) echo ' selected="selected"'; ?>><?php _e( '8 days', self::DOMAIN ); ?></option>
+												<option value="9"<?php if ( $this->share_rush_new_content_term === 9 ) echo ' selected="selected"'; ?>><?php _e( '9 days', self::DOMAIN ); ?></option>
+												<option value="10"<?php if ( $this->share_rush_new_content_term === 10 ) echo ' selected="selected"'; ?>><?php _e( '10 days', self::DOMAIN ); ?></option>
+												<option value="11"<?php if ( $this->share_rush_new_content_term === 11 ) echo ' selected="selected"'; ?>><?php _e( '11 days', self::DOMAIN ); ?></option>
+												<option value="12"<?php if ( $this->share_rush_new_content_term === 12 ) echo ' selected="selected"'; ?>><?php _e( '12 days', self::DOMAIN ); ?></option>
+												<option value="13"<?php if ( $this->share_rush_new_content_term === 13 ) echo ' selected="selected"'; ?>><?php _e( '13 days', self::DOMAIN ); ?></option>
+												<option value="14"<?php if ( $this->share_rush_new_content_term === 14 ) echo ' selected="selected"'; ?>><?php _e( '14 days', self::DOMAIN ); ?></option>
 							  				</select>
-							  				<label><?php _e( 'Default: 3 days', self::DOMAIN ) ?></label>
+							  				<label><?php _e( 'Default: 3 days', self::DOMAIN ); ?></label>
 						  				</td>
 									</tr>
 								  
 			  						<tr>
-						  				<th><label><?php _e( 'Interval cheking and caching share count(sec)', self::DOMAIN ) ?></label></th>
+						  				<th><label><?php _e( 'Interval cheking share count (sec)', self::DOMAIN ); ?></label></th>
 						  				<td>
 							  				<?php
-											  	echo esc_html( $this->share_rush_check_interval ) . ' seconds'  
+											  	echo esc_html( $this->share_rush_check_interval ) . ' ' . __( 'seconds', self::DOMAIN );  
 							  				?>
 						  				</td>
 									</tr>							  
 								  
 								</table>
 			  					<div class="submit-button">
-									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ) ?>" />
+									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ); ?>" />
 			  					</div>								  								  
 						  	</div>
 						</div>					  
 						<div id="share-variation-analysis" class="postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
-							<h3 class="hndle"><span><?php _e('Share Variation Analysis', self::DOMAIN) ?></span></h3>  
+							<h3 class="hndle"><span><?php _e('Share Variation Analysis', self::DOMAIN); ?></span></h3>  
 							<div class="inside">
 								<table class="form-table">						  
 					  				<tr>
-										<th><label><?php _e( 'Method to update basis of comparison', self::DOMAIN ) ?></label></th>
+										<th><label><?php _e( 'Method to update basis of comparison', self::DOMAIN ); ?></label></th>
 						  				<td>
 							  				<select name="share_variation_analysis_mode">
 												<option value="1"<?php if ( $this->share_variation_analysis_mode === self::OPT_SHARE_VARIATION_ANALYSIS_NONE ) echo ' selected="selected"'; ?>><?php _e( 'Disabled (None)', self::DOMAIN ) ?></option>
 												<option value="2"<?php if ( $this->share_variation_analysis_mode === self::OPT_SHARE_VARIATION_ANALYSIS_MANUAL ) echo ' selected="selected"'; ?>><?php _e( 'Enabled (Manual)', self::DOMAIN ) ?></option>
 												<option value="3"<?php if ( $this->share_variation_analysis_mode === self::OPT_SHARE_VARIATION_ANALYSIS_SCHEDULER ) echo ' selected="selected"'; ?>><?php _e( 'Enabled (Scheduler)', self::DOMAIN ) ?></option>
 							  				</select>
-							  				<label><?php _e( 'Default: None', self::DOMAIN ) ?></label>
+							  				<label><?php _e( 'Default: None', self::DOMAIN ); ?></label>
 						  				</td>
 					  				</tr>
 								  
@@ -881,47 +881,47 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 									?>
 								</table>
 			  					<div class="submit-button">
-									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ) ?>" />
-								  	<input type="submit" class="button" name="update_share_comparison_base" value="<?php _e( 'Update Basis of Comparison', self::DOMAIN ) ?>" />
+									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ); ?>" />
+								  	<input type="submit" class="button" name="update_share_comparison_base" value="<?php _e( 'Update Basis of Comparison', self::DOMAIN ); ?>" />
 			  					</div>								  
 						  	</div>
 						</div>					  					  					  
 						<div id="follow-base-cache" class="postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
-							<h3 class="hndle"><span><?php _e('Follow Base Cache', self::DOMAIN) ?></span></h3>  
+							<h3 class="hndle"><span><?php _e( 'Follow Base Cache', self::DOMAIN ); ?></span></h3>  
 							<div class="inside">
 								<table class="form-table">
 									<tr>
-						  				<th><label><?php _e( 'Target SNS', self::DOMAIN ) ?></label></th>
+						  				<th><label><?php _e( 'Target SNS', self::DOMAIN ); ?></label></th>
 						  				<td>
 							  				<div class="sns-check">
 												<input type="checkbox" value="1" name="follow_base_cache_target_feedly"<?php if ( $this->follow_base_cache_target[self::REF_FOLLOW_FEEDLY] ) echo ' checked="checked"'; ?> />
-						 						<label><?php _e( 'Feedly', self::DOMAIN ) ?></label>						  
+						 						<label><?php _e( 'Feedly', self::DOMAIN ); ?></label>						  
 							  				</div>
 						  				</td>
 									</tr>						  
 			  						<tr>
-						  				<th><label><?php _e( 'Interval cheking and caching follower count (sec)', self::DOMAIN ) ?></label></th>
+						  				<th><label><?php _e( 'Interval cheking follower count (sec)', self::DOMAIN ); ?></label></th>
 						  				<td>
 							  				<input type="text" class="text" name="follow_base_check_interval" size="20" value="<?php echo esc_html( $this->follow_base_check_interval); ?>" />
-										  	<label><?php _e( 'Default: 86400 Minimum: 3600', self::DOMAIN ) ?></label>
+										  	<label><?php _e( 'Default: 86400 Minimum: 3600', self::DOMAIN ); ?></label>
 						  				</td>
 			  						</tr>
 								</table>
 			  					<div class="submit-button">
-									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ) ?>" />
-									<input type="submit" class="button" name="clear_follow_base_cache" value="<?php _e( 'Clear Cache', self::DOMAIN ) ?>">									  
+									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ); ?>" />
+									<input type="submit" class="button" name="clear_follow_base_cache" value="<?php _e( 'Clear Cache', self::DOMAIN ); ?>">									  
 			  					</div>								  								  
 						  	</div>
 						</div>
 					  	<?php if ( $this->follow_base_cache_target[self::REF_FOLLOW_FEEDLY] ) { ?>
 						<div id="follow-base-cache-feedly" class="postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
-							<h3 class="hndle"><span><?php _e('Follow Base Cache - Feedly', self::DOMAIN) ?></span></h3>  
+							<h3 class="hndle"><span><?php _e( 'Follow Base Cache - Feedly', self::DOMAIN ); ?></span></h3>  
 							<div class="inside">
 								<table class="form-table">								  	
 									<tr>
-									  	<th><label><?php _e( 'Target feed type:', self::DOMAIN ) ?></label></th>
+									  	<th><label><?php _e( 'Target feed type:', self::DOMAIN ); ?></label></th>
 						  				<td>
 							  				<select name="follow_feed_type">
 												<option value="default"<?php if ( $this->follow_feed_type === self::OPT_FEED_TYPE_DEFAULT ) echo ' selected="selected"'; ?>><?php _e( 'Default', self::DOMAIN ) ?></option>
@@ -930,27 +930,27 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 												<option value="rdf"<?php if ( $this->follow_feed_type === self::OPT_FEED_TYPE_RDF ) echo ' selected="selected"'; ?>><?php _e( 'RDF', self::DOMAIN ) ?></option>
 												<option value="atom"<?php if ( $this->follow_feed_type === self::OPT_FEED_TYPE_ATOM ) echo ' selected="selected"'; ?>><?php _e( 'ATOM', self::DOMAIN ) ?></option>
 							  				</select>
-							  				<label><?php _e( 'Default: Default', self::DOMAIN) ?></label>
+							  				<label><?php _e( 'Default: Default', self::DOMAIN); ?></label>
 						  				</td>
 									</tr>
 								  	<tr>
-									  	<th><label><?php _e( 'Target feed:', self::DOMAIN ) ?></label></th>
+									  	<th><label><?php _e( 'Target feed:', self::DOMAIN ); ?></label></th>
 									  	<td><?php echo get_feed_link( $this->follow_feed_type ); ?></td>
 									</tr>
 								</table>
 			  					<div class="submit-button">
-									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ) ?>" />								  
+									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ); ?>" />								  
 			  					</div>								  								  
 						  	</div>
 						</div>			
 					  	<?php } ?>		
 						<div id="common-dynamic-cache" class="postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
-							<h3 class="hndle"><span><?php _e( 'Dynamic Cache', self::DOMAIN ) ?></span></h3>  
+							<h3 class="hndle"><span><?php _e( 'Dynamic Cache', self::DOMAIN ); ?></span></h3>  
 							<div class="inside">
 								<table class="form-table">
 					  				<tr>
-										<th><label><?php _e( 'Dynamic caching based on user access', self::DOMAIN ) ?></label></th>
+										<th><label><?php _e( 'Dynamic caching based on user access', self::DOMAIN ); ?></label></th>
 						  				<td>
 							  				<select name="dynamic_cache_mode">
 												<option value="1"<?php if ( $this->dynamic_cache_mode === self::OPT_COMMON_ACCESS_BASED_CACHE_NONE ) echo ' selected="selected"'; ?>><?php _e( 'Disabled (None)', self::DOMAIN ) ?></option>
@@ -958,22 +958,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 												<option value="3"<?php if ( $this->dynamic_cache_mode === self::OPT_COMMON_ACCESS_BASED_ASYNC_CACHE ) echo ' selected="selected"'; ?>><?php _e( 'Enabled (Asynchronous Cache)', self::DOMAIN ) ?></option>
 												<option value="4"<?php if ( $this->dynamic_cache_mode === self::OPT_COMMON_ACCESS_BASED_2ND_CACHE ) echo ' selected="selected"'; ?>><?php _e( 'Enabled (Asynchronous 2nd Cache)', self::DOMAIN ) ?></option>
 							  				</select>
-							  				<label><?php _e( 'Default: Enabled (Asynchronous 2nd Cache)', self::DOMAIN) ?></label>
+							  				<label><?php _e( 'Default: Enabled (Asynchronous 2nd Cache)', self::DOMAIN ); ?></label>
 						  				</td>
 					  				</tr>
 								</table>
 			  				<div class="submit-button">
-								<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ) ?>" />
+								<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ); ?>" />
 			  					</div>								  								  
 						  	</div>
 						</div>
 					  	<div id="common-data-crawler" class="postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
-							<h3 class="hndle"><span><?php _e( 'Data Crawler', self::DOMAIN) ?></span></h3>  
+							<h3 class="hndle"><span><?php _e( 'Data Crawler', self::DOMAIN ); ?></span></h3>  
 							<div class="inside">
 								<table class="form-table">
 									<tr>
-						  				<th><label><?php _e( 'Crawl method', self::DOMAIN ) ?></label></th>
+						  				<th><label><?php _e( 'Crawl method', self::DOMAIN ); ?></label></th>
 						  				<td>
 						  				<?php
 					  						switch ( $this->crawler_method ) {
@@ -988,32 +988,32 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				</td>
 									</tr>
 			  						<tr>
-						  				<th><label><?php _e( 'SSL verification', self::DOMAIN ) ?></label></th>
+						  				<th><label><?php _e( 'SSL verification', self::DOMAIN ); ?></label></th>
 						 				<td>
 							  				<select name="crawler_ssl_verification">
-												<option value="0"<?php if ( $this->crawler_ssl_verification === self::OPT_COMMON_CRAWLER_SSL_VERIFY_OFF ) echo ' selected="selected"'; ?>><?php _e( 'Off', self::DOMAIN ) ?></option>
-												<option value="1"<?php if ( $this->crawler_ssl_verification === self::OPT_COMMON_CRAWLER_SSL_VERIFY_ON ) echo ' selected="selected"'; ?>><?php _e( 'On', self::DOMAIN ) ?></option>
+												<option value="0"<?php if ( $this->crawler_ssl_verification === self::OPT_COMMON_CRAWLER_SSL_VERIFY_OFF ) echo ' selected="selected"'; ?>><?php _e( 'Off', self::DOMAIN ); ?></option>
+												<option value="1"<?php if ( $this->crawler_ssl_verification === self::OPT_COMMON_CRAWLER_SSL_VERIFY_ON ) echo ' selected="selected"'; ?>><?php _e( 'On', self::DOMAIN ); ?></option>
 							  				</select>
 							  				<label><?php _e( 'Default: On', self::DOMAIN) ?></label>											  
 						  				</td>
 			  						</tr>									  
 						  		</table>
 			  					<div class="submit-button">
-									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ) ?>" />
+									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ); ?>" />
 			  					</div>								  								  
 						  	</div>
 						</div>  
 						<div id="common-data-export" class="postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
-							<h3 class="hndle"><span><?php _e( 'Data Export', self::DOMAIN) ?></span></h3>  
+							<h3 class="hndle"><span><?php _e( 'Data Export', self::DOMAIN ); ?></span></h3>  
 							<div class="inside">
 								<table class="form-table">						  
 					  				<tr>
-										<th><label><?php _e( 'Method of data export', self::DOMAIN ) ?></label></th>
+										<th><label><?php _e( 'Method of data export', self::DOMAIN ); ?></label></th>
 						  				<td>
 							  				<select name="data_export_mode">
-												<option value="1"<?php if ( $this->data_export_mode === self::OPT_COMMON_DATA_EXPORT_MANUAL ) echo ' selected="selected"'; ?>><?php _e( 'Manual', self::DOMAIN ) ?></option>
-												<option value="2"<?php if ( $this->data_export_mode === self::OPT_COMMON_DATA_EXPORT_SCHEDULER ) echo ' selected="selected"'; ?> disabled="disabled"><?php _e( 'Scheduler', self::DOMAIN ) ?></option>
+												<option value="1"<?php if ( $this->data_export_mode === self::OPT_COMMON_DATA_EXPORT_MANUAL ) echo ' selected="selected"'; ?>><?php _e( 'Manual', self::DOMAIN ); ?></option>
+												<option value="2"<?php if ( $this->data_export_mode === self::OPT_COMMON_DATA_EXPORT_SCHEDULER ) echo ' selected="selected"'; ?> disabled="disabled"><?php _e( 'Scheduler', self::DOMAIN ); ?></option>
 							  				</select>
 							  				<label><?php _e( 'Default: Manual', self::DOMAIN) ?></label>
 						  				</td>
@@ -1171,7 +1171,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 									?>
 								</table>
 			  					<div class="submit-button">
-									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ) ?>" />
+									<input type="submit" class="button button-primary" name="update_all_options" value="<?php _e( 'Update All Options', self::DOMAIN ); ?>" />
 			  					</div>								  
 						  	</div>
 						</div>	  
@@ -1180,12 +1180,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 				<div class="metabox-holder">
 					<div id="common-exported-file" class="postbox">					  
 						<div class="handlediv" title="Click to toggle"><br></div>
-						<h3 class="hndle"><span><?php _e('Exported File', self::DOMAIN) ?></span></h3>  
+						<h3 class="hndle"><span><?php _e( 'Exported File', self::DOMAIN ); ?></span></h3>  
 						<div class="inside">
 							<table class="form-table">
 								<tbody>
 									<tr>
-										<th><?php _e( 'Disk usage of exported file', self::DOMAIN ) ?></th>
+										<th><?php _e( 'Disk usage of exported file', self::DOMAIN ); ?></th>
 										<td>
 							  			<?php
 											$abs_path = WP_PLUGIN_DIR . '/sns-count-cache/data/sns-count-cache-data.csv'; 
@@ -1194,7 +1194,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 											if ( isset( $file_size ) ) {
 											  	echo $file_size;
 											} else {
-											  	_e( 'No exported file', self::DOMAIN);
+											  	_e( 'No exported file', self::DOMAIN );
 											}
 							  			?>
 										</td>
@@ -1206,11 +1206,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 								<table class="form-table">						 
 						 			<tbody>
 						   				<tr>
-								  			<th><?php _e( 'Manual export', self::DOMAIN ) ?></th>
+								  			<th><?php _e( 'Manual export', self::DOMAIN ); ?></th>
 											<td>
-                              					<input type="submit" class="button" name="export_data" value="<?php _e( 'Export', self::DOMAIN ) ?>" />
+                              					<input type="submit" class="button" name="export_data" value="<?php _e( 'Export', self::DOMAIN ); ?>" />
 							  					<br>
-							  					<span class="description">Export share count to a csv file.</span>
+							  					<span class="description"><?php _e( 'Export share count to a csv file.', self::DOMAIN ); ?></span>
 											</td>
 							  			</tr>
 						   			</tbody>
@@ -1224,11 +1224,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 					  	 		<table class="form-table">
 						 			<tbody>
 						   				<tr>
-								  			<th>Reset of exported file</th>
+								  			<th><?php _e( 'Reset of exported file', self::DOMAIN ); ?></th>
 											<td>
-                              					<input type="submit" class="button" name="reset_data" value="<?php _e( 'Reset', self::DOMAIN ) ?>" />
+                              					<input type="submit" class="button" name="reset_data" value="<?php _e( 'Reset', self::DOMAIN ); ?>" />
 							  					<br>
-							  					<span class="description">Clear exported csv file.</span>
+							  					<span class="description"><?php _e( 'Clear exported csv file.', self::DOMAIN ); ?></span>
 											</td>
 							  			</tr>
 						   			</tbody>
@@ -1239,11 +1239,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 					  	 		<table class="form-table">
 						 			<tbody>
 						   				<tr>
-								  			<th>Download of exported file</th>
+								  			<th><?php _e( 'Download of exported file', self::DOMAIN ); ?></th>
 											<td>
-                              					<input type="submit" class="button" name="download_data" value="<?php _e( 'Download', self::DOMAIN ) ?>" />
+                              					<input type="submit" class="button" name="download_data" value="<?php _e( 'Download', self::DOMAIN ); ?>" />
 							  					<br>
-							  					<span class="description">Download the exported csv file.</span>
+							  					<span class="description"><?php _e( 'Download the exported csv file.', self::DOMAIN ); ?></span>
 											</td>
 							  			</tr>
 								  	</tbody>
