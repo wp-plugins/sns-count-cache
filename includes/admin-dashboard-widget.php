@@ -44,16 +44,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 		<div class="sns-cnt-cache">
 		  	<div id="scc-dashboard">			  
 				<div id="site-summary-cache" class="site-summary">
-				  	<h4><a href="admin.php?page=scc-cache-status"><?php _e( 'Cache Status', self::DOMAIN ) ?></a></h4>						  
+				  	<h4><a href="admin.php?page=scc-cache-status"><?php _e( 'Cache Status', self::DOMAIN ); ?></a></h4>						  
 					<table class="view-table">
 						<thead>
 							<tr>
-								<th><?php _e( 'Cache Type', self::DOMAIN ) ?></th>
-								<th><?php _e( 'Cache Progress', self::DOMAIN ) ?></th>
-								<th><?php _e( 'Total Content', self::DOMAIN ) ?></th>
-								<th><?php _e( 'State - Full Cache', self::DOMAIN ) ?></th>
-								<th><?php _e( 'State - Partial Cache', self::DOMAIN ) ?></th>
-								<th><?php _e( 'State - No Cache', self::DOMAIN ) ?></th>
+								<th><?php _e( 'Cache Type', self::DOMAIN ); ?></th>
+								<th><?php _e( 'Cache Progress', self::DOMAIN ); ?></th>
+								<th><?php _e( 'Total Content', self::DOMAIN ); ?></th>
+								<th><?php _e( 'State - Full Cache', self::DOMAIN ); ?></th>
+								<th><?php _e( 'State - Partial Cache', self::DOMAIN ); ?></th>
+								<th><?php _e( 'State - No Cache', self::DOMAIN ); ?></th>
 							</tr>
 						</thead>
 						<tbody>							  

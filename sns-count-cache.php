@@ -1027,7 +1027,7 @@ final class SNS_Count_Cache implements Order {
 		  	$this->original_max_execution_time = 30;
 		}
 	  
-	  	$this->loading_img_url = plugins_url( '/images/load.gif', __FILE__ );
+	  	$this->loading_img_url = plugins_url( '/images/loading.gif', __FILE__ );
 	  
 	  	// delete old hooks
 	  	WP_Cron_Util::clear_scheduled_hook( 'scc_basecache_prime' );

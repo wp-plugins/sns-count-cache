@@ -41,34 +41,34 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 	?>
 	<div class="wrap">
-		<h2><a href="admin.php?page=scc-dashboard"><?php _e( 'SNS Count Cache', self::DOMAIN ) ?></a></h2>
+		<h2><a href="admin.php?page=scc-dashboard"><?php _e( 'SNS Count Cache', self::DOMAIN ); ?></a></h2>
 		<div class="sns-cnt-cache">
 		  	<div id="scc-dashboard">
 			  		<h3 class="nav-tab-wrapper">
-					  	<a class="nav-tab nav-tab-active" href="admin.php?page=scc-dashboard"><?php _e( 'Dashboard', self::DOMAIN ) ?></a>
-					  	<a class="nav-tab" href="admin.php?page=scc-cache-status"><?php _e( 'Cache Status', self::DOMAIN ) ?></a>
-					  	<a class="nav-tab" href="admin.php?page=scc-share-count"><?php _e( 'Share Count', self::DOMAIN ) ?></a>
+					  	<a class="nav-tab nav-tab-active" href="admin.php?page=scc-dashboard"><?php _e( 'Dashboard', self::DOMAIN ); ?></a>
+					  	<a class="nav-tab" href="admin.php?page=scc-cache-status"><?php _e( 'Cache Status', self::DOMAIN ); ?></a>
+					  	<a class="nav-tab" href="admin.php?page=scc-share-count"><?php _e( 'Share Count', self::DOMAIN ); ?></a>
 					  	<?php if ( $this->share_variation_analysis_mode !== self::OPT_SHARE_VARIATION_ANALYSIS_NONE ) { ?>
-					  	<a class="nav-tab" href="admin.php?page=scc-hot-content"><?php _e( 'Hot Content', self::DOMAIN ) ?></a>
+					  	<a class="nav-tab" href="admin.php?page=scc-hot-content"><?php _e( 'Hot Content', self::DOMAIN ); ?></a>
 					  	<?php } ?>
-					  	<a class="nav-tab" href="admin.php?page=scc-setting"><?php _e( 'Setting', self::DOMAIN ) ?></a>
-					  	<a class="nav-tab" href="admin.php?page=scc-help"><?php _e( 'Help', self::DOMAIN ) ?></a>
+					  	<a class="nav-tab" href="admin.php?page=scc-setting"><?php _e( 'Setting', self::DOMAIN ); ?></a>
+					  	<a class="nav-tab" href="admin.php?page=scc-help"><?php _e( 'Help', self::DOMAIN ); ?></a>
 			  		</h3>
 			  
 					<div class="metabox-holder">
 						<div id="site-summary-cache" class="site-summary postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
-							<h3 class="hndle"><span><?php _e( 'Cache Status', self::DOMAIN ) ?></span></h3>  	
+							<h3 class="hndle"><span><?php _e( 'Cache Status', self::DOMAIN ); ?></span></h3>  	
 							<div class="inside">			  
 								<table class="view-table">
 									<thead>
 										<tr>
-											<th><?php _e( 'Cache Type', self::DOMAIN ) ?></th>
-											<th><?php _e( 'Cache Progress', self::DOMAIN ) ?></th>
-											<th><?php _e( 'Total Content', self::DOMAIN ) ?></th>
-											<th><?php _e( 'State - Full Cache', self::DOMAIN ) ?></th>
-											<th><?php _e( 'State - Partial Cache', self::DOMAIN ) ?></th>
-											<th><?php _e( 'State - No Cache', self::DOMAIN ) ?></th>
+											<th><?php _e( 'Cache Type', self::DOMAIN ); ?></th>
+											<th><?php _e( 'Cache Progress', self::DOMAIN ); ?></th>
+											<th><?php _e( 'Total Content', self::DOMAIN ); ?></th>
+											<th><?php _e( 'State - Full Cache', self::DOMAIN ); ?></th>
+											<th><?php _e( 'State - Partial Cache', self::DOMAIN ); ?></th>
+											<th><?php _e( 'State - No Cache', self::DOMAIN ); ?></th>
 										</tr>
 									</thead>
 									<tbody>							  
@@ -101,7 +101,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 					<div class="metabox-holder">
 						<div id="site-summary-count" class="site-summary postbox">
 							<div class="handlediv" title="Click to toggle"><br></div>
-							<h3 class="hndle"><span><?php _e( 'Share Count', self::DOMAIN ) ?></span></h3>  	
+							<h3 class="hndle"><span><?php _e( 'Share Count', self::DOMAIN ); ?></span></h3>  	
 							<div class="inside">
 								<table class="view-table">
 									<thead>
