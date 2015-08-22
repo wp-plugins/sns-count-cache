@@ -386,7 +386,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  						<tr>
 						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
 						  				<td><?php _e( 'Number of contents to check at a time', self::DOMAIN ) ?></td>
-						  				<td><?php echo esc_html( $this->share_base_posts_per_check ) . ' ' . __( 'posts', self::DOMAIN ); ?></td>
+						  				<td><?php echo esc_html( $this->share_base_posts_per_check ) . ' ' . __( 'contents', self::DOMAIN ); ?></td>
 			  						</tr>
 			  						<tr>
 						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ) ?></td>
@@ -645,7 +645,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				</td>
 			  						</tr>
 			  						<tr>
-						  				<th><label><?php _e( 'Number of contents to check at a time (posts)', self::DOMAIN ) ?></label></th>
+						  				<th><label><?php _e( 'Number of contents to check at a time', self::DOMAIN ) ?></label></th>
 						 				<td>
 							  				<input type="text" class="text" name="share_base_posts_per_check" size="20" value="<?php echo esc_html( $this->share_base_posts_per_check ); ?>" />
 							  				<label><?php _e( 'Default: 20', self::DOMAIN ); ?></label>
