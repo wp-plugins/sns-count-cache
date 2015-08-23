@@ -1,10 +1,10 @@
-﻿=== SNS Count Cache ===
+=== SNS Count Cache ===
 Contributors: marubon
 Donate link: 
 Tags: performance, SNS, social, cache, share
 Requires at least: 3.7
-Tested up to: 4.2.3
-Stable tag: 0.7.1
+Tested up to: 4.3
+Stable tag: 0.8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -114,6 +114,11 @@ There are no questions.
 
 = 0.7.1 =
 * Modified: Check interval of follower count is tuned.
+
+= 0.8.0 =
+* Added: Japanese translation
+* Improved: Cache processing is stabilized.
+* Added: function to select feed type for feedly follower retrieval.
 
 == Upgrade Notice ==
 The following functions are deprecated.

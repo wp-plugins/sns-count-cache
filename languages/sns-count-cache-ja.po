@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SNS Count Cache 0.8.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/sns-count-cache\n"
-"POT-Creation-Date: 2015-08-22 22:40+0900\n"
-"PO-Revision-Date: 2015-08-23 09:59+0900\n"
+"POT-Creation-Date: 2015-08-23 10:44+0900\n"
+"PO-Revision-Date: 2015-08-23 18:27+0900\n"
 "Last-Translator: Daisuke Maruyama <marubon@gmail.com>\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -196,8 +196,8 @@ msgid ""
 "by default, you can modify the setting in the \"Setting\" tab in the "
 "administration page."
 msgstr ""
-"デフォルトで10分ごとに20記事の取得するが、管理ページの設定タブにて変更すること"
-"が可能です。"
+"デフォルトで10分ごとに20記事の取得するが、管理ページの「設定」タブにて変更する"
+"ことが可能です。"
 
 #: includes/admin-help.php:60
 msgid "How can I know whether share count of each post is cached or not?"
@@ -207,7 +207,7 @@ msgstr "各記事のSNSカウントのキャッシュ有無を確認する方法
 msgid ""
 "Cache status is described in the \"Cache Status\" tab in the administration "
 "page."
-msgstr "キャッシュ状態は、管理ページのキャッシュ状態タブにて確認可能です。"
+msgstr "キャッシュ状態は、管理ページの「キャッシュ状況」タブにて確認可能です。"
 
 #: includes/admin-help.php:62
 msgid "How can I get share count from the cache?"
@@ -370,27 +370,27 @@ msgid "No hot content."
 msgstr "話題のコンテンツはありません。"
 
 #: includes/admin-setting.php:35 includes/admin-setting.php:688
-#: includes/admin-setting.php:732 includes/admin-setting.php:890
-#: includes/admin-setting.php:918 includes/admin-setting.php:948
-#: includes/admin-setting.php:972 includes/admin-setting.php:1008
-#: includes/admin-setting.php:1180
+#: includes/admin-setting.php:732 includes/admin-setting.php:987
+#: includes/admin-setting.php:1015 includes/admin-setting.php:1045
+#: includes/admin-setting.php:1069 includes/admin-setting.php:1105
+#: includes/admin-setting.php:1374
 msgid "Update All Options"
-msgstr "全オプションの更新"
+msgstr "設定の更新"
 
-#: includes/admin-setting.php:225 includes/admin-setting.php:1235
+#: includes/admin-setting.php:225 includes/admin-setting.php:1429
 msgid "Reset"
 msgstr "リセット"
 
-#: includes/admin-setting.php:233 includes/admin-setting.php:1217
+#: includes/admin-setting.php:233 includes/admin-setting.php:1411
 msgid "Export"
 msgstr "エクスポート"
 
-#: includes/admin-setting.php:245 includes/admin-setting.php:891
+#: includes/admin-setting.php:245 includes/admin-setting.php:988
 msgid "Update Basis of Comparison"
 msgstr "比較基準の更新"
 
 #: includes/admin-setting.php:257 includes/admin-setting.php:272
-#: includes/admin-setting.php:689 includes/admin-setting.php:919
+#: includes/admin-setting.php:689 includes/admin-setting.php:1016
 msgid "Clear Cache"
 msgstr "キャッシュの消去"
 
@@ -403,39 +403,39 @@ msgstr "現在の設定"
 #: includes/admin-setting.php:388 includes/admin-setting.php:393
 #: includes/admin-setting.php:407 includes/admin-setting.php:610
 msgid "Share Base Cache"
-msgstr "シェア基本キャッシュ"
+msgstr "シェア基本キャッシュ機能"
 
 #: includes/admin-setting.php:321 includes/admin-setting.php:421
 #: includes/admin-setting.php:434 includes/admin-setting.php:695
 msgid "Share Rush Cache"
-msgstr "シェア緊急キャッシュ"
+msgstr "シェア臨時キャッシュ機能"
 
 #: includes/admin-setting.php:321 includes/admin-setting.php:444
 #: includes/admin-setting.php:465 includes/admin-setting.php:738
 msgid "Share Variation Analysis"
-msgstr "シェア変動分析"
+msgstr "シェア変動分析機能"
 
 #: includes/admin-setting.php:321 includes/admin-setting.php:473
-#: includes/admin-setting.php:486 includes/admin-setting.php:897
+#: includes/admin-setting.php:486 includes/admin-setting.php:994
 msgid "Follow Base Cache"
-msgstr "フォロー基本キャッシュ"
+msgstr "フォロー基本キャッシュ機能"
 
 #: includes/admin-setting.php:321 includes/admin-setting.php:525
-#: includes/admin-setting.php:955
+#: includes/admin-setting.php:1052
 msgid "Dynamic Cache"
-msgstr "動的キャッシュ"
+msgstr "動的キャッシュ機能"
 
 #: includes/admin-setting.php:321 includes/admin-setting.php:546
-#: includes/admin-setting.php:562 includes/admin-setting.php:978
+#: includes/admin-setting.php:562 includes/admin-setting.php:1075
 msgid "Data Crawler"
-msgstr "データクローラ"
+msgstr "データクローラ機能"
 
 #: includes/admin-setting.php:321 includes/admin-setting.php:575
-#: includes/admin-setting.php:593 includes/admin-setting.php:1014
+#: includes/admin-setting.php:593 includes/admin-setting.php:1111
 msgid "Data Export"
-msgstr "データエクスポート"
+msgstr "データエクスポート機能"
 
-#: includes/admin-setting.php:321 includes/admin-setting.php:1189
+#: includes/admin-setting.php:321 includes/admin-setting.php:1383
 msgid "Exported File"
 msgstr "エクスポートされたファイル"
 
@@ -452,7 +452,7 @@ msgid "Value"
 msgstr "値"
 
 #: includes/admin-setting.php:339 includes/admin-setting.php:474
-#: includes/admin-setting.php:614 includes/admin-setting.php:901
+#: includes/admin-setting.php:614 includes/admin-setting.php:998
 msgid "Target SNS"
 msgstr "対象SNS"
 
@@ -461,8 +461,8 @@ msgid "Hatena Bookmark"
 msgstr "はてなブックマーク"
 
 #: includes/admin-setting.php:372 includes/admin-setting.php:639
-msgid "Additional custom post types"
-msgstr "追加のカスタム投稿タイプ"
+msgid "Custom post types"
+msgstr "カスタム投稿タイプ"
 
 #: includes/admin-setting.php:384 includes/admin-setting.php:435
 #: includes/admin-setting.php:647 includes/admin-setting.php:722
@@ -487,12 +487,12 @@ msgid "Scheme migration mode from http to https"
 msgstr "HTTPからHTTPSへのスキーム移行モード"
 
 #: includes/admin-setting.php:398 includes/admin-setting.php:567
-#: includes/admin-setting.php:665 includes/admin-setting.php:1001
+#: includes/admin-setting.php:665 includes/admin-setting.php:1098
 msgid "On"
 msgstr "有効"
 
 #: includes/admin-setting.php:400 includes/admin-setting.php:569
-#: includes/admin-setting.php:664 includes/admin-setting.php:1000
+#: includes/admin-setting.php:664 includes/admin-setting.php:1097
 msgid "Off"
 msgstr "無効"
 
@@ -502,7 +502,7 @@ msgstr "HTTPからHTTPSへのスキーム移行日"
 
 #: includes/admin-setting.php:422 includes/admin-setting.php:699
 msgid "Term considering posted content as new content"
-msgstr "投稿コンテンツを新規とみなす期間"
+msgstr "投稿日からコンテンツを新着とみなす期間"
 
 #: includes/admin-setting.php:426
 msgid "day"
@@ -517,7 +517,7 @@ msgid "Method to update basis of comparison"
 msgstr "比較基準の更新方式"
 
 #: includes/admin-setting.php:449 includes/admin-setting.php:530
-#: includes/admin-setting.php:745 includes/admin-setting.php:962
+#: includes/admin-setting.php:745 includes/admin-setting.php:1059
 msgid "Disabled (None)"
 msgstr "無効（なし）"
 
@@ -533,86 +533,86 @@ msgstr "有効（スケジューラ）"
 msgid "Schedule"
 msgstr "スケジュール"
 
-#: includes/admin-setting.php:487 includes/admin-setting.php:910
+#: includes/admin-setting.php:487 includes/admin-setting.php:1007
 msgid "Interval cheking follower count (sec)"
-msgstr "フォロー数のチェック間隔"
+msgstr "フォロー数のチェック間隔（秒）"
 
 #: includes/admin-setting.php:492 includes/admin-setting.php:519
-#: includes/admin-setting.php:926
+#: includes/admin-setting.php:1023
 msgid "Follow Base Cache - Feedly"
-msgstr "フォロー基本キャッシュ - Feedly"
+msgstr "フォロー基本キャッシュ機能 - Feedly"
 
-#: includes/admin-setting.php:493 includes/admin-setting.php:930
+#: includes/admin-setting.php:493 includes/admin-setting.php:1027
 msgid "Target feed type"
 msgstr "対象フィードタイプ"
 
 #: includes/admin-setting.php:498 includes/admin-setting.php:513
-#: includes/admin-setting.php:933
+#: includes/admin-setting.php:1030
 msgid "Default"
 msgstr "デフォルト"
 
-#: includes/admin-setting.php:501 includes/admin-setting.php:934
+#: includes/admin-setting.php:501 includes/admin-setting.php:1031
 msgid "RSS"
 msgstr "RSS"
 
-#: includes/admin-setting.php:504 includes/admin-setting.php:935
+#: includes/admin-setting.php:504 includes/admin-setting.php:1032
 msgid "RSS2"
 msgstr "RSS2"
 
-#: includes/admin-setting.php:507 includes/admin-setting.php:936
+#: includes/admin-setting.php:507 includes/admin-setting.php:1033
 msgid "RDF"
 msgstr "RDF"
 
-#: includes/admin-setting.php:510 includes/admin-setting.php:937
+#: includes/admin-setting.php:510 includes/admin-setting.php:1034
 msgid "ATOM"
 msgstr "ATOM"
 
-#: includes/admin-setting.php:520 includes/admin-setting.php:943
+#: includes/admin-setting.php:520 includes/admin-setting.php:1040
 msgid "Target feed"
 msgstr "対象フィード"
 
-#: includes/admin-setting.php:526 includes/admin-setting.php:959
+#: includes/admin-setting.php:526 includes/admin-setting.php:1056
 msgid "Dynamic caching based on user access"
 msgstr "ユーザアクセスをトリガとする動的キャッシュ"
 
-#: includes/admin-setting.php:533 includes/admin-setting.php:963
+#: includes/admin-setting.php:533 includes/admin-setting.php:1060
 msgid "Enabled (Synchronous Cache)"
 msgstr "有効（同期キャッシュ）"
 
-#: includes/admin-setting.php:536 includes/admin-setting.php:964
+#: includes/admin-setting.php:536 includes/admin-setting.php:1061
 msgid "Enabled (Asynchronous Cache)"
 msgstr "有効（非同期キャッシュ）"
 
-#: includes/admin-setting.php:539 includes/admin-setting.php:965
+#: includes/admin-setting.php:539 includes/admin-setting.php:1062
 msgid "Enabled (Asynchronous 2nd Cache)"
 msgstr "有効（非同期2次キャッシュ）"
 
-#: includes/admin-setting.php:547 includes/admin-setting.php:982
+#: includes/admin-setting.php:547 includes/admin-setting.php:1079
 msgid "Crawl method"
 msgstr "クロールの方式"
 
-#: includes/admin-setting.php:552 includes/admin-setting.php:987
+#: includes/admin-setting.php:552 includes/admin-setting.php:1084
 msgid "Normal (Sequential Retrieval)"
 msgstr "標準（逐次検索）"
 
-#: includes/admin-setting.php:555 includes/admin-setting.php:990
+#: includes/admin-setting.php:555 includes/admin-setting.php:1087
 msgid "Extended (Parallel Retrieval)"
 msgstr "拡張（並列検索）"
 
-#: includes/admin-setting.php:563 includes/admin-setting.php:997
+#: includes/admin-setting.php:563 includes/admin-setting.php:1094
 msgid "SSL verification"
-msgstr "SSL証明書の照合"
+msgstr "SSL証明書の検証"
 
-#: includes/admin-setting.php:576 includes/admin-setting.php:1018
+#: includes/admin-setting.php:576 includes/admin-setting.php:1115
 msgid "Method of data export"
 msgstr "データのエクスポート方式"
 
-#: includes/admin-setting.php:580 includes/admin-setting.php:1021
+#: includes/admin-setting.php:580 includes/admin-setting.php:1118
 msgid "Manual"
 msgstr "手動"
 
 #: includes/admin-setting.php:583 includes/admin-setting.php:784
-#: includes/admin-setting.php:1022 includes/admin-setting.php:1058
+#: includes/admin-setting.php:1119 includes/admin-setting.php:1155
 msgid "Scheduler"
 msgstr "有効（スケジューラ）"
 
@@ -708,123 +708,243 @@ msgstr "既定値: 3日"
 msgid "Default: None"
 msgstr "既定値: なし"
 
-#: includes/admin-setting.php:789 includes/admin-setting.php:1063
+#: includes/admin-setting.php:789 includes/admin-setting.php:1160
 msgid "Type"
 msgstr "タイプ"
 
-#: includes/admin-setting.php:794 includes/admin-setting.php:1068
+#: includes/admin-setting.php:794 includes/admin-setting.php:1165
 msgid "Hour"
 msgstr "時"
 
-#: includes/admin-setting.php:797 includes/admin-setting.php:1071
+#: includes/admin-setting.php:797 includes/admin-setting.php:1168
 msgid "Minute"
 msgstr "分"
 
-#: includes/admin-setting.php:803 includes/admin-setting.php:1077
+#: includes/admin-setting.php:803 includes/admin-setting.php:1174
 msgid "monthly"
 msgstr "毎月"
 
-#: includes/admin-setting.php:809 includes/admin-setting.php:1083
-msgid "on"
-msgstr "on"
+#: includes/admin-setting.php:812 includes/admin-setting.php:1183
+msgid "on 1."
+msgstr "1日"
 
-#: includes/admin-setting.php:831 includes/admin-setting.php:1105
+#: includes/admin-setting.php:815 includes/admin-setting.php:1186
+msgid "on 2."
+msgstr "2日"
+
+#: includes/admin-setting.php:818 includes/admin-setting.php:1189
+msgid "on 3."
+msgstr "3日"
+
+#: includes/admin-setting.php:821 includes/admin-setting.php:1192
+msgid "on 4."
+msgstr "4日"
+
+#: includes/admin-setting.php:824 includes/admin-setting.php:1195
+msgid "on 5."
+msgstr "5日"
+
+#: includes/admin-setting.php:827 includes/admin-setting.php:1198
+msgid "on 6."
+msgstr "6日"
+
+#: includes/admin-setting.php:830 includes/admin-setting.php:1201
+msgid "on 7."
+msgstr "7日"
+
+#: includes/admin-setting.php:833 includes/admin-setting.php:1204
+msgid "on 8."
+msgstr "8日"
+
+#: includes/admin-setting.php:836 includes/admin-setting.php:1207
+msgid "on 9."
+msgstr "9日"
+
+#: includes/admin-setting.php:839 includes/admin-setting.php:1210
+msgid "on 10."
+msgstr "10日"
+
+#: includes/admin-setting.php:842 includes/admin-setting.php:1213
+msgid "on 11."
+msgstr "11日"
+
+#: includes/admin-setting.php:845 includes/admin-setting.php:1216
+msgid "on 12."
+msgstr "12日"
+
+#: includes/admin-setting.php:848 includes/admin-setting.php:1219
+msgid "on 13."
+msgstr "13日"
+
+#: includes/admin-setting.php:851 includes/admin-setting.php:1222
+msgid "on 14."
+msgstr "14日"
+
+#: includes/admin-setting.php:854 includes/admin-setting.php:1225
+msgid "on 15."
+msgstr "15日"
+
+#: includes/admin-setting.php:857 includes/admin-setting.php:1228
+msgid "on 16."
+msgstr "16日"
+
+#: includes/admin-setting.php:860 includes/admin-setting.php:1231
+msgid "on 17."
+msgstr "17日"
+
+#: includes/admin-setting.php:863 includes/admin-setting.php:1234
+msgid "on 18."
+msgstr "18日"
+
+#: includes/admin-setting.php:866 includes/admin-setting.php:1237
+msgid "on 19."
+msgstr "19日"
+
+#: includes/admin-setting.php:869 includes/admin-setting.php:1240
+msgid "on 20."
+msgstr "20日"
+
+#: includes/admin-setting.php:872 includes/admin-setting.php:1243
+msgid "on 21."
+msgstr "21日"
+
+#: includes/admin-setting.php:875 includes/admin-setting.php:1246
+msgid "on 22."
+msgstr "22日"
+
+#: includes/admin-setting.php:878 includes/admin-setting.php:1249
+msgid "on 23."
+msgstr "23日"
+
+#: includes/admin-setting.php:881 includes/admin-setting.php:1252
+msgid "on 24."
+msgstr "24日"
+
+#: includes/admin-setting.php:884 includes/admin-setting.php:1255
+msgid "on 25."
+msgstr "25日"
+
+#: includes/admin-setting.php:887 includes/admin-setting.php:1258
+msgid "on 26."
+msgstr "26日"
+
+#: includes/admin-setting.php:890 includes/admin-setting.php:1261
+msgid "on 27."
+msgstr "27日"
+
+#: includes/admin-setting.php:893 includes/admin-setting.php:1264
+msgid "on 28."
+msgstr "28日"
+
+#: includes/admin-setting.php:896 includes/admin-setting.php:1267
+msgid "on 29."
+msgstr "29日"
+
+#: includes/admin-setting.php:899 includes/admin-setting.php:1270
+msgid "on 30."
+msgstr "30日"
+
+#: includes/admin-setting.php:902 includes/admin-setting.php:1273
+msgid "on 31."
+msgstr "31日"
+
+#: includes/admin-setting.php:928 includes/admin-setting.php:1299
 msgid "weekly"
 msgstr "毎週"
 
-#: includes/admin-setting.php:836 includes/admin-setting.php:1110
+#: includes/admin-setting.php:933 includes/admin-setting.php:1304
 msgid "Sunday"
 msgstr "日曜日"
 
-#: includes/admin-setting.php:837 includes/admin-setting.php:1111
+#: includes/admin-setting.php:934 includes/admin-setting.php:1305
 msgid "Monday"
 msgstr "月曜日"
 
-#: includes/admin-setting.php:838 includes/admin-setting.php:1112
+#: includes/admin-setting.php:935 includes/admin-setting.php:1306
 msgid "Tuesday"
 msgstr "火曜日"
 
-#: includes/admin-setting.php:839 includes/admin-setting.php:1113
+#: includes/admin-setting.php:936 includes/admin-setting.php:1307
 msgid "Wednesday"
 msgstr "水曜日"
 
-#: includes/admin-setting.php:840 includes/admin-setting.php:1114
+#: includes/admin-setting.php:937 includes/admin-setting.php:1308
 msgid "Thursday"
 msgstr "木曜日"
 
-#: includes/admin-setting.php:841 includes/admin-setting.php:1115
+#: includes/admin-setting.php:938 includes/admin-setting.php:1309
 msgid "Friday"
 msgstr "金曜日"
 
-#: includes/admin-setting.php:842 includes/admin-setting.php:1116
+#: includes/admin-setting.php:939 includes/admin-setting.php:1310
 msgid "Saturday"
 msgstr "土曜日"
 
-#: includes/admin-setting.php:862 includes/admin-setting.php:1136
+#: includes/admin-setting.php:959 includes/admin-setting.php:1330
 msgid "daily"
 msgstr "毎日"
 
-#: includes/admin-setting.php:905
+#: includes/admin-setting.php:1002
 msgid "Feedly"
 msgstr "Feedly"
 
-#: includes/admin-setting.php:913
+#: includes/admin-setting.php:1010
 msgid "Default: 86400 Minimum: 3600"
 msgstr "既定値: 86400 最小値: 3600"
 
-#: includes/admin-setting.php:939
+#: includes/admin-setting.php:1036
 msgid "Default: Default"
 msgstr "既定値: デフォルト"
 
-#: includes/admin-setting.php:967
+#: includes/admin-setting.php:1064
 msgid "Default: Enabled (Asynchronous 2nd Cache)"
 msgstr "既定値: 有効（非同期2次キャッシュ）"
 
-#: includes/admin-setting.php:1003
+#: includes/admin-setting.php:1100
 msgid "Default: On"
 msgstr "既定値: 有効"
 
-#: includes/admin-setting.php:1024
+#: includes/admin-setting.php:1121
 msgid "Default: Manual"
 msgstr "既定値: 手動"
 
-#: includes/admin-setting.php:1159
+#: includes/admin-setting.php:1353
 msgid "hourly"
 msgstr "毎時"
 
-#: includes/admin-setting.php:1194
+#: includes/admin-setting.php:1388
 msgid "Disk usage of exported file"
 msgstr "エクスポートされたファイルのディスク使用量"
 
-#: includes/admin-setting.php:1203
+#: includes/admin-setting.php:1397
 msgid "No exported file"
 msgstr "エクスポートされたファイルは存在しません。"
 
-#: includes/admin-setting.php:1215
+#: includes/admin-setting.php:1409
 msgid "Manual export"
 msgstr "手動エクスポート"
 
-#: includes/admin-setting.php:1219
+#: includes/admin-setting.php:1413
 msgid "Export share count to a csv file."
 msgstr "シェア数をCSVファイルにエクスポートします。"
 
-#: includes/admin-setting.php:1233
+#: includes/admin-setting.php:1427
 msgid "Reset of exported file"
 msgstr "エクスポートされたファイルのリセット"
 
-#: includes/admin-setting.php:1237
+#: includes/admin-setting.php:1431
 msgid "Clear exported csv file."
 msgstr "エクスポートされたCSVファイルを削除します。"
 
-#: includes/admin-setting.php:1248
+#: includes/admin-setting.php:1442
 msgid "Download of exported file"
 msgstr "エクスポートされたファイルのダウンロード"
 
-#: includes/admin-setting.php:1250 includes/download.php:38
+#: includes/admin-setting.php:1444 includes/download.php:38
 msgid "Download"
 msgstr "ダウンロード"
 
-#: includes/admin-setting.php:1252
+#: includes/admin-setting.php:1446
 msgid "Download the exported csv file."
 msgstr "エクスポートされたCSVファイルをダウンロードします。"
 
@@ -879,7 +999,7 @@ msgid "Ongoing"
 msgstr "進行中"
 
 #. Plugin URI of the plugin/theme
-msgid "https://wordpress.org/plugins/sns-count-cache/"
+msgid "https://ja.wordpress.org/plugins/sns-count-cache/"
 msgstr ""
 
 #. Description of the plugin/theme
@@ -889,6 +1009,10 @@ msgid ""
 "may help you to shorten page loading time because the share count can be "
 "retrieved not through network but through the cache using given functions."
 msgstr ""
+"SNS Count Cacheは、Twitter、Facebook、Google+、Pocket、はてなブックマークのシェ"
+"ア数を取得し、バックグラウンドでキャッシュします。用意された関数を利用すること"
+"で、ネットワーク経由でなくキャッシュからシェア数を参照できようになるため、ペー"
+"ジ読み込みの高速化が見込めます。"
 
 #. Author of the plugin/theme
 msgid "Daisuke Maruyama"
@@ -897,6 +1021,12 @@ msgstr ""
 #. Author URI of the plugin/theme
 msgid "http://marubon.info/"
 msgstr ""
+
+#~ msgid "Additional custom post types"
+#~ msgstr "追加のカスタム投稿タイプ"
+
+#~ msgid "on"
+#~ msgstr "on"
 
 #~ msgid "What is SNS Cout Cache?"
 #~ msgstr "SNS Count Cacheは何なのか？"
