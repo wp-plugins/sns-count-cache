@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: SNS Count Cache 0.8.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/sns-count-cache\n"
 "POT-Creation-Date: 2015-08-22 22:40+0900\n"
-"PO-Revision-Date: 2015-08-22 22:54+0900\n"
+"PO-Revision-Date: 2015-08-23 09:59+0900\n"
 "Last-Translator: Daisuke Maruyama <marubon@gmail.com>\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -467,7 +467,7 @@ msgstr "追加のカスタム投稿タイプ"
 #: includes/admin-setting.php:384 includes/admin-setting.php:435
 #: includes/admin-setting.php:647 includes/admin-setting.php:722
 msgid "Interval cheking share count (sec)"
-msgstr "シェア数をチェックする間隔"
+msgstr "シェア数のチェック間隔（秒）"
 
 #: includes/admin-setting.php:385 includes/admin-setting.php:438
 #: includes/admin-setting.php:488 includes/admin-setting.php:725
@@ -502,7 +502,7 @@ msgstr "HTTPからHTTPSへのスキーム移行日"
 
 #: includes/admin-setting.php:422 includes/admin-setting.php:699
 msgid "Term considering posted content as new content"
-msgstr "投稿されたコンテンツを新規コンテンツとみなす期間"
+msgstr "投稿コンテンツを新規とみなす期間"
 
 #: includes/admin-setting.php:426
 msgid "day"
@@ -535,7 +535,7 @@ msgstr "スケジュール"
 
 #: includes/admin-setting.php:487 includes/admin-setting.php:910
 msgid "Interval cheking follower count (sec)"
-msgstr "フォロー数をチェックする間隔"
+msgstr "フォロー数のチェック間隔"
 
 #: includes/admin-setting.php:492 includes/admin-setting.php:519
 #: includes/admin-setting.php:926

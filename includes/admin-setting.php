@@ -636,7 +636,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 						  				</td>
 									</tr>
 			  						<tr>
-						  				<th><label><?php _e( 'Additional custom post types', self::DOMAIN ); ?></label></th>
+						  				<th><label><?php _e( 'Custom post types', self::DOMAIN ); ?></label></th>
 						  				<td>
 							  				<input type="text" class="text" name="share_base_custom_post_types" size="60" value="<?php echo esc_html( implode( ',', $this->share_base_custom_post_types ) );  ?>" />
 											<br>

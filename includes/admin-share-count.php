@@ -90,7 +90,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 									<th><?php _e( 'Content', self::DOMAIN ); ?></th>
 							  		<?php
 						  						  			
-						  				foreach ( $share_base_cache_target as $sns => $active ){	
+						  				foreach ( $share_base_cache_target as $sns => $active ) {	
 									  
 									  		if ( $active ) {
 										  
@@ -125,7 +125,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 										  				break;
 												}
 										  											  											  											  
-										  		if ( $sns === $sort_exec_key ){
+										  		if ( $sns === $sort_exec_key ) {
 													echo '<th><a class="sort-exec-key" href="' . $sort_url . '">' . esc_html( $sns_name ) . '</th>';		
 												} else {
 											  		echo '<th><a href="' . $sort_url . '">' . esc_html( $sns_name ) . '</th>';	
