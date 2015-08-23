@@ -369,7 +369,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 			  						</tr>
 			  						<tr>
 						  				<td><?php _e( 'Share Base Cache', self::DOMAIN ); ?></td>
-						  				<td><?php _e( 'Additional custom post types', self::DOMAIN ); ?></td>
+						  				<td><?php _e( 'Custom post types', self::DOMAIN ); ?></td>
 						  				<td><?php								  
 											  	if ( ! empty( $this->share_base_custom_post_types ) && $this->share_base_custom_post_types ) {
 												  	echo esc_html( implode( ',', $this->share_base_custom_post_types ) );
@@ -806,7 +806,104 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
                                     				<td>
 														<select name="a_moncronmday">
 														<?php for ( $i = 1; $i <= 31; $i ++ ) {
-																	echo '<option ' . selected( in_array( "$i", $mday, TRUE ), TRUE, FALSE ) . '  value="' . $i . '" />' . __( 'on',  self::DOMAIN ) . ' ' . $i . '.</option>';
+									  							$on_day = '';
+									  							switch ( $i ) {
+																  	case 1:
+																  		$on_day = __( 'on 1.', self::DOMAIN );
+																  		break;
+																  	case 2:
+																  		$on_day = __( 'on 2.', self::DOMAIN );
+																  		break;
+																  	case 3:
+																  		$on_day = __( 'on 3.', self::DOMAIN );
+																  		break;
+																  	case 4:
+																  		$on_day = __( 'on 4.', self::DOMAIN );
+																  		break;
+																  	case 5:
+																  		$on_day = __( 'on 5.', self::DOMAIN );
+																  		break;
+																  	case 6:
+																  		$on_day = __( 'on 6.', self::DOMAIN );
+																  		break;
+																  	case 7:
+																  		$on_day = __( 'on 7.', self::DOMAIN );
+																  		break;
+																  	case 8:
+																  		$on_day = __( 'on 8.', self::DOMAIN );
+																  		break;
+																  	case 9:
+																  		$on_day = __( 'on 9.', self::DOMAIN );
+																  		break;
+																  	case 10:
+																  		$on_day = __( 'on 10.', self::DOMAIN );
+																  		break;
+																  	case 11:
+																  		$on_day = __( 'on 11.', self::DOMAIN );
+																  		break;
+																  	case 12:
+																  		$on_day = __( 'on 12.', self::DOMAIN );
+																  		break;
+																  	case 13:
+																  		$on_day = __( 'on 13.', self::DOMAIN );
+																  		break;
+																  	case 14:
+																  		$on_day = __( 'on 14.', self::DOMAIN );
+																  		break;
+																  	case 15:
+																  		$on_day = __( 'on 15.', self::DOMAIN );
+																  		break;
+																  	case 16:
+																  		$on_day = __( 'on 16.', self::DOMAIN );
+																  		break;
+																  	case 17:
+																  		$on_day = __( 'on 17.', self::DOMAIN );
+																  		break;
+																  	case 18:
+																  		$on_day = __( 'on 18.', self::DOMAIN );
+																  		break;
+																  	case 19:
+																  		$on_day = __( 'on 19.', self::DOMAIN );
+																  		break;
+																  	case 20:
+																  		$on_day = __( 'on 20.', self::DOMAIN );
+																  		break;
+																  	case 21:
+																  		$on_day = __( 'on 21.', self::DOMAIN );
+																  		break;
+																  	case 22:
+																  		$on_day = __( 'on 22.', self::DOMAIN );
+																  		break;
+																  	case 23:
+																  		$on_day = __( 'on 23.', self::DOMAIN );
+																  		break;
+																  	case 24:
+																  		$on_day = __( 'on 24.', self::DOMAIN );
+																  		break;
+																  	case 25:
+																  		$on_day = __( 'on 25.', self::DOMAIN );
+																  		break;
+																  	case 26:
+																  		$on_day = __( 'on 26.', self::DOMAIN );
+																  		break;
+																  	case 27:
+																  		$on_day = __( 'on 27.', self::DOMAIN );
+																  		break;
+																  	case 28:
+																  		$on_day = __( 'on 28.', self::DOMAIN );
+																  		break;
+																  	case 29:
+																  		$on_day = __( 'on 29.', self::DOMAIN );
+																  		break;
+																  	case 30:
+																  		$on_day = __( 'on 30.', self::DOMAIN );
+																  		break;
+																  	case 31:
+																  		$on_day = __( 'on 31.', self::DOMAIN );
+																  		break;
+									  							}
+									  
+																echo '<option ' . selected( in_array( "$i", $mday, TRUE ), TRUE, FALSE ) . '  value="' . $i . '" />' . $on_day . '</option>';
 														} ?>
 														</select>
 													</td>
@@ -1080,7 +1177,104 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
                                     				<td>
 														<select name="e_moncronmday">
 														<?php for ( $i = 1; $i <= 31; $i ++ ) {
-																	echo '<option ' . selected( in_array( "$i", $mday, TRUE ), TRUE, FALSE ) . '  value="' . $i . '" />' . __( 'on',  self::DOMAIN ) . ' ' . $i . '.</option>';
+									  							$on_day = '';
+									  							switch ( $i ) {
+																  	case 1:
+																  		$on_day = __( 'on 1.', self::DOMAIN );
+																  		break;
+																  	case 2:
+																  		$on_day = __( 'on 2.', self::DOMAIN );
+																  		break;
+																  	case 3:
+																  		$on_day = __( 'on 3.', self::DOMAIN );
+																  		break;
+																  	case 4:
+																  		$on_day = __( 'on 4.', self::DOMAIN );
+																  		break;
+																  	case 5:
+																  		$on_day = __( 'on 5.', self::DOMAIN );
+																  		break;
+																  	case 6:
+																  		$on_day = __( 'on 6.', self::DOMAIN );
+																  		break;
+																  	case 7:
+																  		$on_day = __( 'on 7.', self::DOMAIN );
+																  		break;
+																  	case 8:
+																  		$on_day = __( 'on 8.', self::DOMAIN );
+																  		break;
+																  	case 9:
+																  		$on_day = __( 'on 9.', self::DOMAIN );
+																  		break;
+																  	case 10:
+																  		$on_day = __( 'on 10.', self::DOMAIN );
+																  		break;
+																  	case 11:
+																  		$on_day = __( 'on 11.', self::DOMAIN );
+																  		break;
+																  	case 12:
+																  		$on_day = __( 'on 12.', self::DOMAIN );
+																  		break;
+																  	case 13:
+																  		$on_day = __( 'on 13.', self::DOMAIN );
+																  		break;
+																  	case 14:
+																  		$on_day = __( 'on 14.', self::DOMAIN );
+																  		break;
+																  	case 15:
+																  		$on_day = __( 'on 15.', self::DOMAIN );
+																  		break;
+																  	case 16:
+																  		$on_day = __( 'on 16.', self::DOMAIN );
+																  		break;
+																  	case 17:
+																  		$on_day = __( 'on 17.', self::DOMAIN );
+																  		break;
+																  	case 18:
+																  		$on_day = __( 'on 18.', self::DOMAIN );
+																  		break;
+																  	case 19:
+																  		$on_day = __( 'on 19.', self::DOMAIN );
+																  		break;
+																  	case 20:
+																  		$on_day = __( 'on 20.', self::DOMAIN );
+																  		break;
+																  	case 21:
+																  		$on_day = __( 'on 21.', self::DOMAIN );
+																  		break;
+																  	case 22:
+																  		$on_day = __( 'on 22.', self::DOMAIN );
+																  		break;
+																  	case 23:
+																  		$on_day = __( 'on 23.', self::DOMAIN );
+																  		break;
+																  	case 24:
+																  		$on_day = __( 'on 24.', self::DOMAIN );
+																  		break;
+																  	case 25:
+																  		$on_day = __( 'on 25.', self::DOMAIN );
+																  		break;
+																  	case 26:
+																  		$on_day = __( 'on 26.', self::DOMAIN );
+																  		break;
+																  	case 27:
+																  		$on_day = __( 'on 27.', self::DOMAIN );
+																  		break;
+																  	case 28:
+																  		$on_day = __( 'on 28.', self::DOMAIN );
+																  		break;
+																  	case 29:
+																  		$on_day = __( 'on 29.', self::DOMAIN );
+																  		break;
+																  	case 30:
+																  		$on_day = __( 'on 30.', self::DOMAIN );
+																  		break;
+																  	case 31:
+																  		$on_day = __( 'on 31.', self::DOMAIN );
+																  		break;
+									  							}									  
+									  
+																echo '<option ' . selected( in_array( "$i", $mday, TRUE ), TRUE, FALSE ) . '  value="' . $i . '" />' . $on_day . '</option>';
 														} ?>
 														</select>
 													</td>
